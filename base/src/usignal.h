@@ -18,9 +18,9 @@ public:
   void wait();
 
 private:
-  int sig__;
-  struct sigaction sa__;
-  signalFun cb__;
+  int m_iSig;
+  struct sigaction m_sa;
+  signalFun m_callback;
 };
 } // namespace cis
 

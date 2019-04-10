@@ -5,13 +5,13 @@ using namespace cis;
 
 udaemon::udaemon(const char *pidfile)
 {
-    pidfile__ = umemory::strdup(pidfile);
+    m_cPidFile = umemory::strdup(pidfile);
 }
 
 udaemon::~udaemon()
 {
-    umemory::free(pidfile__);
-    pidfile__ = 0;
+    umemory::free(m_cPidFile);
+    m_cPidFile = 0;
 }
 
 int udaemon::init()
@@ -45,13 +45,13 @@ int udaemon::init()
 
 int udaemon::exit()
 {
-    return unlink(pidfile__);
+    return unlink(m_cPidFile);
 }
 
 int udaemon::local_check_pid()
 {
     int pid = 0;
-    FILE *f = fopen(pidfile__, "r");
+    FILE *f = fopen(m_cPidFile, "r");
     if (f == NULL)
         return 0;
     int n = fscanf(f, "%d", &pid);
@@ -68,16 +68,16 @@ int udaemon::local_write_pid()
 {
     FILE *f;
     int pid = 0;
-    int fd = open(pidfile__, O_RDWR | O_CREAT, 0644);
+    int fd = open(m_cPidFile, O_RDWR | O_CREAT, 0644);
     if (fd == -1)
     {
-        fprintf(stderr, "Can't create pidfile ----->>>>> [%s].\n", pidfile__);
+        fprintf(stderr, "Can't create pidfile ----->>>>> [%s].\n", m_cPidFile);
         return 0;
     }
     f = fdopen(fd, "r+");
     if (f == NULL)
     {
-        fprintf(stderr, "Can't open pidfile ----->>>>> [%s].\n", pidfile__);
+        fprintf(stderr, "Can't open pidfile ----->>>>> [%s].\n", m_cPidFile);
         return 0;
     }
 

@@ -10,67 +10,67 @@ class urwlock
 public:
   urwlock()
   {
-    pthread_rwlock_init(&k__, NULL);
+    pthread_rwlock_init(&m_mutex, NULL);
   }
 
   ~urwlock()
   {
-    pthread_rwlock_destroy(&k__);
+    pthread_rwlock_destroy(&m_mutex);
   }
 
   inline void wlock()
   {
-    pthread_rwlock_wrlock(&k__);
+    pthread_rwlock_wrlock(&m_mutex);
   }
 
   inline void rlock()
   {
-    pthread_rwlock_rdlock(&k__);
+    pthread_rwlock_rdlock(&m_mutex);
   }
 
   inline void unlock()
   {
-    pthread_rwlock_unlock(&k__);
+    pthread_rwlock_unlock(&m_mutex);
   }
 
 private:
-  pthread_rwlock_t k__;
+  pthread_rwlock_t m_mutex;
 };
 
 class wlocking
 {
 public:
-  wlocking(urwlock *h) : h__(h)
+  wlocking(urwlock *h) : m_lpLock(h)
   {
-    h__->wlock();
+    m_lpLock->wlock();
   }
 
   ~wlocking()
   {
-    h__->unlock();
-    h__ = NULL;
+    m_lpLock->unlock();
+    m_lpLock = NULL;
   }
 
 private:
-  urwlock *h__;
+  urwlock *m_lpLock;
 };
 
 class rlocking
 {
 public:
-  rlocking(urwlock *h) : h__(h)
+  rlocking(urwlock *h) : m_lpLock(h)
   {
-    h__->rlock();
+    m_lpLock->rlock();
   }
 
   ~rlocking()
   {
-    h__->unlock();
-    h__ = NULL;
+    m_lpLock->unlock();
+    m_lpLock = NULL;
   }
 
 private:
-  urwlock *h__;
+  urwlock *m_lpLock;
 };
 } // namespace cis
 

@@ -8,46 +8,46 @@ namespace cis
 {
 class urecuresivelock
 {
-  public:
-    urecuresivelock(uspinlock *ls) : lk__(ls),
-                                     count__(0)
+public:
+    urecuresivelock(uspinlock *ls) : m_lpLock(ls),
+                                     m_icount(0)
     {
     }
     ~urecuresivelock() {}
 
     void lock()
     {
-        if (count__ == 0)
+        if (m_icount == 0)
         {
-            lk__->lock();
+            m_lpLock->lock();
         }
-        ++count__;
+        ++m_icount;
     }
 
     int trylock()
     {
-        if (count__ == 0)
+        if (m_icount == 0)
         {
-            if (!lk__->trylock())
+            if (!m_lpLock->trylock())
                 return 0;
         }
-        ++count__;
+        ++m_icount;
         return 1;
     }
 
     void unlock()
     {
-        --count__;
-        if (count__ <= 0)
+        --m_icount;
+        if (m_icount <= 0)
         {
-            assert(count__ == 0);
-            lk__->unlock();
+            assert(m_icount == 0);
+            m_lpLock->unlock();
         }
     }
 
-  private:
-    uspinlock *lk__;
-    int count__;
+private:
+    uspinlock *m_lpLock;
+    int m_icount;
 };
 } // namespace cis
 

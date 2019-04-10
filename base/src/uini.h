@@ -22,12 +22,12 @@ public:
 
   iterator begin()
   {
-    return sections__.begin();
+    return m_mapSections.begin();
   }
 
   iterator end()
   {
-    return sections__.end();
+    return m_mapSections.end();
   }
 
 public:
@@ -51,9 +51,9 @@ private:
   static void __trim__(string &str);
 
 private:
-  map<string, string> sections__;
-  vector<string> flags__;
-  string fname__;
+  map<string, string> m_mapSections;
+  vector<string> m_vecFlags;
+  string m_strName;
 };
 
 } // namespace cis

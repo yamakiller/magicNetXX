@@ -15,12 +15,12 @@ signalCallback(int signal)
 
 usignal::usignal(int flags, int sig, signalFun cb)
 {
-    sa__.sa_handler = &signalCallback;
-    sa__.sa_flags = flags;
-    sigfillset(&sa__.sa_mask);
-    sigaction(sig, &sa__, NULL);
-    sig__ = sig;
-    cb__ = cb;
+    m_sa.sa_handler = &signalCallback;
+    m_sa.sa_flags = flags;
+    sigfillset(&m_sa.sa_mask);
+    sigaction(sig, &m_sa, NULL);
+    m_iSig = sig;
+    m_callback = cb;
 }
 
 usignal::~usignal()
@@ -29,9 +29,9 @@ usignal::~usignal()
 
 void usignal::wait()
 {
-    if (signalEvent[sig__])
+    if (signalEvent[m_iSig])
     {
-        cb__();
-        signalEvent[sig__] = 0;
+        m_callback();
+        signalEvent[m_iSig] = 0;
     }
 }

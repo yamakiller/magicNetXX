@@ -7,55 +7,55 @@ namespace cis
 {
 class ulock
 {
-  public:
+public:
     ulock()
     {
-        pthread_mutex_init(&mutex__, NULL);
+        pthread_mutex_init(&m_mutex, NULL);
     }
 
     ~ulock()
     {
-        pthread_mutex_destroy(&mutex__);
+        pthread_mutex_destroy(&m_mutex);
     }
 
     void lock()
     {
-        pthread_mutex_lock(&mutex__);
+        pthread_mutex_lock(&m_mutex);
     }
 
     void unlock()
     {
-        pthread_mutex_unlock(&mutex__);
+        pthread_mutex_unlock(&m_mutex);
     }
 
     bool trylock()
     {
-        if (pthread_mutex_trylock(&mutex__) == 0)
+        if (pthread_mutex_trylock(&m_mutex) == 0)
         {
             return true;
         }
         return false;
     }
 
-  private:
-    pthread_mutex_t mutex__;
+private:
+    pthread_mutex_t m_mutex;
 };
 
 class ulocking
 {
-  public:
-    ulocking(ulock *l) : l__(l)
+public:
+    ulocking(ulock *l) : m_lpLock(l)
     {
-        l__->lock();
+        m_lpLock->lock();
     }
 
     ~ulocking()
     {
-        l__->unlock();
+        m_lpLock->unlock();
     }
 
-  private:
-    ulock *l__;
+private:
+    ulock *m_lpLock;
 };
 
 } // namespace cis

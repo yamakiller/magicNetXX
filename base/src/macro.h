@@ -1,8 +1,6 @@
 #ifndef CIS_ENGINE_MACRO_H
 #define CIS_ENGINE_MACRO_H
 
-#include "format.h"
-
 #define R_CONSTRUCTOR(className) \
     className() {}               \
     ~className() {}
@@ -41,9 +39,6 @@
     PRIVATE_MACRO_CHOOSE_HELPER(STAT_, COUNT_MACRO_VAR_ARGS(__VA_ARGS__)) \
     (className, funName, __VA_ARGS__)
 
-
-
-
 #define RELEASE(p) \
     if (p != NULL) \
     {              \
@@ -60,6 +55,7 @@
 
 #include <cstdio>
 #include <functional>
+#include <stdint.h>
 
 using namespace std;
 namespace rednet

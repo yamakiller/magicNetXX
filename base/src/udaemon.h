@@ -27,7 +27,7 @@ private:
   int local_redirect_fds();
 
 private:
-  char *pidfile__;
+  char *m_cPidFile;
 };
 
 } // namespace cis

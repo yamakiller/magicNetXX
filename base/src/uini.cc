@@ -8,13 +8,13 @@ using namespace cis;
 
 uini::uini()
 {
-    flags__.push_back("#");
-    flags__.push_back(";");
+    m_vecFlags.push_back("#");
+    m_vecFlags.push_back(";");
 }
 
 int uini::load(const string &filename)
 {
-    fname__ = filename;
+    m_strName = filename;
     FILE *fp = fopen(filename.c_str(), "r");
     if (!fp)
     {
@@ -44,7 +44,7 @@ int uini::load(const string &filename)
 
         if (!local_parse(line, key, value))
             continue;
-        sections__[key] = value;
+        m_mapSections[key] = value;
     }
 
     return 0;
@@ -134,10 +134,10 @@ string uini::local_get_value(const string &key)
 {
     string str_null;
     str_null.clear();
-    if (sections__.empty())
+    if (m_mapSections.empty())
         return str_null;
-    iterator it = sections__.find(key);
-    if (it != sections__.end())
+    iterator it = m_mapSections.find(key);
+    if (it != m_mapSections.end())
     {
         return it->second;
     }
@@ -147,23 +147,23 @@ string uini::local_get_value(const string &key)
 bool uini::local_iscomment(const string &str)
 {
     bool bret = false;
-    for (size_t i = 0; i < flags__.size(); ++i)
+    for (size_t i = 0; i < m_vecFlags.size(); ++i)
     {
         size_t k = 0;
-        if (str.length() < flags__[i].length())
+        if (str.length() < m_vecFlags[i].length())
         {
             continue;
         }
 
-        for (k = 0; k < flags__[i].length(); ++k)
+        for (k = 0; k < m_vecFlags[i].length(); ++k)
         {
-            if (str[k] != flags__[i][k])
+            if (str[k] != m_vecFlags[i][k])
             {
                 break;
             }
         }
 
-        if (k == flags__[i].length())
+        if (k == m_vecFlags[i].length())
         {
             bret = true;
             break;
@@ -197,8 +197,8 @@ bool uini::local_parse(const string &content, string &key, string &value, char c
 
 void uini::local_release()
 {
-    sections__.clear();
-    flags__.clear();
+    m_mapSections.clear();
+    m_vecFlags.clear();
 }
 
 void uini::__trimleft__(string &str, char c /*' '*/)
