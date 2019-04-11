@@ -3,17 +3,33 @@
 #include "atomic.h"
 #include "uexception.h"
 #include "ilog.h"
+#include "uwork_group.h"
+
 #include <string.h>
 
 #include <stdlib.h>
 #include <dlfcn.h>
 #include <stdio.h>
+#include <functional>
 
 namespace cis
 {
 
 uframework::uframework() : m_uModuleMallocID(1)
 {
+}
+
+int uframework::initialize(const char *strCmdLine)
+{
+    INST(uwork_group, initialize);
+
+    return 0;
+}
+
+void uframework::startup()
+{
+    INST(uwork_group, append, bind(&uframework::local_run, this, std::placeholders::_1), NULL);
+    INST(uwork_group, wait);
 }
 
 uint32_t uframework::registerModule(umodule *lpModule)
@@ -192,6 +208,17 @@ void uframework::local_eraseName(const char *strName)
     if (it != m_uMapIdName.end())
     {
         m_uMapIdName.erase(it);
+    }
+}
+
+void uframework::local_shutdown()
+{
+    uwork_group::instance()->m_iShutdown = 1;
+    ModulePtr ptr = nullptr;
+    for (auto it = m_uMapModule.begin(); it != m_uMapModule.end(); ++it)
+    {
+        ptr = it->second;
+        ptr->wakeup();
     }
 }
 

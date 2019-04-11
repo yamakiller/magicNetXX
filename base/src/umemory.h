@@ -2,16 +2,14 @@
 #define CIS_ENGINE_MEMORY_H_
 
 #include "macro.h"
+#include "unoncopyable.h"
 #include <stddef.h>
 #include <stdint.h>
 
 namespace cis
 {
-class umemory
+class umemory : unoncopyable
 {
-private:
-  R_CONSTRUCTOR(umemory)
-
 public:
   static void *malloc(size_t size);
   static void *calloc(size_t nmemb, size_t size);

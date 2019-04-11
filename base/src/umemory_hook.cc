@@ -1,5 +1,6 @@
 #include "atomic.h"
 #include "umemory.h"
+
 #include <stdio.h>
 #include <string.h>
 #include <vector>
@@ -35,7 +36,7 @@ using namespace std;
 namespace cis
 {
 
-class umemory_hook
+class umemory_hook : unoncopyable
 {
     friend class umemory;
 
@@ -52,8 +53,6 @@ class umemory_hook
 
     static constexpr int MEMORY_BLACK_MAX = 0x10000;
 
-private:
-    R_CONSTRUCTOR(umemory_hook)
 private:
     static void malloc_error(size_t sz);
     static void fill_prefix(void *ptr);

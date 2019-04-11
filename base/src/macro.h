@@ -1,10 +1,6 @@
 #ifndef CIS_ENGINE_MACRO_H
 #define CIS_ENGINE_MACRO_H
 
-#define R_CONSTRUCTOR(className) \
-    className() {}               \
-    ~className() {}
-
 #define PRIVATE_MACRO_VAR_ARGS_IMPL_COUNT(_1, _2, _3, _4, _5, _6, _7, _8, _9, N, ...) N
 #define PRIVATE_MACRO_VAR_ARGS_IMPL(args) PRIVATE_MACRO_VAR_ARGS_IMPL_COUNT args
 #define COUNT_MACRO_VAR_ARGS(...) PRIVATE_MACRO_VAR_ARGS_IMPL((__VA_ARGS__, 10, 9, 8, 7, 6, 5 4, 3, 2, 1, 0))

@@ -5,11 +5,12 @@
 //#include "umemory.h"
 #include "uobject.h"
 #include <string.h>
+#include <assert.h>
 
 namespace cis
 {
 template <typename T, int DEFAULT_SIZE = 64, int EQ_OVERLOAD = 1024>
-class iq : uobject
+class iq : public uobject
 {
 public:
   iq() : cap__(DEFAULT_SIZE),

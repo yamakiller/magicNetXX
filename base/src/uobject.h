@@ -10,8 +10,9 @@ namespace cis
 {
 class uobject
 {
-  public:
-    R_CONSTRUCTOR(uobject)
+public:
+    uobject() {}
+    ~uobject() {}
 
     void *operator new(size_t size)
     {

@@ -25,6 +25,9 @@ public:
     uframework();
     ~uframework();
 
+    int initialize(const char *strCmdLine);
+    void startup();
+
     inline void setFrameworkId(uint32_t id) { m_uFrameworkId = (id << UFRAMEWORK_ID_SHIFT); };
     inline uint32_t getFrameworkId() { return (m_uFrameworkId >> UFRAMEWORK_ID_SHIFT); }
 
@@ -43,6 +46,10 @@ private:
     uint32_t local_mallocId();
     void local_eraseAll();
     void local_eraseName(const char *strName);
+
+    void local_shutdown();
+
+    void *local_run(void *parm);
 
 private:
     volatile uint32_t m_uModuleMallocID;

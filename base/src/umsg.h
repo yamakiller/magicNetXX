@@ -36,9 +36,10 @@ class umq : public iq<umsg>
 {
 public:
     umq(uint32_t uId) : iq<umsg>(), m_uParentId(uId) {}
+    virtual ~umq() {}
 
 protected:
-    void local_drop(umsg *e);
+    void local_drop(umsg *e) override;
 
 private:
     uint32_t m_uParentId;

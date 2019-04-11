@@ -4,7 +4,7 @@
 #include <string>
 #include <format.h>
 #include "umemory.h"
-#include "umsg.h"
+#include "ucomponent_msg.h"
 
 #define LOG_PRINTF0(LEVEL, SOURCE, FMT, ...)                              \
 	do                                                                    \
@@ -205,9 +205,10 @@ public:
 		hmsg.sz = MSG_PACK(len, MsgType::T_TEXT);
 
 		shared_ptr<umodule> ptr = INST(uframework, getModule, logger);
-
-		//推送到消息队列
-		umemory::free(data);
+		if (ptr->push(&hmsg) != 0)
+		{
+			umemory::free(data);
+		}
 	}
 
 	static void doPrintf(LogLevel level, const std::string &msg)

@@ -3,6 +3,9 @@
 #include "uexception.h"
 #include "ilog.h"
 
+#include "umsg.h"
+#include "ucomponent_msg.h"
+
 #include <stdlib.h>
 #include <dlfcn.h>
 #include <stdio.h>
@@ -58,6 +61,28 @@ umodule::umodule(const char *strName, const char *strParam) : m_strName(strName)
         LOG_TRACE(m_uId, "FAILED Launch {}", strName);
         throw uexception("");
     }
+}
+
+int umodule::push(struct umsg *msg)
+{
+    ucomponent_msg *lpcmpt = dynamic_cast<ucomponent_msg *>(m_lpCmpt);
+    if (lpcmpt == NULL)
+    {
+        return -1;
+    }
+
+    lpcmpt->push(msg);
+    return 0;
+}
+
+void umodule::wakeup()
+{
+    ucomponent_msg *lpcmpt = dynamic_cast<ucomponent_msg *>(m_lpCmpt);
+    if (lpcmpt == NULL)
+    {
+        return;
+    }
+    lpcmpt->wakeup();
 }
 
 void *umodule::local_getApi(void *lpDll, const char *strName, const char *strNameApi)

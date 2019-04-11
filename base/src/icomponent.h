@@ -5,13 +5,17 @@
 
 namespace cis
 {
+
 class icomponent : public uobject
 {
 public:
     virtual ~icomponent() {}
 
     virtual int initialize(void *, const char *strParam) = 0;
+
+    virtual void finalize() = 0;
 };
+
 } // namespace cis
 
 #endif
