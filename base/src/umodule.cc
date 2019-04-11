@@ -1,8 +1,11 @@
 #include "umodule.h"
 #include "uframework.h"
 #include "uexception.h"
-
 #include "ilog.h"
+
+#include <stdlib.h>
+#include <dlfcn.h>
+#include <stdio.h>
 
 namespace cis
 {
@@ -16,7 +19,7 @@ umodule::umodule(const char *strName, const char *strParam) : m_strName(strName)
         return;
     }
 
-    component_dl_create create = local_getApi(dl, strName, "create");
+    component_dl_create create = (component_dl_create)local_getApi(dl, strName, "create");
     if (create == NULL)
     {
         PRINT_FATAL("{} get api {} fail", strName, "create");
@@ -45,17 +48,14 @@ umodule::umodule(const char *strName, const char *strParam) : m_strName(strName)
     m_lpDll = dl;
     m_lpCmpt = icmpt;
 
-    m_lpMq = new umq(m_uId);
-    assert(m_lpMq);
-
     int r = m_lpCmpt->initialize(this, strParam);
     if (r == 0)
     {
-        //输出到日志启动成功
+        LOG_TRACE(m_uId, "LAUNCH {} {}", strName, strParam ? strParam : "");
     }
     else
     {
-        //输出到日志启动失败
+        LOG_TRACE(m_uId, "FAILED Launch {}", strName);
         throw uexception("");
     }
 }

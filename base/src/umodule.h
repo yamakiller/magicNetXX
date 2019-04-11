@@ -2,7 +2,6 @@
 #define CIS_ENGINE_UMODULE_H
 
 #include "icomponent.h"
-#include "umessage.h"
 #include <string>
 
 using namespace std;
@@ -23,7 +22,7 @@ public:
     inline void setId(uint32_t id) { m_uId = id; }
 
 private:
-    void *local_getApi(void *lpDll, const char *strName);
+    void *local_getApi(void *lpDll, const char *strName, const char *strNameApi);
 
 private:
     uint32_t m_uId;
@@ -31,8 +30,6 @@ private:
 
     icomponent *m_lpCmpt;
     void *m_lpDll;
-
-    umq *m_lpMq;
 };
 } // namespace cis
 

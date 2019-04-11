@@ -29,7 +29,6 @@
 //#define rxposix_memalign posix_memalign
 #endif
 
-
 #define PREFIX_SIZE sizeof(struct cis::umemory_hook::mem_cookie)
 
 using namespace std;
@@ -53,9 +52,9 @@ class umemory_hook
 
     static constexpr int MEMORY_BLACK_MAX = 0x10000;
 
-  private:
+private:
     R_CONSTRUCTOR(umemory_hook)
-  private:
+private:
     static void malloc_error(size_t sz);
     static void fill_prefix(void *ptr);
     static void update_meminfo(uint32_t thread_id, size_t sz);
@@ -63,7 +62,7 @@ class umemory_hook
 
     static void clean_prefix(void *ptr);
 
-  private:
+private:
     static size_t __used_memory__;
     static size_t __used_block__;
     static mem_info __memory_blocks[MEMORY_BLACK_MAX];

@@ -2,6 +2,12 @@
 #include "umodule.h"
 #include "atomic.h"
 #include "uexception.h"
+#include "ilog.h"
+#include <string.h>
+
+#include <stdlib.h>
+#include <dlfcn.h>
+#include <stdio.h>
 
 namespace cis
 {
@@ -59,6 +65,49 @@ void uframework::unregisterModule(uint32_t id)
         }
     }
     m_rwMapLock.unlock();
+}
+
+uint32_t uframework::getModuleId(const char *strName)
+{
+    uint32_t result = 0;
+    m_rwMapLock.rlock();
+    if (m_uMapIdName.empty())
+    {
+        m_rwMapLock.unlock();
+        return result;
+    }
+
+    auto it = m_uMapIdName.find(strName);
+    if (it == m_uMapIdName.end())
+    {
+        m_rwMapLock.unlock();
+        return result;
+    }
+    result = it->second;
+    m_rwMapLock.unlock();
+
+    return result;
+}
+
+uframework::ModulePtr uframework::getModule(const uint32_t id)
+{
+    ModulePtr result = nullptr;
+    m_rwMapLock.rlock();
+    if (m_uMapModule.empty())
+    {
+        m_rwMapLock.unlock();
+        return result;
+    }
+
+    auto it = m_uMapModule.find(id);
+    if (it == m_uMapModule.end())
+    {
+        m_rwMapLock.unlock();
+        return result;
+    }
+    result = it->second;
+    m_rwMapLock.unlock();
+    return result;
 }
 
 void *uframework::openDynamicL(const char *strName)

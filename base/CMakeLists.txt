@@ -12,6 +12,8 @@ include_directories(
 )
 
 target_link_libraries(${PROJ_NAME} 
+	dl
+	pthread
 	libjemalloc)
 
 set_target_properties(${PROJ_NAME} PROPERTIES FOLDER "core")

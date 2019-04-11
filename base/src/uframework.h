@@ -34,10 +34,14 @@ public:
     uint32_t registerModule(umodule *lpModule);
     void unregisterModule(uint32_t id);
 
+    uint32_t getModuleId(const char *strName);
+    ModulePtr getModule(const uint32_t id);
+
     void *openDynamicL(const char *strName);
 
 private:
     uint32_t local_mallocId();
+    void local_eraseAll();
     void local_eraseName(const char *strName);
 
 private:
