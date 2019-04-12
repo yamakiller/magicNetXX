@@ -14,9 +14,9 @@ ExternalProject_Add(jemalloc
     CFLAGS=-std=gnu99\ -Wall\ -pipe\ -g3\ -O3\ -funroll-loops
     BUILD_COMMAND ${MAKE}
     INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/
-    INSTALL_COMMAND $(MAKE) install_lib_static install_include)
-  add_library(libjemalloc STATIC IMPORTED GLOBAL)
-  set_target_properties(libjemalloc PROPERTIES IMPORTED_LOCATION "${CMAKE_CURRENT_BINARY_DIR}/lib/libjemalloc_pic.a")
+    INSTALL_COMMAND $(MAKE) install_lib_shared install_include)
+  add_library(libjemalloc SHARED IMPORTED GLOBAL)
+  set_target_properties(libjemalloc PROPERTIES IMPORTED_LOCATION "/usr/local/lib/libjemalloc.so")
   add_dependencies(libjemalloc jemalloc)
   include_directories("${CMAKE_CURRENT_BINARY_DIR}/include/")
 

@@ -5,6 +5,7 @@
 
 #include "umsg.h"
 #include "ucomponent_msg.h"
+#include "umodule_mgr.h"
 
 #include <stdlib.h>
 #include <dlfcn.h>
@@ -15,14 +16,14 @@ namespace cis
 
 umodule::umodule(const char *strName, const char *strParam) : m_strName(strName)
 {
-    void *dl = INST(uframework, openDynamicL, strName);
+    void *dl = INST(umodule_mgr, openDynamicL, strName);
     if (dl == NULL)
     {
         throw uexception("");
         return;
     }
 
-    component_dl_create create = (component_dl_create)local_getApi(dl, strName, "create");
+    component_dl_create create = (component_dl_create)local_getApi(dl, strName, "_create");
     if (create == NULL)
     {
         PRINT_FATAL("{} get api {} fail", strName, "create");
@@ -39,7 +40,7 @@ umodule::umodule(const char *strName, const char *strParam) : m_strName(strName)
 
     try
     {
-        INST(uframework, registerModule, this);
+        INST(umodule_mgr, registerModule, this);
     }
     catch (uexception &e)
     {
@@ -61,6 +62,12 @@ umodule::umodule(const char *strName, const char *strParam) : m_strName(strName)
         LOG_TRACE(m_uId, "FAILED Launch {}", strName);
         throw uexception("");
     }
+}
+
+umodule::~umodule()
+{
+    RELEASE(m_lpCmpt);
+    m_lpDll = NULL;
 }
 
 int umodule::push(struct umsg *msg)
@@ -92,6 +99,7 @@ void *umodule::local_getApi(void *lpDll, const char *strName, const char *strNam
     char tmp[name_size + api_size + 1];
     memcpy(tmp, strName, name_size);
     memcpy(tmp + name_size, strNameApi, api_size + 1);
+
     char *ptr = strrchr(tmp, '.');
     if (ptr == NULL)
     {

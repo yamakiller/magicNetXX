@@ -11,7 +11,7 @@
 using namespace std;
 namespace cis
 {
-class ucomponent_msg : icomponent
+class ucomponent_msg : public icomponent
 {
 public:
     ucomponent_msg();
@@ -19,7 +19,7 @@ public:
 
     virtual int initialize(void *, const char *strParam);
 
-    virtual void finalize();
+    virtual void finalize() = 0;
 
     void wakeup();
 

@@ -5,6 +5,7 @@
 #include <format.h>
 #include "umemory.h"
 #include "ucomponent_msg.h"
+#include "umodule_mgr.h"
 
 #define LOG_PRINTF0(LEVEL, SOURCE, FMT, ...)                              \
 	do                                                                    \
@@ -132,39 +133,48 @@ public:
 		L_WARNING,
 		L_ERROR,
 		L_FATAL,
+		L_INFO,
 	};
 
 	static void doLog(LogLevel level, uint32_t source, const std::string &msg)
 	{
 
-		static uint32_t logger = INST(uframework, getModuleId, "logger");
+		static uint32_t logger = INST(umodule_mgr, getModuleId, "logger");
 		if (logger == 0)
 			return;
 
 		char color[16];
+		char status[16];
 
 		switch (level)
 		{
 		case LogLevel::L_FATAL:
 			sprintf(color, purple);
+			sprintf(status, " [fatal] ");
 			break;
 		case LogLevel::L_ERROR:
 			sprintf(color, red);
+			sprintf(status, " [error] ");
 			break;
 		case LogLevel::L_WARNING:
 			sprintf(color, yellow);
+			sprintf(status, " [warning] ");
 			break;
 		case LogLevel::L_NOTICE:
 			sprintf(color, green);
+			sprintf(status, " [notice] ");
 			break;
 		case LogLevel::L_DEBUG:
 			sprintf(color, white);
+			sprintf(status, " [debug] ");
 			break;
 		case LogLevel::L_TRACE:
 			sprintf(color, light_gray);
+			sprintf(status, " [trace] ");
 			break;
 		default:
 			sprintf(color, none);
+			sprintf(status, " [info] ");
 			break;
 		}
 
@@ -172,7 +182,7 @@ public:
 		char tmp[log_message_size];
 		char *data = NULL;
 
-		int len = snprintf(tmp, log_message_size, "%s%s", color, msg.c_str());
+		int len = snprintf(tmp, log_message_size, "%s[:%08x]%s%s", color, source, status, msg.c_str());
 
 		if (len >= 0 && len < log_message_size)
 			data = (char *)umemory::strdup(tmp);
@@ -183,7 +193,7 @@ public:
 			{
 				tmp_max *= 2;
 				data = (char *)umemory::malloc(tmp_max);
-				len = snprintf(data, tmp_max, "%s%s", color, msg.c_str());
+				len = snprintf(data, tmp_max, "%s[:%08x]%s%s", color, source, status, msg.c_str());
 				if (len < tmp_max)
 					break;
 				umemory::free(data);
@@ -193,7 +203,6 @@ public:
 		if (len < 0)
 		{
 			umemory::free(data);
-			perror("snprintf error :");
 			return;
 		}
 
@@ -202,9 +211,9 @@ public:
 		hmsg.source = source;
 		hmsg.session = 0;
 		hmsg.target = logger;
+		hmsg.data = data;
 		hmsg.sz = MSG_PACK(len, MsgType::T_TEXT);
-
-		shared_ptr<umodule> ptr = INST(uframework, getModule, logger);
+		shared_ptr<umodule> ptr = INST(umodule_mgr, getModule, logger);
 		if (ptr->push(&hmsg) != 0)
 		{
 			umemory::free(data);
@@ -216,25 +225,25 @@ public:
 		switch (level)
 		{
 		case LogLevel::L_FATAL:
-			fprintf(stderr, "%s", purple);
+			fprintf(stderr, "%s [fatal] ", purple);
 			break;
 		case LogLevel::L_ERROR:
-			fprintf(stderr, "%s", red);
+			fprintf(stderr, "%s [error] ", red);
 			break;
 		case LogLevel::L_WARNING:
-			fprintf(stderr, "%s", yellow);
+			fprintf(stderr, "%s [warning] ", yellow);
 			break;
 		case LogLevel::L_NOTICE:
-			fprintf(stderr, "%s", green);
+			fprintf(stderr, "%s [notice] ", green);
 			break;
 		case LogLevel::L_DEBUG:
-			fprintf(stderr, "%s", white);
+			fprintf(stderr, "%s [debug] ", white);
 			break;
 		case LogLevel::L_TRACE:
-			fprintf(stderr, "%s", light_gray);
+			fprintf(stderr, "%s [trace] ", light_gray);
 			break;
 		default:
-			fprintf(stderr, "%s", none);
+			fprintf(stderr, "%s [info]", "none");
 			break;
 		}
 		fprintf(stderr, "%s\n", msg.c_str());

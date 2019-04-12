@@ -28,10 +28,10 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 set(THIRDLIB_DIR ${PROJECT_SOURCE_DIR}/3rd)
 set(BASE_DIR ${PROJECT_SOURCE_DIR}/base)
 set(LAUNCHER_DIR ${PROJECT_SOURCE_DIR}/launcher)
+set(MODULE_DIR ${PROJECT_SOURCE_DIR}/module)
 
 set(MODULE_INCLUDE_DIRECTORIES
 	${BASE_DIR}/src
-    $(BASE_DIR)/lib-src
 	${THIRDLIB_DIR}/cppformat-master
 	${THIRDLIB_DIR}/spdlog-master/include/spdlog	
 	${LAUNCHER_DIR}/src
@@ -50,4 +50,6 @@ set_property(GLOBAL PROPERTY USE_FOLDERS On)
 add_subdirectory(launcher)
 add_subdirectory(3rd)
 add_subdirectory(base)
+add_subdirectory(module)
+add_subdirectory(example)
 
