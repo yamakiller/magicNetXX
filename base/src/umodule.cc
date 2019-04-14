@@ -26,7 +26,7 @@ umodule::umodule(const char *strName, const char *strParam) : m_strName(strName)
     component_dl_create create = (component_dl_create)local_getApi(dl, strName, "_create");
     if (create == NULL)
     {
-        PRINT_FATAL("{} get api {} fail", strName, "create");
+        LOG_CRITICAL(0, "{} get api {} fail", strName, "create");
         throw uexception("");
         return;
     }
@@ -44,7 +44,7 @@ umodule::umodule(const char *strName, const char *strParam) : m_strName(strName)
     }
     catch (uexception &e)
     {
-        PRINT_FATAL("{}", e.getMessage());
+        LOG_CRITICAL(0, "{}", e.getMessage());
         throw uexception("");
         return;
     }
@@ -55,11 +55,11 @@ umodule::umodule(const char *strName, const char *strParam) : m_strName(strName)
     int r = m_lpCmpt->initialize(this, strParam);
     if (r == 0)
     {
-        LOG_TRACE(m_uId, "LAUNCH {} {}", strName, strParam ? strParam : "");
+        LOG_INFO(m_uId, "LAUNCH {} {}", strName, strParam ? strParam : "");
     }
     else
     {
-        LOG_TRACE(m_uId, "FAILED Launch {}", strName);
+        LOG_INFO(m_uId, "FAILED Launch {}", strName);
         throw uexception("");
     }
 }

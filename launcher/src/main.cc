@@ -12,7 +12,7 @@ int main(int argc, char *argv[])
     udaemon *lpDaemon = NULL;
     if (!option.parse(argc, argv))
     {
-        PRINT_DEBUG("command line parse failed.");
+        LOG_ERROR(0, "command line parse failed.");
         return 0;
     }
 
@@ -24,13 +24,13 @@ int main(int argc, char *argv[])
 
     if (INSTGET(uframework) == 0)
     {
-        PRINT_DEBUG("framework instance is nill.");
+        LOG_ERROR(0, "framework instance is nill.");
         return 0;
     }
 
     if (INST(uframework, initialize) != 0)
     {
-        PRINT_DEBUG("framework initialize fail.");
+        LOG_ERROR(0, "framework initialize fail.");
         return 0;
     }
 

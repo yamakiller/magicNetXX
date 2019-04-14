@@ -21,3 +21,4 @@ ExternalProject_Add(jemalloc
   include_directories("${CMAKE_CURRENT_BINARY_DIR}/include/")
 
 add_subdirectory("cppformat-master")
+add_subdirectory("spdlog")

@@ -1,6 +1,5 @@
 
-#include <uframework.h>
-#include <uexception.h>
+#include <base.h>
 
 namespace cis
 {
@@ -14,7 +13,7 @@ public:
         uframework::initialize();
         try
         {
-            umodule *lplogger = new umodule("logger", NULL);
+            umodule *lplogger = new umodule("module_logger", NULL);
         }
         catch (const uexception &e)
         {

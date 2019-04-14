@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 
-set(PROJ_NAME module-logger)
+set(PROJ_NAME module_logger)
 file(GLOB SRCLIST ./src/*.*)
 
 

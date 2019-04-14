@@ -126,9 +126,7 @@ void *umodule_mgr::openDynamicL(const char *strName)
 {
     const char *l;
     const char *path = m_strCPath.c_str();
-    std::string dllName = "module-";
-    dllName += strName;
-    const char *name = dllName.c_str();
+    const char *name = strName;
 
     size_t path_size = strlen(path);
     size_t name_size = strlen(name);
@@ -160,7 +158,7 @@ void *umodule_mgr::openDynamicL(const char *strName)
         }
         else
         {
-            PRINT_ERROR("Invalid cpath : {}", m_strCPath.c_str());
+            LOG_ERROR(0, "Invalid cpath : {}", m_strCPath.c_str());
             exit(1);
         }
 
@@ -170,7 +168,7 @@ void *umodule_mgr::openDynamicL(const char *strName)
 
     if (dl == NULL)
     {
-        PRINT_ERROR("try open {} failed : {}", name, dlerror());
+        LOG_ERROR(0, "try open {} failed : {}", name, dlerror());
     }
 
     return dl;
