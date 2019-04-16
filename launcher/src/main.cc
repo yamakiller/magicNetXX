@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    if (INST(uframework, initialize) != 0)
+    if (INST(uframework, initialize, option) != 0)
     {
         LOG_ERROR(0, "framework initialize fail.");
         return 0;

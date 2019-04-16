@@ -49,6 +49,24 @@
         p = nullptr;   \
     }
 
+#define REGISTER_MODULE_ASSERT(module_name, module_param) \
+    try                                                   \
+    {                                                     \
+        new umodule(module_name, module_param);           \
+    }                                                     \
+    catch (const uexception &e)                           \
+    {                                                     \
+        return 1;                                         \
+    }
+
+#define FRAMEWORK_INITIALIZE_ASSERT(opt)  \
+    if (uframework::initialize(opt) != 0) \
+    {                                     \
+        return 1;                         \
+    }
+
+#define GETOPTION_STRING_ASSERT(opt, key) opt.isSet(key) ? opt.getOption(key).c_str() : NULL
+
 #include <cstdio>
 #include <functional>
 #include <stdint.h>

@@ -28,12 +28,13 @@ uframework *uframework::instance()
     return sInstance;
 }
 
-int uframework::initialize()
+int uframework::initialize(ucommand_optline &opt)
 {
     INST(uwork_group, initialize);
     INST(umodule_mgr, initialize);
 
-    
+    REGISTER_MODULE_ASSERT("module_logger", GETOPTION_STRING_ASSERT(opt, "log"));
+
     return 0;
 }
 

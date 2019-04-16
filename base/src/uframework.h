@@ -4,6 +4,7 @@
 #include "usingleton.h"
 #include "unoncopyable.h"
 #include "umodule_mgr.h"
+#include "ucommand_optline.h"
 #include <string>
 
 #define UFRAMEWORK_ID_SHIFT 24
@@ -20,7 +21,7 @@ public:
 
     static uframework *instance();
 
-    virtual int initialize();
+    virtual int initialize(ucommand_optline &opt);
 
     virtual void finalize();
 

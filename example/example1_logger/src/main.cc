@@ -8,18 +8,9 @@ namespace example
 class LoggerFramework : public uframework
 {
 public:
-    int initialize() override
+    int initialize(ucommand_optline &opt) override
     {
-        uframework::initialize();
-        try
-        {
-            umodule *lplogger = new umodule("module_logger", NULL);
-        }
-        catch (const uexception &e)
-        {
-            return 1;
-        }
-
+        FRAMEWORK_INITIALIZE_ASSERT(opt);
         return 0;
     }
 };
