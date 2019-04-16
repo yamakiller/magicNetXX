@@ -51,26 +51,6 @@
 		cis::ilog::doLog(LEVEL, SOURCE, body + tail);                     \
 	} while (false)
 
-#define OUT_PRINTF0(LEVEL, FMT, ...)                                      \
-	do                                                                    \
-	{                                                                     \
-		std::string body;                                                 \
-		try                                                               \
-		{                                                                 \
-			body = fmt::format(FMT);                                      \
-		}                                                                 \
-		catch (...)                                                       \
-		{                                                                 \
-			body = "format error";                                        \
-		}                                                                 \
-		std::string tail = "";                                            \
-		if (LEVEL == cis::ilog::LogLevel::L_ERROR)                        \
-		{                                                                 \
-			fmt::format("[{}][{}:{}]", __FUNCTION__, __FILE__, __LINE__); \
-		}                                                                 \
-		cis::ilog::doPrintf(LEVEL, body + tail);                          \
-	} while (false)
-
 #define LOG_TRACE(SOURCE, ...) LOG_PRINTF(cis::ilog::LogLevel::L_TRACE, SOURCE, __VA_ARGS__)
 #define LOG_DEBUG(SOURCE, ...) LOG_PRINTF(cis::ilog::LogLevel::L_DEBUG, SOURCE, __VA_ARGS__)
 #define LOG_NOTICE(SOURCE, ...) LOG_PRINTF(cis::ilog::LogLevel::L_NOTICE, SOURCE, __VA_ARGS__)
