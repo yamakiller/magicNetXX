@@ -24,7 +24,7 @@
 			body = "format error";                                        \
 		}                                                                 \
 		std::string tail = "";                                            \
-		if (LEVEL == cis::ilog::LogLevel::L_ERROR)					      \
+		if (LEVEL == cis::ilog::LogLevel::L_ERROR)                        \
 		{                                                                 \
 			fmt::format("[{}][{}:{}]", __FUNCTION__, __FILE__, __LINE__); \
 		}                                                                 \
@@ -44,7 +44,7 @@
 			LOG_PRINTF0(LEVEL, SOURCE, __VA_ARGS__);                      \
 		}                                                                 \
 		std::string tail = "";                                            \
-		if (LEVEL == cis::ilog::LogLevel::L_ERROR) 				          \
+		if (LEVEL == cis::ilog::LogLevel::L_ERROR)                        \
 		{                                                                 \
 			fmt::format("[{}][{}:{}]", __FUNCTION__, __FILE__, __LINE__); \
 		}                                                                 \
@@ -64,7 +64,7 @@
 			body = "format error";                                        \
 		}                                                                 \
 		std::string tail = "";                                            \
-		if (LEVEL == cis::ilog::LogLevel::L_ERROR)    					  \
+		if (LEVEL == cis::ilog::LogLevel::L_ERROR)                        \
 		{                                                                 \
 			fmt::format("[{}][{}:{}]", __FUNCTION__, __FILE__, __LINE__); \
 		}                                                                 \
@@ -87,7 +87,8 @@ class ilog
 {
 
 public:
-	virtual ~ilog() {
+	virtual ~ilog()
+	{
 		spdlog::drop_all();
 	}
 	enum class LogLevel
@@ -110,33 +111,31 @@ public:
 			if (console == nullptr)
 				console = spdlog::stdout_color_mt(CONSOLE_LOG_NAME);
 
-			switch(level)
+			switch (level)
 			{
-				case LogLevel::L_INFO:
-					console->info("[:{:08d}] {}", source, msg.c_str());
+			case LogLevel::L_INFO:
+				console->info("[:{:08d}] {}", source, msg.c_str());
 				break;
-				case LogLevel::L_DEBUG:
-					console->debug("[:{:08d}] {}", source, msg.c_str());
+			case LogLevel::L_DEBUG:
+				console->debug("[:{:08d}] {}", source, msg.c_str());
 				break;
-				case LogLevel::L_TRACE:
-					console->trace("[:{:08d}] {}", source, msg.c_str());
+			case LogLevel::L_TRACE:
+				console->trace("[:{:08d}] {}", source, msg.c_str());
 				break;
-				case LogLevel::L_WARNING:
-					console->warn("[:{:08d}] {}", source, msg.c_str());
+			case LogLevel::L_WARNING:
+				console->warn("[:{:08d}] {}", source, msg.c_str());
 				break;
-				case LogLevel::L_ERROR:
-					console->error("[:{:08d}] {}", source, msg.c_str());
+			case LogLevel::L_ERROR:
+				console->error("[:{:08d}] {}", source, msg.c_str());
 				break;
-				case LogLevel::L_CRITICAL:
-					console->critical("[:{:08d}] {}", source, msg.c_str());
+			case LogLevel::L_CRITICAL:
+				console->critical("[:{:08d}] {}", source, msg.c_str());
 				break;
-				default:
+			default:
 				break;
 			}
 			return;
 		}
-
-
 
 		static constexpr int log_message_size = 256;
 		char tmp[log_message_size];
@@ -172,7 +171,6 @@ public:
 			return;
 		}
 
-
 		struct umsg hmsg;
 		hmsg.source = source;
 		hmsg.session = 0;
@@ -185,8 +183,6 @@ public:
 			umemory::free(data);
 		}
 	}
-
-
 };
 } // namespace cis
 
