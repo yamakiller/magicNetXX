@@ -34,3 +34,4 @@
 .vscode/sftp.json
 .vscode/c_cpp_properties.json
 .vscode/launch.json
+ms/client/node_modules
