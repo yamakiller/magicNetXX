@@ -11,20 +11,21 @@ import (
 	"server/controllers"
 
 	"github.com/astaxie/beego"
+	"github.com/dchest/captcha"
 )
 
 func init() {
-	ns := beego.NewNamespace("/v1",
-		beego.NSNamespace("/object",
+	ns := beego.NewNamespace("/api",
+		beego.NSNamespace("/account",
 			beego.NSInclude(
-				&controllers.ObjectController{},
-			),
-		),
-		beego.NSNamespace("/user",
-			beego.NSInclude(
-				&controllers.UserController{},
+				&controllers.AccountController{},
 			),
 		),
 	)
+
+	checkImageW, _ := beego.AppConfig.Int("check_image_width")
+	checkImageH, _ := beego.AppConfig.Int("check_image_height")
+
+	beego.Handler("/captcha/*.png", captcha.Server(checkImageW, checkImageH))
 	beego.AddNamespace(ns)
 }
