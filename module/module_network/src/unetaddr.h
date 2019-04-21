@@ -19,7 +19,6 @@ public:
 
 private:
   sockaddr m_addr;
-  uint16_t m_port;
 };
 } // namespace network
 } // namespace cis

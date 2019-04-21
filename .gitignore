@@ -34,4 +34,9 @@
 .vscode/sftp.json
 .vscode/c_cpp_properties.json
 .vscode/launch.json
+3rd/jemalloc/
+*.cmake
+*.make
+jemalloc*.tar.bz2
+build
 ms/client/node_modules

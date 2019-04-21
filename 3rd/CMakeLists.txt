@@ -5,7 +5,11 @@ INCLUDE(ExternalProject)
 
 set(PROJ_NAME deps)
 
-
+if (APPLE)
+set (JEMALLOC_LIB_PATH "/usr/local/lib/libjemalloc.dylib")
+else ()
+set (JEMALLOC_LIB_PATH "/usr/local/lib/libjemalloc.so")
+endif()
 
 ExternalProject_Add(jemalloc
     SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/jemalloc
@@ -16,7 +20,7 @@ ExternalProject_Add(jemalloc
     INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/
     INSTALL_COMMAND $(MAKE) install_lib_shared install_include)
   add_library(libjemalloc SHARED IMPORTED GLOBAL)
-  set_target_properties(libjemalloc PROPERTIES IMPORTED_LOCATION "/usr/local/lib/libjemalloc.so")
+  set_target_properties(libjemalloc PROPERTIES IMPORTED_LOCATION ${JEMALLOC_LIB_PATH})
   add_dependencies(libjemalloc jemalloc)
   include_directories("${CMAKE_CURRENT_BINARY_DIR}/include/")
 
