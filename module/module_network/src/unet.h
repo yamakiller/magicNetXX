@@ -1,0 +1,21 @@
+#ifndef MODULE_NET_UNET_H
+#define MODULE_NET_UNET_H
+
+#if defined(_WIN64)
+#define UNET_PLATFORM_WINDOWS 0
+#define UNET_PLATFORM PLATFORM_WINDOWS
+#elif defined(__WIN32__) || defined(WIN32) || defined(_WIN32)
+#define UNET_PLATFORM_WINDOWS 0
+#define UNET_PLATFORM PLATFORM_WINDOWS
+#elif defined(__APPLE_CC__)
+#define UNET_PLATFORM_APPLE 2
+#define UNET_PLATFORM PLATFORM_APPLE
+#elif defined(__INTEL_COMPILER)
+#define UNET_PLATFORM_INTEL 3
+#define UNET_PLATFORM PLATFORM_INTEL
+#else
+#define UNET_PLATFORM_LINUX 1
+#define UNET_PLATFORM UNET_PLATFORM_LINUX
+#endif
+
+#endif

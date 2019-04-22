@@ -15,7 +15,8 @@ public:
            const uint16_t port = 21);
 
   const char *getAddress();
-  const uint16_t getPort();
+  const int32_t getPort();
+  const sockaddr_in *getAddressIn();
 
 private:
   sockaddr m_addr;

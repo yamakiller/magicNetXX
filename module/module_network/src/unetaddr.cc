@@ -57,7 +57,9 @@ const char *unetaddr::getAddress() {
   return NULL;
 }
 
-uint16_t unetaddr::getPort() {
+const sockaddr_in *unetaddr::getAddressIn() { return (sockaddr_in *)&m_addr; }
+
+const int32_t unetaddr::getPort() {
   switch ((m_addr.sa_family)) {
   case AF_INET:
     return ((sockaddr_in *)&m_addr)->sin_port;
