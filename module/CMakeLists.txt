@@ -4,3 +4,4 @@ set(PROJ_NAME modules)
 
 
 add_subdirectory("module-logger")
+add_subdirectory("module-network")

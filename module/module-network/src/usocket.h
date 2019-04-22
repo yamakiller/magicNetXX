@@ -15,7 +15,7 @@ typedef int32_t u_sock_t;
 typedef int32_t u_sock_t;
 #endif
 
-class unet {
+class usocket {
 public:
   static int32_t apiInit();
   static void apiCleanup();

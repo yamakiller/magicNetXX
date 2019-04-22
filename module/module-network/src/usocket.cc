@@ -30,7 +30,7 @@ typedef int32_t socklen_t;
 
 namespace cis {
 namespace network {
-int32_t unet::apiInit() {
+int32_t usocket::apiInit() {
 #ifdef UNET_PLATFORM_WINDOWS
   WSADATA wsa_data;
   return WSAStartup(MAKEWORD(2, 2), &wsa_data) == 0 ? 0
@@ -40,32 +40,34 @@ int32_t unet::apiInit() {
 #endif
 }
 
-void unet::apiCleanup() {
+void usocket::apiCleanup() {
 #ifdef U_PLATFORM_WINDOWS
   WSACleanup();
 #else
 #endif // DEBUG
 }
 
-u_sock_t unet::create(int32_t type, int32_t proto) {
+u_sock_t usocket::create(int32_t type, int32_t proto) {
   return ::socket(AF_INET, type, proto);
 }
 
-u_sock_t unet::tcp() { return unet::create(SOCK_STREAM, IPPROTO_TCP); }
+u_sock_t usocket::tcp() { return usocket::create(SOCK_STREAM, IPPROTO_TCP); }
 
-u_sock_t unet::udp() { return unet::create(SOCK_DGRAM, IPPROTO_UDP); }
+u_sock_t usocket::udp() { return usocket::create(SOCK_DGRAM, IPPROTO_UDP); }
 
-int unet::invalid() { return INVALID_SOCKET; }
+int usocket::invalid() { return INVALID_SOCKET; }
 
-int32_t unet::close(u_sock_t s) {
+int32_t usocket::close(u_sock_t s) {
+  int32_t result;
 #ifdef UNET_PLATFORM_WINDOWS
-  return 0 == closesocket(s) ? 0 : -uerror::wsalasserror();
+  result = ::closesocket(s);
 #else
-  return 0 == close(s) ? 0 : -uerror::wsalasterror();
+  result = ::close(s);
 #endif
+  return result == 0 ? 0 : -uerror::wsalasterror();
 }
 
-int32_t unet::shutdown(u_sock_t s) {
+int32_t usocket::shutdown(u_sock_t s) {
 #ifdef UNET_PLATFORM_WINDOWS
   return ::shutdown(s, 2) == 0 ? 0 : -uerror::wsalasterror();
 #else
@@ -73,7 +75,7 @@ int32_t unet::shutdown(u_sock_t s) {
 #endif
 }
 
-int32_t unet::setNonblock(u_sock_t s) {
+int32_t usocket::setNonblock(u_sock_t s) {
 #ifdef UNET_PLATFORM_WINDOWS
   unsigned long ul = 1;
   return ioctlsocket(s, FIONBIO, (unsigned long *)&ul) == 0
@@ -91,7 +93,7 @@ int32_t unet::setNonblock(u_sock_t s) {
 #endif
 }
 
-int32_t unet::setKleepAlive(u_sock_t s) {
+int32_t usocket::setKleepAlive(u_sock_t s) {
 #ifdef UNET_PLATFORM_WINDOWS
   int32_t nerr = SOCKET_ERROR;
   struct tcp_keepalive alive_in = {0};
@@ -115,7 +117,9 @@ int32_t unet::setKleepAlive(u_sock_t s) {
   return nerr == 0 ? 0 : -uerror::wsalasterror()
 #else
   int32_t keepalive = 1;
+#ifdef UNET_PLATFORM_LINUX
   int32_t keepidle = 120;
+#endif
   int32_t keepinterval = 5;
   int32_t keepcount = 4;
   int32_t err = 0;
@@ -156,7 +160,7 @@ int32_t unet::setKleepAlive(u_sock_t s) {
 #endif
 }
 
-int32_t unet::setReuseAddr(u_sock_t s) {
+int32_t usocket::setReuseAddr(u_sock_t s) {
   int32_t reuseaddr = 1;
   return setsockopt(s, SOL_SOCKET, SO_REUSEADDR, (char *)&reuseaddr,
                     sizeof(reuseaddr)) == 0
@@ -164,59 +168,59 @@ int32_t unet::setReuseAddr(u_sock_t s) {
              : -uerror::wsalasterror();
 }
 
-int32_t unet::setSendBuffSize(u_sock_t s, size_t size) {
+int32_t usocket::setSendBuffSize(u_sock_t s, size_t size) {
   return setsockopt(s, SOL_SOCKET, SO_SNDBUF, (char *)&size, sizeof(size)) == 0
              ? 0
              : -uerror::wsalasterror();
 }
 
-int32_t unet::setRecvBuffSize(u_sock_t s, size_t size) {
+int32_t usocket::setRecvBuffSize(u_sock_t s, size_t size) {
   return setsockopt(s, SOL_SOCKET, SO_RCVBUF, (char *)&size, sizeof(size)) == 0
              ? 0
              : -uerror::wsalasterror();
 }
 
-int32_t unet::bind(u_sock_t s, const char *addr, const int32_t port) {
+int32_t usocket::bind(u_sock_t s, const char *addr, const int32_t port) {
   unetaddr addr_in(AF_INET, addr, port);
   return ::bind(s, (struct sockaddr *)addr_in.getAddressIn(),
-                sizeof(*addr_in.getAddressIn)) == 0
+                sizeof(*addr_in.getAddressIn())) == 0
              ? 0
              : -uerror::wsalasterror();
 }
 
-int32_t unet::bind(u_sock_t s, const int32_t addr, const int32_t port) {
+int32_t usocket::bind(u_sock_t s, const int32_t addr, const int32_t port) {
   unetaddr addr_in(AF_INET, (const uint8_t *)&addr, port);
   return ::bind(s, (struct sockaddr *)addr_in.getAddressIn(),
-                sizeof(*addr_in.getAddressIn)) == 0
+                sizeof(*addr_in.getAddressIn())) == 0
              ? 0
              : -uerror::wsalasterror();
 }
 
-int32_t unet::connect(u_sock_t s, const char *addr, const int32_t port) {
+int32_t usocket::connect(u_sock_t s, const char *addr, const int32_t port) {
   unetaddr addr_in(AF_INET, addr, port);
   return ::connect(s, (struct sockaddr *)addr_in.getAddressIn(),
-                   sizeof(*addr_in.getAddressIn)) == 0
+                   sizeof(*addr_in.getAddressIn())) == 0
              ? 0
              : -uerror::wsalasterror();
 }
 
-int32_t unet::connect(u_sock_t s, const int32_t addr, const int32_t port) {
+int32_t usocket::connect(u_sock_t s, const int32_t addr, const int32_t port) {
   unetaddr addr_in(AF_INET, (const uint8_t *)&addr, port);
   return ::connect(s, (struct sockaddr *)addr_in.getAddressIn(),
-                   sizeof(*addr_in.getAddressIn)) == 0
+                   sizeof(*addr_in.getAddressIn())) == 0
              ? 0
              : -uerror::wsalasterror();
 }
 
-int32_t unet::listen(u_sock_t s, int32_t que) {
+int32_t usocket::listen(u_sock_t s, int32_t que) {
   return ::listen(s, que) == 0 ? 0 : -uerror::wsalasterror();
 }
 
-u_sock_t unet::accept(u_sock_t s) { return ::accept(s, 0, 0); }
+u_sock_t usocket::accept(u_sock_t s) { return ::accept(s, 0, 0); }
 
-int32_t unet::isValidate(u_sock_t s) { return s != unet::invalid(); }
+int32_t usocket::isValidate(u_sock_t s) { return s != usocket::invalid(); }
 
-int32_t unet::getPeerInfo(u_sock_t s, int32_t *outAddr, int32_t *outPort) {
+int32_t usocket::getPeerInfo(u_sock_t s, int32_t *outAddr, int32_t *outPort) {
   struct sockaddr_in addr;
   socklen_t addrlen = 0;
   addrlen = sizeof(addr);
@@ -239,7 +243,7 @@ int32_t unet::getPeerInfo(u_sock_t s, int32_t *outAddr, int32_t *outPort) {
   return 0;
 }
 
-int32_t unet::getSockInfo(u_sock_t s, int32_t *outAddr, int32_t *outPort) {
+int32_t usocket::getSockInfo(u_sock_t s, int32_t *outAddr, int32_t *outPort) {
   struct sockaddr_in addr;
   socklen_t addrlen = 0;
   addrlen = sizeof(addr);
@@ -262,7 +266,7 @@ int32_t unet::getSockInfo(u_sock_t s, int32_t *outAddr, int32_t *outPort) {
   return 0;
 }
 
-int32_t unet::send(u_sock_t s, const char *inData, size_t size) {
+int32_t usocket::send(u_sock_t s, const char *inData, size_t size) {
   int32_t nerr = -1;
 
 #if defined(UNET_PLATFORM_LINUX)
@@ -276,8 +280,8 @@ int32_t unet::send(u_sock_t s, const char *inData, size_t size) {
   return nerr >= 0 ? nerr : -uerror::wsalasterror();
 }
 
-int32_t unet::sendto(u_sock_t s, int32_t ip, int32_t port, const char *inData,
-                     size_t size) {
+int32_t usocket::sendto(u_sock_t s, int32_t ip, int32_t port,
+                        const char *inData, size_t size) {
   struct sockaddr_in addr;
   int32_t nerr = -1;
 
@@ -298,7 +302,7 @@ int32_t unet::sendto(u_sock_t s, int32_t ip, int32_t port, const char *inData,
   return nerr >= 0 ? nerr : -uerror::wsalasterror();
 }
 
-int32_t unet::recv(u_sock_t s, char *outData, size_t size) {
+int32_t usocket::recv(u_sock_t s, char *outData, size_t size) {
   int32_t nerr = -1;
 
   nerr = ::recv(s, outData, size, 0);
@@ -306,8 +310,8 @@ int32_t unet::recv(u_sock_t s, char *outData, size_t size) {
   return nerr >= 0 ? nerr : -uerror::wsalasterror();
 }
 
-int32_t unet::recvfrom(u_sock_t s, int32_t *outAddr, int32_t *outPort,
-                       char *outData, size_t size) {
+int32_t usocket::recvfrom(u_sock_t s, int32_t *outAddr, int32_t *outPort,
+                          char *outData, size_t size) {
   struct sockaddr_in addr;
   socklen_t addrlen = sizeof(addr);
   int32_t nerr = -1;
