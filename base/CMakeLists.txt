@@ -16,7 +16,10 @@ target_link_libraries(${PROJ_NAME}
 	dl
 	pthread
 	spdlog
-	libjemalloc)
+	libjemalloc
+	boost_system
+	boost_coroutine
+	boost_context)
 
 set_target_properties(${PROJ_NAME} PROPERTIES FOLDER "core")
 
