@@ -1,17 +1,18 @@
 #ifndef CIS_ENGINE_FCONTEXT_H
 #define CIS_ENGINE_FCONTEXT_H
 
-#include <boost/context/fcontext.hpp>
+#include <boost/context/detail/fcontext.hpp>
 #include <functional>
 
 #define STACK_MALLOC(sz) engine::memory::malloc(sz)
 #define STACK_FREE(p) engine::memory::free(p)
 
-namespace engine {
+namespace engine
+{
 
-using boost::context::fcontext_t;
-using boost::context::jump_fcontext;
-using boost::context::make_fcontext;
+using boost::context::detail::fcontext_t;
+using boost::context::detail::jump_fcontext;
+using boost::context::detail::make_fcontext;
 
 /**
  * @biref 跳转到目标上下文
@@ -39,6 +40,15 @@ make_fcontext(void *sp, std::size_t size, void (*fn)(intptr_t));*/
 // mprotect
 
 typedef void (*fn_t)(intptr_t);
+
+struct StackTraits
+{
+    static int &getProtectStackPageSize();
+
+    static bool protectStack(void *stack, size_t size, int pageSize);
+
+    static void unprotectStack(void *stack, int pageSize);
+};
 
 } // namespace engine
 
