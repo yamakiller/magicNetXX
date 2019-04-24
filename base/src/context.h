@@ -2,7 +2,7 @@
 #define CIS_ENGINE_CONTEXT_H
 
 #include "fcontext.h"
-
+#include "memory_hook.h"
 // https://github.com/yyzybb537/libgo/blob/master/libgo/context/context.h
 
 namespace engine {
@@ -10,13 +10,13 @@ class context {
 
   context(fn_t fn, intptr_t ud, size_t stackSize)
       : m_fn(fn), m_ud(ud), m_stackSize(stackSize) {
-    m_stack = (char *)::malloc(m_stackSize);
+    m_stack = (char *)STACK_MALLOC(m_stackSize);
     m_ctx = make_fcontext(m_stack + m_stackSize, m_stackSize, m_fn);
   }
 
   ~context() {
     if (m_stack) {
-      ::free(m_stack);
+      STACK_FREE(m_stack);
       m_stack = NULL;
     }
   }

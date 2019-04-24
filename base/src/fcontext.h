@@ -4,6 +4,9 @@
 #include <boost/context/fcontext.hpp>
 #include <functional>
 
+#define STACK_MALLOC(sz) engine::memory::malloc(sz)
+#define STACK_FREE(p) engine::memory::free(p)
+
 namespace engine {
 
 using boost::context::fcontext_t;
@@ -31,6 +34,9 @@ using boost::context::make_fcontext;
  */
 /*BOOST_CONTEXT_DECL fcontext_t BOOST_CONTEXT_CALLDECL
 make_fcontext(void *sp, std::size_t size, void (*fn)(intptr_t));*/
+
+// https://owent.net/2016/1270.html
+// mprotect
 
 typedef void (*fn_t)(intptr_t);
 
