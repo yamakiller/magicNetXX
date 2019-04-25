@@ -3,6 +3,7 @@
 
 #include <atomic>
 #include <limits>
+#include <stdint.h>
 
 namespace engine {
 
@@ -19,45 +20,45 @@ public:
 
   // 多申请一个typename T的空间, 便于判断full和empty.
   explicit lockFreeRingQueue(uint_t capacity)
-      : capacity_(reCapacity(capacity)), readable_{0}, write_{0}, read_{0},
-        writable_{uint_t(capacity_ - 1)} {
-    buffer_ = (T *)malloc(sizeof(T) * capacity_);
+      : m_capacity(reCapacity(capacity)), m_readable{0}, m_write{0}, m_read{0},
+        m_writable{uint_t(m_capacity - 1)} {
+    m_buffer = (T *)malloc(sizeof(T) * m_capacity);
   }
 
   ~lockFreeRingQueue() {
     // destory elements.
-    uint_t read = consume(read_);
-    uint_t readable = consume(readable_);
+    uint_t read = consume(m_read);
+    uint_t readable = consume(m_readable);
     for (; read < readable; ++read) {
-      buffer_[read].~T();
+      m_buffer[read].~T();
     }
 
-    free(buffer_);
+    free(m_buffer);
   }
 
   template <typename U> lockFreeResult Push(U &&t) {
     lockFreeResult result;
 
-    // 1.write_步进1.
+    // 1.m_write步进1.
     uint_t write, writable;
     do {
-      write = relaxed(write_);
-      writable = consume(writable_);
+      write = relaxed(m_write);
+      writable = consume(m_writable);
       if (write == writable)
         return result;
 
-    } while (!write_.compare_exchange_weak(write, mod(write + 1),
+    } while (!m_write.compare_exchange_weak(write, mod(write + 1),
                                            std::memory_order_acq_rel,
                                            std::memory_order_relaxed));
 
     // 2.数据写入
-    new (buffer_ + write) T(std::forward<U>(t));
+    new (m_buffer + write) T(std::forward<U>(t));
 
     // 3.更新readable
     uint_t readable;
     do {
-      readable = relaxed(readable_);
-    } while (!readable_.compare_exchange_weak(write, mod(readable + 1),
+      readable = relaxed(m_readable);
+    } while (!m_readable.compare_exchange_weak(write, mod(readable + 1),
                                               std::memory_order_acq_rel,
                                               std::memory_order_relaxed));
 
@@ -70,32 +71,31 @@ public:
   lockFreeResult Pop(T &t) {
     lockFreeResult result;
 
-    // 1.read_步进1.
+    // 1.m_read步进1.
     uint_t read, readable;
     do {
-      read = relaxed(read_);
-      readable = consume(readable_);
+      read = relaxed(m_read);
+      readable = consume(m_readable);
       if (read == readable)
         return result;
 
-    } while (!read_.compare_exchange_weak(read, mod(read + 1),
+    } while (!m_read.compare_exchange_weak(read, mod(read + 1),
                                           std::memory_order_acq_rel,
                                           std::memory_order_relaxed));
 
     // 2.读数据
-    t = std::move(buffer_[read]);
-    buffer_[read].~T();
+    t = std::move(m_buffer[read]);
+    m_buffer[read].~T();
 
     // 3.更新writable
-    // update condition: mod(writable_ + 1) == read_
-    //               as: writable_ == mod(read_ + capacity_ - 1)
-    uint_t check = mod(read + capacity_ - 1);
-    while (!writable_.compare_exchange_weak(
-        check, read, std::memory_order_acq_rel, std::memory_order_relaxed))
-      ;
+    // update condition: mod(m_writable + 1) == m_read
+    //               as: m_writable == mod(m_read + m_capacity - 1)
+    uint_t check = mod(read + m_capacity - 1);
+    while (!m_writable.compare_exchange_weak(
+        check, read, std::memory_order_acq_rel, std::memory_order_relaxed));
 
     // 4.检查读取时是否full
-    result.notify = (read == mod(readable_ + 1));
+    result.notify = (read == mod(m_readable + 1));
     result.success = true;
     return result;
   }
@@ -113,23 +113,23 @@ private:
     return val.load(std::memory_order_consume);
   }
 
-  inline uint_t mod(uint_t val) { return val % capacity_; }
+  inline uint_t mod(uint_t val) { return val % m_capacity; }
 
   inline size_t reCapacity(uint_t capacity) { return (size_t)capacity + 1; }
 
 private:
-  size_t capacity_;
-  T *buffer_;
+  size_t m_capacity;
+  T *m_buffer;
 
-  // [write_, writable_] 可写区间, write_ == writable_ is full.
+  // [m_write, m_writable] 可写区间, m_write == m_writable is full.
   // read后更新writable
-  atomic_t write_;
-  atomic_t writable_;
+  atomic_t m_write;
+  atomic_t m_writable;
 
-  // [read_, readable_) 可读区间, read_ == readable_ is empty.
+  // [m_read, m_readable) 可读区间, m_read == m_readable is empty.
   // write后更新readable
-  atomic_t read_;
-  atomic_t readable_;
+  atomic_t m_read;
+  atomic_t m_readable;
 };
 
 } // namespace engine

@@ -30,13 +30,13 @@ if (NOT Boost_FOUND)
   ExternalProject_Add(boost
     SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/boost
     URL "https://dl.bintray.com/boostorg/release/1.69.0/source/boost_1_69_0.tar.bz2"
-    CONFIGURE_COMMAND ./bootstrap.sh
+    CONFIGURE_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/boost/bootstrap.sh
     --with-libraries=system
     --with-libraries=coroutine
     --with-libraries=context
-    BUILD_COMMAND ./b2 install
+    BUILD_COMMAND  ./b2 install
     BUILD_IN_SOURCE 
-     INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/
+    INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/
     INSTALL_COMMAND "")
 endif()
 include_directories("${CMAKE_CURRENT_BINARY_DIR}/include/")
