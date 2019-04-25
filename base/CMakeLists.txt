@@ -7,6 +7,10 @@ file(GLOB SRCLIST ./src/*.*)
 add_library(${PROJ_NAME} SHARED ${SRCLIST})
 add_definitions(-DUSE_JEMALLOC)
 
+find_package(Boost COMPONENTS system coroutine context REQUIRED)
+include_directories(${Boost_INCLUDE_DIRS})
+include_directories(${Jemalloc_INCLUDE_DIR})
+
 include_directories(
 	${THIRDLIB_DIR}/cppformat-master
 	${THIRDLIB_DIR}/spdlog/include
@@ -16,10 +20,8 @@ target_link_libraries(${PROJ_NAME}
 	dl
 	pthread
 	spdlog
-	libjemalloc
-	boost_system
-	boost_coroutine
-	boost_context)
+	${Jemalloc_LIBRARIES}
+	${Boost_LIBRARIES})
 
 set_target_properties(${PROJ_NAME} PROPERTIES FOLDER "core")
 

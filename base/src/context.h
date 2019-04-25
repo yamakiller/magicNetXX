@@ -9,8 +9,8 @@ namespace engine
 {
 class context
 {
-
-  context(fn_t fn, intptr_t ud, size_t stackSize)
+public:
+  context(fn_t fn, void* ud, size_t stackSize)
       : m_fn(fn), m_ud(ud), m_stackSize(stackSize)
   {
     m_stack = (char *)STACK_MALLOC(m_stackSize);
@@ -25,7 +25,7 @@ class context
   {
     if (m_stack)
     {
-      if (protectPage_)
+      if (m_protectPage)
         StackTraits::unprotectStack(m_stack, m_protectPage);
 
       STACK_FREE(m_stack);
@@ -33,14 +33,21 @@ class context
     }
   }
 
-  inline void SwapIn() { jump_fcontext(&getTlsContext(), m_ctx, m_ud); }
+  inline void SwapIn() { 
+    transfer_t t = jump_fcontext(m_ctx, m_ud);
+    *(&getTlsContext()) = t.fctx;
+  }
 
   inline void SwapTo(context &other)
   {
-    jump_fcontext(&m_ctx, other.m_ctx, other.m_ud);
+    transfer_t t = jump_fcontext(other.m_ctx, other.m_ud);
+    m_ctx = t.fctx;
   }
 
-  inline void SwapOut() { jump_fcontext(&m_ctx, getTlsContext(), 0); }
+  inline void SwapOut() { 
+    transfer_t t = jump_fcontext(getTlsContext(), 0); 
+    m_ctx = t.fctx;
+  }
 
   fcontext_t &getTlsContext()
   {
@@ -52,7 +59,7 @@ private:
   fcontext_t m_ctx;
   char *m_stack;
   fn_t m_fn;
-  intptr_t m_ud;
+  void *m_ud;
   uint32_t m_stackSize;
   int m_protectPage;
 };

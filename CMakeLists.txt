@@ -1,7 +1,7 @@
 
 cmake_minimum_required(VERSION 3.10)
 
-project(cis-server)
+project(CisEngine)
 
 set(CMAKE_BUILD_TYPE Debug)
 
@@ -29,6 +29,12 @@ set(THIRDLIB_DIR ${PROJECT_SOURCE_DIR}/3rd)
 set(BASE_DIR ${PROJECT_SOURCE_DIR}/base)
 set(LAUNCHER_DIR ${PROJECT_SOURCE_DIR}/launcher)
 set(MODULE_DIR ${PROJECT_SOURCE_DIR}/module)
+set(CisEngine_INSTALL_PREFIX "${CisEngine_BINARY_DIR}/prefix")
+set(CisEngine_DEFAULT_ARGS
+  "-DCMAKE_PREFIX_PATH:PATH=${CisEngine_INSTALL_PREFIX};${CMAKE_PREFIX_PATH}"
+  "-DCMAKE_INSTALL_PREFIX:PATH=${CisEngine_INSTALL_PREFIX}")
+
+set(download_dir "${CMAKE_CURRENT_BINARY_DIR}/Downloads")
 
 set(MODULE_INCLUDE_DIRECTORIES
 	${BASE_DIR}/src
@@ -52,4 +58,6 @@ add_subdirectory(3rd)
 add_subdirectory(base)
 #add_subdirectory(module)
 #add_subdirectory(example)
+
+
 

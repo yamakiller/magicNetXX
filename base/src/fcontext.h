@@ -11,6 +11,7 @@ namespace engine
 {
 
 using boost::context::detail::fcontext_t;
+using boost::context::detail::transfer_t;
 using boost::context::detail::jump_fcontext;
 using boost::context::detail::make_fcontext;
 
@@ -39,7 +40,7 @@ make_fcontext(void *sp, std::size_t size, void (*fn)(intptr_t));*/
 // https://owent.net/2016/1270.html
 // mprotect
 
-typedef void (*fn_t)(intptr_t);
+typedef void (*fn_t)(transfer_t);
 
 struct StackTraits
 {
