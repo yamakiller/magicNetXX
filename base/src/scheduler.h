@@ -2,8 +2,8 @@
 #define CIS_ENGINE_SCHEDULER_H
 
 #include "singleton.h"
-#include <stdint.h>
 #include <mutex>
+#include <stdint.h>
 #include <thread>
 
 namespace engine
@@ -13,6 +13,8 @@ class scheduler : public singleton<scheduler>
 public:
     scheduler();
     ~scheduler();
+
+    inline int32_t isShutdown() { return m_shutdown; }
 
 private:
     int32_t m_minThread;

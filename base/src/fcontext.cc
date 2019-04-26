@@ -12,7 +12,7 @@ int &StackTraits::getProtectStackPageSize()
     return size;
 }
 
-#ifdef __linux
+#ifdef __linux__
 bool StackTraits::protectStack(void *stack, size_t size, int pageSize)
 {
     if (!pageSize)
