@@ -1,6 +1,7 @@
 #ifndef CIS_ENGINE_BASE_H
 #define CIS_ENGINE_BASE_H
 
+#include <stdlib.h>
 #include <functional>
 #include <stdint.h>
 #include <memory>
@@ -8,7 +9,8 @@
 #include <algorithm>
 #include <string.h>
 
-namespace engine {
+namespace engine
+{
 template <typename T>
 using atomic_t = std::atomic<T>;
 }

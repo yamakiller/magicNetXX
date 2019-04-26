@@ -8,19 +8,21 @@
 #include <mutex>
 #include <atomic>
 
-namespace engine {
+namespace engine
+{
 
-    class scheduler;
+class scheduler;
 
-    class vpid {
-        friend class scheduler;
-        private:
-            int m_id;
-             * m_lpsch;
+class vpid
+{
+    friend class scheduler;
 
-            actor* m_running{nullptr};
-    };
-}
+private:
+    int m_id;
+    scheduler *m_lpsch;
 
+    //actor* m_running{nullptr};
+};
+} // namespace engine
 
 #endif
