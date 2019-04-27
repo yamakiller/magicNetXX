@@ -8,12 +8,12 @@ add_library(${PROJ_NAME} SHARED ${SRCLIST})
 add_definitions(-DUSE_JEMALLOC)
 
 find_package(Boost COMPONENTS system coroutine context REQUIRED)
-include_directories(${Boost_INCLUDE_DIRS})
-include_directories(${Jemalloc_INCLUDE_DIR})
 
 include_directories(
 	${THIRDLIB_DIR}/cppformat-master
 	${THIRDLIB_DIR}/spdlog/include
+	${Boost_INCLUDE_DIRS}
+	${Jemalloc_INCLUDE_DIR}
 )
 
 target_link_libraries(${PROJ_NAME} 

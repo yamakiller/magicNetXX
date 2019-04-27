@@ -8,10 +8,17 @@ namespace engine
 {
 struct task
 {
+
     void Run()
     {
         fprintf(stderr, "Task Run\n");
     }
+
+private:
+    task(task const &) = delete;
+    task(task &&) = delete;
+    task &operator=(task const &) = delete;
+    task &operator=(task &&) = delete;
 };
 } // namespace engine
 

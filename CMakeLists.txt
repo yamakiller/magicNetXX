@@ -57,7 +57,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS On)
 add_subdirectory(3rd)
 add_subdirectory(base)
 #add_subdirectory(module)
-#add_subdirectory(example)
+add_subdirectory(example)
 
 
 

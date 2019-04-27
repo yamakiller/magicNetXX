@@ -1,27 +1,58 @@
 #ifndef CIS_ENGINE_SCHEDULER_H
 #define CIS_ENGINE_SCHEDULER_H
 
-#include "singleton.h"
 #include <mutex>
 #include <stdint.h>
 #include <thread>
+#include <vector>
+
+#include "noncopyable.h"
+#include "singleton.h"
+#include "worker.h"
 
 namespace engine
 {
-class scheduler : public singleton<scheduler>
+
+class scheduler : public singleton<scheduler>, public noncopyable
 {
+    friend class worker;
+
 public:
-    scheduler();
+    static const int g_ulimitedMaxThreadNumber = 40960;
+
+    int32_t doStart(int32_t threadNumber);
+
+    void doShutdown();
+
+    inline int32_t isShutdown()
+    {
+        return m_shutdown;
+    }
+
     ~scheduler();
 
-    inline int32_t isShutdown() { return m_shutdown; }
+protected:
+    scheduler();
+
+    scheduler(scheduler const &) = delete;
+    scheduler(scheduler &&) = delete;
+    scheduler &operator=(scheduler const &) = delete;
+    scheduler &operator=(scheduler &&) = delete;
 
 private:
-    int32_t m_minThread;
-    int32_t m_maxThread;
+    void newWorker();
+
+    void dispatcherWork();
+
+private:
+    std::vector<worker *> m_works;
+    spinlock m_started;
+
+    atomic_t<uint32_t> m_taskCount;
+
+    int32_t m_maxThreadNumber;
 
     std::thread m_dispatchThread; //调度线程
-
     std::mutex m_shutdownMtx;
     int32_t m_shutdown;
 };

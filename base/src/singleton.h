@@ -3,18 +3,24 @@
 
 #include <stdlib.h>
 
-namespace engine {
+namespace engine
+{
 
-template <class T> class singleton {
+template <class T>
+class singleton
+{
 public:
-  virtual ~singleton() {
-    if (m_inst) {
+  virtual ~singleton()
+  {
+    if (m_inst)
+    {
       delete m_inst;
-      m_inst = NULL
+      m_inst = NULL;
     }
   }
 
-  static T *instance() {
+  static T *instance()
+  {
     if (m_inst)
       return m_inst;
     m_inst = new T();
@@ -28,7 +34,8 @@ private:
   static T *m_inst;
 };
 
-template <class T> T *singleton<T>::m_inst = NULL;
+template <class T>
+T *singleton<T>::m_inst = NULL;
 
 } // namespace engine
 

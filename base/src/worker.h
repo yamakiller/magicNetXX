@@ -27,7 +27,7 @@ public:
 
     inline int Id() { return m_id; }
 
-    static worker *getCurrentWorker();
+    static worker *&getCurrentWorker();
 
     void addTask(task *t);
 
@@ -35,6 +35,8 @@ private:
     void waitCondition();
 
     void notifyCondition();
+
+    void joinWait();
 
     void moveRunnable();
 
@@ -50,9 +52,10 @@ private:
     bool m_notified;
     //--------------------
     task *m_runnable;
-    deque<task *, true> m_runnableQueue;
-    deque<task *, true> m_newQueue;
-    deque<task *, true> m_waitQueue;
+    typedef deque<task *, true> tkdeque;
+    tkdeque m_runnableQueue;
+    tkdeque m_newQueue;
+    tkdeque m_waitQueue;
 };
 } // namespace engine
 

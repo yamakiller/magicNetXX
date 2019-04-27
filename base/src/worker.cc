@@ -1,4 +1,5 @@
 #include "worker.h"
+#include "scheduler.h"
 
 namespace engine
 {
@@ -9,16 +10,18 @@ worker::worker(scheduler *sch, int id) : m_id(id),
                                          m_notified(false),
                                          m_runnable(nullptr)
 {
-    m_pid = std::thread([this] {
+    std::thread t([this] {
         worker *p = static_cast<worker *>(this);
         p->process();
     });
+
+    m_pid.swap(t);
 }
 
 void worker::addTask(task *t)
 {
-    std::unique_lock<deque::lock_t> lock(m_newQueue.lockRef());
-    m_newQueue.pushWithoutLock(t);
+    std::unique_lock<tkdeque::lock_t> lock(m_newQueue.lockRef());
+    m_newQueue.pushUnLock(t);
     if (m_waiting)
     {
         m_cv.notify_all();
@@ -31,7 +34,7 @@ void worker::addTask(task *t)
 
 void worker::waitCondition()
 {
-    std::unique_lock<deque::lock_t> lock(m_runnableQueue.lockRef());
+    std::unique_lock<tkdeque::lock_t> lock(m_runnableQueue.lockRef());
     if (m_notified)
     {
         m_notified = false;
@@ -39,13 +42,13 @@ void worker::waitCondition()
     }
 
     m_waiting = true;
-    m_cv.wait();
+    m_cv.wait(lock);
     m_waiting = false;
 }
 
 void worker::notifyCondition()
 {
-    std::unique_lock<deque::lock_t> lock(m_newQueue.lockRef());
+    std::unique_lock<tkdeque::lock_t> lock(m_newQueue.lockRef());
     if (m_waiting)
     {
         m_cv.notify_all();
@@ -56,7 +59,13 @@ void worker::notifyCondition()
     }
 }
 
-worker *worker::getCurrentWorker()
+void worker::joinWait()
+{
+    if (m_pid.joinable())
+        m_pid.join();
+}
+
+worker *&worker::getCurrentWorker()
 {
     static thread_local worker *lpworker = nullptr;
     return lpworker;
@@ -64,11 +73,12 @@ worker *worker::getCurrentWorker()
 
 void worker::moveRunnable()
 {
-    m_runnableQueue.push
+    m_runnableQueue.push(m_newQueue.popAll());
 }
 
 void worker::process()
 {
+    fprintf(stderr, "process run\n");
     worker::getCurrentWorker() = this;
     while (!m_lpsch->isShutdown())
     {
@@ -76,13 +86,17 @@ void worker::process()
         if (m_runnable != nullptr)
         {
             m_runnable->Run();
-            //--结束处理,放回到等待池里面
+            m_waitQueue.push(m_runnable);
+            m_runnable = NULL;
             continue;
         }
 
-        //把新任务搬过来
+        moveRunnable();
+        if (!m_runnableQueue.empty())
+        {
+            continue;
+        }
         waitCondition();
-        //
     }
 }
 

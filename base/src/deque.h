@@ -3,8 +3,8 @@
 
 #include <condition_variable>
 #include <deque>
-#include <list>
 #include <mutex>
+#include <queue>
 
 #include "spinlock.h"
 
@@ -15,7 +15,7 @@ class deque final
 {
 public:
     typedef typename std::conditional<threadSafe, spinlock, unspinlock>::type lock_t;
-    typedef typename std::conditional<threadSafe, lock_guard<spinlock>, unslk_lock_guard>::type locked_guard;
+    typedef typename std::conditional<threadSafe, std::lock_guard<spinlock>, unslk_lock_guard>::type locked_guard;
 
 public:
     deque() = default;
@@ -23,34 +23,43 @@ public:
 
     //LIFO
 
-    void pushWithoutLock(const T &val)
+    void pushUnLock(const T &val)
     {
-        m_deque.push(val);
+        m_deque.push_back(val);
     }
 
     void push(const T &val)
     {
-        locked_guard<lock_T> l(m_lock);
-        pushWithoutLock(val);
+        locked_guard l(m_lock);
+        pushUnLock(val);
     }
 
-    void push(const std::list<T> &ls){
-        std::move()}
+    void pushUnLock(std::queue<T> &ls)
+    {
+        while (!ls.empty())
+        {
+            m_deque.push_back(std::move(ls.front()));
+            ls.pop();
+        }
+    }
+
+    void push(std::queue<T> &ls)
+    {
+        locked_guard l(m_lock);
+        pushUnLock(ls);
+    }
 
     T popFront()
     {
-        m_lock.lock();
+        locked_guard l(m_lock);
 
         if (m_deque.empty())
         {
-            m_lock.unlock();
             return nullptr;
         }
 
         T val = m_deque.front();
         m_deque.pop_front();
-
-        m_lock.unlock();
 
         return val;
     }
@@ -58,21 +67,35 @@ public:
     //for steal FIFO
     T popBack()
     {
-        if (!m_lock.try_lock())
-            return nullptr;
+        locked_guard l(m_lock);
 
         if (m_deque.empty())
         {
-            m_lock.unlock();
             return nullptr;
         }
 
         T val = m_deque.back();
         m_deque.pop_back();
 
-        m_lock.unlock();
-
         return val;
+    }
+
+    std::queue<T> &popAll()
+    {
+        locked_guard l(m_lock);
+        return popUnLockAll();
+    }
+
+    std::queue<T> &popUnLockAll()
+    {
+        std::queue<T> result;
+        while (!m_deque.empty())
+        {
+            result.push(std::move(m_deque.front()));
+            m_deque.pop_front();
+        }
+
+        return result;
     }
 
     lock_t &lockRef()
