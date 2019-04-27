@@ -36,7 +36,6 @@
 .vscode/launch.json
 .vscode
 3rd/jemalloc/
-*.cmake
 *.make
 jemalloc*.tar.bz2
 build
