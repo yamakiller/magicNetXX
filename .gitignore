@@ -34,6 +34,7 @@
 .vscode/sftp.json
 .vscode/c_cpp_properties.json
 .vscode/launch.json
+.vscode
 3rd/jemalloc/
 *.cmake
 *.make
