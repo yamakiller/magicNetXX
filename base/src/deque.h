@@ -34,16 +34,18 @@ public:
         pushUnLock(val);
     }
 
-    void pushUnLock(std::queue<T> &ls)
+    void pushUnLock(std::queue<T> *ls)
     {
-        while (!ls.empty())
+
+        while (!ls->empty())
         {
-            m_deque.push_back(std::move(ls.front()));
-            ls.pop();
+            m_deque.push_back(std::move(ls->front()));
+            ls->pop();
         }
+        delete ls;
     }
 
-    void push(std::queue<T> &ls)
+    void push(std::queue<T> *ls)
     {
         locked_guard l(m_lock);
         pushUnLock(ls);
@@ -65,33 +67,50 @@ public:
     }
 
     //for steal FIFO
-    T popBack()
+    std::queue<T> *popBack(int n)
     {
         locked_guard l(m_lock);
+        std::queue<T> *result = new std::queue<T>();
 
         if (m_deque.empty())
         {
-            return nullptr;
+            return result;
         }
 
-        T val = m_deque.back();
-        m_deque.pop_back();
+        if (n > 0)
+        {
+            for (int i = 0; i < n && !m_deque.empty(); i++)
+            {
+                T val = m_deque.back();
+                m_deque.pop_back();
+                result->push(val);
+            }
+        }
+        else
+        {
+            while (!m_deque.empty())
+            {
+                T val = m_deque.back();
+                m_deque.pop_back();
+                result->push(val);
+            }
+        }
 
-        return val;
+        return result;
     }
 
-    std::queue<T> &popAll()
+    std::queue<T> *popAll()
     {
         locked_guard l(m_lock);
         return popUnLockAll();
     }
 
-    std::queue<T> &popUnLockAll()
+    std::queue<T> *popUnLockAll()
     {
-        std::queue<T> result;
+        std::queue<T> *result = new std::queue<T>();
         while (!m_deque.empty())
         {
-            result.push(std::move(m_deque.front()));
+            result->push(std::move(m_deque.front()));
             m_deque.pop_front();
         }
 
@@ -101,6 +120,12 @@ public:
     lock_t &lockRef()
     {
         return m_lock;
+    }
+
+    size_t size()
+    {
+        locked_guard l(m_lock);
+        return m_deque.size();
     }
 
     bool empty()

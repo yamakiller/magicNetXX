@@ -6,7 +6,7 @@ file(GLOB SRCLIST ./src/*.*)
 
 add_executable(${PROJ_NAME} ${SRCLIST})
 
-message(STATUS "${Boost_INCLUDE_DIRS}")
+find_package(Boost COMPONENTS system coroutine context REQUIRED)
 
 include_directories(
 	./src/

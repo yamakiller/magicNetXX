@@ -4,8 +4,8 @@
 #include <boost/context/detail/fcontext.hpp>
 #include <functional>
 
-#define STACK_MALLOC(sz) engine::memory::malloc(sz)
-#define STACK_FREE(p) engine::memory::free(p)
+#define STACK_MALLOC(sz) ::malloc(sz)
+#define STACK_FREE(p) ::free(p)
 
 namespace engine
 {

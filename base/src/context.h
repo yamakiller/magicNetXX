@@ -2,7 +2,6 @@
 #define CIS_ENGINE_CONTEXT_H
 
 #include "fcontext.h"
-#include "memory_hook.h"
 // https://github.com/yyzybb537/libgo/blob/master/libgo/context/context.h
 
 namespace engine
@@ -10,7 +9,7 @@ namespace engine
 class context
 {
 public:
-  context(fn_t fn, void* ud, size_t stackSize)
+  context(fn_t fn, void *ud, size_t stackSize)
       : m_fn(fn), m_ud(ud), m_stackSize(stackSize)
   {
     m_stack = (char *)STACK_MALLOC(m_stackSize);
@@ -33,7 +32,8 @@ public:
     }
   }
 
-  inline void SwapIn() { 
+  inline void SwapIn()
+  {
     transfer_t t = jump_fcontext(m_ctx, m_ud);
     *(&getTlsContext()) = t.fctx;
   }
@@ -44,8 +44,9 @@ public:
     m_ctx = t.fctx;
   }
 
-  inline void SwapOut() { 
-    transfer_t t = jump_fcontext(getTlsContext(), 0); 
+  inline void SwapOut()
+  {
+    transfer_t t = jump_fcontext(getTlsContext(), 0);
     m_ctx = t.fctx;
   }
 

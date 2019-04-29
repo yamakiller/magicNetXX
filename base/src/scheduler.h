@@ -29,20 +29,25 @@ public:
         return m_shutdown;
     }
 
+    void createTask();
+
+    scheduler();
     ~scheduler();
 
 protected:
-    scheduler();
-
     scheduler(scheduler const &) = delete;
     scheduler(scheduler &&) = delete;
     scheduler &operator=(scheduler const &) = delete;
     scheduler &operator=(scheduler &&) = delete;
 
+    void addTask(task *t);
+
 private:
     void newWorker();
 
     void dispatcherWork();
+
+    void timeTick();
 
 private:
     std::vector<worker *> m_works;
@@ -53,6 +58,8 @@ private:
     int32_t m_maxThreadNumber;
 
     std::thread m_dispatchThread; //调度线程
+    std::thread m_timeThread;
+
     std::mutex m_shutdownMtx;
     int32_t m_shutdown;
 };

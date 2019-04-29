@@ -13,15 +13,15 @@ include_directories(
 	${THIRDLIB_DIR}/cppformat-master
 	${THIRDLIB_DIR}/spdlog/include
 	${Boost_INCLUDE_DIRS}
-	${Jemalloc_INCLUDE_DIR}
 )
 
 target_link_libraries(${PROJ_NAME} 
 	dl
 	pthread
 	spdlog
-	${Jemalloc_LIBRARIES}
 	${Boost_LIBRARIES})
+
+message("aaa:${Jemalloc_LIBRARIES}")
 
 set_target_properties(${PROJ_NAME} PROPERTIES FOLDER "core")
 
