@@ -12,11 +12,13 @@
 #include "deque.h"
 #include "task.h"
 
-namespace engine {
+namespace engine
+{
 
 class scheduler;
 
-class worker {
+class worker
+{
   friend class scheduler;
 
 public:

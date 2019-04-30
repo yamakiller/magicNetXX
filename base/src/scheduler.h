@@ -6,6 +6,8 @@
 #include <thread>
 #include <vector>
 
+#include <string>
+
 #include "noncopyable.h"
 #include "singleton.h"
 #include "worker.h"
@@ -34,6 +36,8 @@ public:
     scheduler();
     ~scheduler();
 
+    std::string debug();
+
 protected:
     scheduler(scheduler const &) = delete;
     scheduler(scheduler &&) = delete;
@@ -41,6 +45,8 @@ protected:
     scheduler &operator=(scheduler &&) = delete;
 
     void addTask(task *t);
+
+    static void releaseTask(task *t, void *arg);
 
 private:
     void newWorker();

@@ -1,6 +1,7 @@
 #include <chrono>
 #include <scheduler.h>
 #include <stdlib.h>
+#include <string>
 #include <thread>
 
 int main(int argc, char *argv[])
@@ -14,7 +15,10 @@ int main(int argc, char *argv[])
         {
             engine::scheduler::instance()->createTask();
         }
-        fprintf(stderr, "end-------------------------\n");
+
+        std::string debug_info = engine::scheduler::instance()->debug();
+        fprintf(stderr, "\033[2J");
+        fprintf(stderr, "%s", debug_info.c_str());
     }
     return 0;
 }
