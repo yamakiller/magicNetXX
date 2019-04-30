@@ -21,7 +21,5 @@ target_link_libraries(${PROJ_NAME}
 	spdlog
 	${Boost_LIBRARIES})
 
-message("aaa:${Jemalloc_LIBRARIES}")
-
 set_target_properties(${PROJ_NAME} PROPERTIES FOLDER "core")
 

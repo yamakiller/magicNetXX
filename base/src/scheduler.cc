@@ -38,7 +38,7 @@ int32_t scheduler::doStart(int32_t threadNumber) {
   }
 
   {
-    std::thread t([this { this->timeTick(); }]);
+    std::thread t([this] { this->timeTick(); });
     m_timeThread.swap(t);
   }
 
@@ -104,26 +104,25 @@ void scheduler::dispatcherWork() {
     }
 
     // 2. 计算负载情况
-    for (std::size_t i = 0; i < pcount; i++) {
+    for (size_t i = 0; i < workCount; i++) {
       auto w = m_works[i];
       size_t loadaverage = w->getRunnableNum();
       totalLoadaverage += loadaverage;
 
       loadMaps.insert(LoadMap::value_type{loadaverage, i});
-      p->busyMark();
+      w->restBusy();
 
-      if (loadaverage > 0 && p->isWaiting()) {
-        p->notifyCondition();
+      if (loadaverage > 0 && w->isWaiting()) {
+        w->notifyCondition();
       }
     }
 
     // 3. 东西
     // 阻塞线程的任务steal出来
     {
-      list<task *> tasks;
+      list<task *> *tasks = new list<task *>();
       for (auto &kv : busyings) {
         auto p = m_works[kv.first];
-        p->restBusy(); //偷取一次，说明不再繁忙
 
         list<task *> *tmp = p->steal(0);
         while (!tmp->empty()) {
@@ -136,7 +135,7 @@ void scheduler::dispatcherWork() {
       if (!tasks->empty()) {
         auto range = loadMaps.equal_range(loadMaps.begin()->first);
         std::size_t avg =
-            tasks.size() / std::distance(range.first, range.second);
+            tasks->size() / std::distance(range.first, range.second);
         if (avg == 0)
           avg = 1;
 
@@ -146,7 +145,7 @@ void scheduler::dispatcherWork() {
         }
 
         for (auto it = range.first; it != range.second; ++it) {
-          list<task *> in = tasks.cut(avg);
+          list<task *> *in = tasks->cut(avg);
           if (in->empty()) {
             delete in;
             break;
@@ -157,7 +156,8 @@ void scheduler::dispatcherWork() {
             w->addTask(std::move(in->pop()));
           }
           delete in;
-          .insert(LoadMap::value_type{w->getRunnableNum(), it->second});
+          newLoadMaps.insert(
+              LoadMap::value_type{w->getRunnableNum(), it->second});
         }
 
         if (!tasks->empty()) {
@@ -179,7 +179,7 @@ void scheduler::dispatcherWork() {
     // 如果还有在等待的线程, 从任务多的线程中拿一些给它
     if (loadMaps.begin()->first == 0) {
       auto range = loadMaps.equal_range(loadMaps.begin()->first);
-      std::size_t waitN = std::distance(range.first, range.second);
+      size_t waitN = std::distance(range.first, range.second);
       if (waitN == loadMaps.size()) {
         // 都没任务了, 不用偷了
         continue;
@@ -193,12 +193,12 @@ void scheduler::dispatcherWork() {
         continue;
       }
 
-      std::size_t avg = tasks.size() / waitN;
+      std::size_t avg = tasks->size() / waitN;
       if (avg == 0)
         avg = 1;
 
       for (auto it = range.first; it != range.second; ++it) {
-        list<task *> in = tasks->cut(avg);
+        list<task *> *in = tasks->cut(avg);
         if (in->empty()) {
           delete in;
           break;

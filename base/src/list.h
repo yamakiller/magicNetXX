@@ -4,12 +4,12 @@
 #include <queue>
 
 namespace engine {
-template <class T> class dlist {
+template <class T> class list {
 public:
-  dlist() {}
-  ~dlist() {}
+  list() {}
+  ~list() {}
 
-  void push(T &val) { m_tb.push(val); }
+  void push(T val) { m_tb.push(val); }
 
   T pop() {
     T result = m_tb.front();
@@ -17,8 +17,8 @@ public:
     return result;
   }
 
-  dlist<T> *cut(int32_t n) {
-    dlist<T> *result = new dlist<T>();
+  list<T> *cut(int32_t n) {
+    list<T> *result = new list<T>();
     for (int i = 0; i < n && !m_tb.empty(); i++) {
       result->push(this->pop());
     }
@@ -26,6 +26,8 @@ public:
   }
 
   const bool empty() { return m_tb.empty(); }
+
+  const size_t size() { return m_tb.size(); }
 
 private:
   std::queue<T> m_tb;

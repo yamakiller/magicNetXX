@@ -81,10 +81,9 @@ void worker::moveRunnable() { m_runnableQueue.push(m_newQueue.popAll()); }
 
 void worker::gc() //需要修改
 {
-  std::queue<task *> *list = m_gccQueue.popAll();
+  list<task *> *list = m_gccQueue.popAll();
   while (list->empty()) {
-    task *p = list->front();
-    list->pop();
+    task *p = list->pop();
     delete p;
   }
   delete list;
@@ -126,8 +125,7 @@ list<task *> *worker::steal(size_t n) {
 
   list<task *> *steal_q_1 = m_runnableQueue.popBack(other);
   while (!steal_q->empty()) {
-    steal_q_1->push(steal_q->front());
-    steal_q->pop();
+    steal_q_1->push(steal_q->pop());
   }
   delete steal_q;
   return steal_q_1;
