@@ -34,7 +34,7 @@
 .vscode/sftp.json
 .vscode/c_cpp_properties.json
 .vscode/launch.json
-.vscode
+.vscode/ipch
 3rd/jemalloc/
 *.make
 jemalloc*.tar.bz2
