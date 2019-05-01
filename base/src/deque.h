@@ -10,6 +10,88 @@
 #include "spinlock.h"
 
 namespace engine {
+
+template <typename T> struct dequeNode2 {
+  dequeNode2<T> *_prev;
+  dequeNode2<T> *_next;
+};
+
+template <typename T, bool threadSafe> class deque2 final {
+public:
+  typedef typename std::conditional<threadSafe, spinlock, unspinlock>::type
+      lock_handle;
+  typedef typename std::conditional<threadSafe, std::lock_guard<spinlock>,
+                                    unslk_lock_guard>::type locked_guard;
+
+public:
+  deque2() = default;
+  ~deque2() = default;
+
+  void pushUnlock(void *value) {
+    dequeNode2<T> *newNode = dynamic_cast<dequeNode2<T> *>(value);
+    assert(newNode);
+
+    if (m_head == m_tail == nullptr) {
+      m_head = m_tail = newNode;
+      newNode->_prev = newNode->_next = NULL;
+    } else {
+      m_tail->_next = newNode;
+      newNode->_prev = m_tail;
+      newNode->_next = nullptr;
+      m_tail = newNode;
+    }
+    ++m_count;
+  }
+
+  void push(void *value) {
+    locked_guard lcked(&m_lock);
+    pushUnlock(value);
+  }
+
+  void front(**outValue) {
+    locked_guard lcked(&m_lock);
+    if (m_head == nullptr) {
+      *outValue = nullptr;
+      return;
+    }
+
+    *outValue = m_head;
+  }
+
+  void *popUnlock() {
+    if (m_head == NULL) {
+      return nullptr;
+    }
+
+    if (m_head == m_tail) {
+      dequeNode2<T> *tmp = m_head;
+      m_head = m_tail = nullptr;
+      return tmp;
+    }
+
+    dequeNode2<T> *tmp = m_head;
+    m_head = m_head->_next;
+    m_head->_prev = nullptr;
+    tmp->_prev = tmp->_next = nullptr;
+    return (void *)tmp;
+  }
+
+  void *pop() {
+    locked_guard lcked(&m_lock);
+    return popUnlock();
+  }
+
+  void *popBackUnlock() { return nullptr; }
+  void *popBack() { return nullptr; }
+
+private:
+  dequeNode2<T> *m_head;
+  dequeNode2<T> *m_tail;
+  lock_handle m_lock;
+
+  int32_t m_count;
+};
+
 template <class T, bool threadSafe> class deque final {
 public:
   typedef
