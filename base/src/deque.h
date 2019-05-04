@@ -1,28 +1,32 @@
 #ifndef CIS_ENGINE_DEQUE_H
 #define CIS_ENGINE_DEQUE_H
 
+#include <assert.h>
 #include <condition_variable>
 #include <deque>
 #include <mutex>
 #include <queue>
 
 #include "list.h"
+#include "shared_ptr.h"
 #include "spinlock.h"
 
 namespace engine
 {
 
-template <typename T>
-struct dequeNode2
+struct invNode
 {
-  dequeNode2<T> *_prev;
-  dequeNode2<T> *_next;
+  invNode *_prev;
+  invNode *_next;
 };
 
+//IncrementRef
+//DecrementRef
+
 template <typename T>
-class list2
+class invList
 {
-  static_assert((std::is_base_of<dequeNode2, T>::value), "T must be baseof dequeNode2");
+  static_assert((std::is_base_of<invNode, T>::value), "T must be baseof dequeNode2");
 
 public:
   struct iterator
@@ -36,8 +40,8 @@ public:
     void reset(T *p)
     {
       _ptr = p;
-      _next = ptr ? (T *)_ptr->_next : nullptr;
-      _prev = ptr ? (T *)_ptr->_prev : nullptr;
+      _next = _ptr ? (T *)_ptr->_next : nullptr;
+      _prev = _ptr ? (T *)_ptr->_prev : nullptr;
     }
 
     friend bool operator==(iterator const &lhs, iterator const &rhs)
@@ -76,15 +80,15 @@ public:
   };
 
 public:
-  list2() : m_head(nullptr), m_tail(nullptr), m_count(0) {}
+  invList() : m_head(nullptr), m_tail(nullptr), m_count(0) {}
 
-  list2(dequeNode2<T> *h, dequeNode2<T> *t, size_t count)
-      : m_head(h), m_tail(t), m_count(count) {}
+  invList(T *h, T *t, size_t count)
+      : m_head((invNode *)h), m_tail((invNode *)t), m_count(count) {}
 
-  list2(list2 const &) = delete;
-  list2 &operator=(list2 const &) = delete;
+  invList(invList const &) = delete;
+  invList &operator=(invList const &) = delete;
 
-  list2(list2<T> &&other)
+  invList(invList<T> &&other)
   {
     m_head = other.m_head;
     m_tail = other.m_tail;
@@ -92,12 +96,12 @@ public:
     other.zero();
   }
 
-  ~list2()
+  ~invList()
   {
     assert(m_count == 0);
   }
 
-  list2 &operator=(list2<T> &&other)
+  invList &operator=(invList<T> &&other)
   {
     clear();
     m_head = other.m_head;
@@ -119,18 +123,18 @@ public:
   }
   void erase(void *param)
   {
-    dequeNode2<T> *ptr = dynamic_cast<dequeNode2<T> *>(param);
+    invNode *ptr = dynamic_cast<invNode *>(param);
     assert(ptr);
-    if (ptr->prev)
+    if (ptr->_prev)
     {
       ptr->_prev->_next = ptr->_next;
     }
     else
     {
-      m_head = m_head->next;
+      m_head = m_head->_next;
     }
 
-    if (ptr->next)
+    if (ptr->_next)
     {
       ptr->_next->_prev = ptr->_prev;
     }
@@ -142,10 +146,10 @@ public:
     ptr->_prev = ptr->_next = nullptr;
     --m_count;
 
-    ptr = nullptr;
+    decrementRef((void *)ptr);
   }
 
-  void append(list2<T> &&other)
+  void append(invList<T> &&other)
   {
     if (other.empty())
       return;
@@ -170,25 +174,25 @@ public:
     other.zero();
   }
 
-  list2<T> cut(size_t n)
+  invList<T> cut(size_t n)
   {
     if (empty())
     {
-      return list2<T>();
+      return invList<T>();
     }
 
     if (n >= size())
     {
-      list2<T> o(std::move(*this));
+      invList<T> o(std::move(*this));
       return o;
     }
 
     if (n == 0)
     {
-      return list2<T>();
+      return invList<T>();
     }
 
-    list2<T> o;
+    invList<T> o;
     auto pos = m_head;
     for (size_t i = 1; i < n; ++i)
       pos = pos->_next;
@@ -226,18 +230,18 @@ public:
     m_count = 0;
   }
 
-  dequeNode2<T> *head() { return m_head; }
-  dequeNode2<T> *tail() { return m_tail; }
+  invNode *head() { return m_head; }
+  invNode *tail() { return m_tail; }
 
 public:
-  dequeNode2<T> *m_head;
-  dequeNode2<T> *m_tail;
+  invNode *m_head;
+  invNode *m_tail;
 
   size_t m_count;
 };
 
 template <typename T, bool threadSafe>
-class deque2 final
+class invDeque final
 {
 public:
   typedef typename std::conditional<threadSafe, spinlock, unspinlock>::type
@@ -246,30 +250,29 @@ public:
                                     unslk_lock_guard>::type locked_guard;
 
 public:
-  deque2()
+  invDeque()
   {
     m_head = m_tail = nullptr;
     m_count = 0;
   }
 
-  ~deque2()
+  ~invDeque()
   {
     locked_guard lcked(&m_lock);
     while (m_tail)
     {
-      dequeNode2<T> *prev = m_tail->prev;
-      m_tail = nullptr;
+      invNode *prev = m_tail->_prev;
+      decrementRef((void *)m_tail);
       m_tail = prev;
     }
     m_head = nullptr;
   }
 
-  void pushUnlock(void *value)
+  void pushUnlock(T *value)
   {
-    dequeNode2<T> *newNode = dynamic_cast<dequeNode2<T> *>(value);
+    invNode *newNode = dynamic_cast<invNode *>(value);
     assert(newNode);
-
-    if (m_head == m_tail == nullptr)
+    if (m_head == nullptr)
     {
       m_head = m_tail = newNode;
       newNode->_prev = newNode->_next = NULL;
@@ -284,13 +287,42 @@ public:
     ++m_count;
   }
 
-  void push(void *value)
+  void pushUnlock(const invList<T> &s)
+  {
+    if (s.empty())
+    {
+      return;
+    }
+
+    if (empty())
+    {
+      m_head = s.head();
+      m_tail = s.tail();
+      m_count = s.size();
+      s.zero();
+      return;
+    }
+
+    m_tail->_next = s.head();
+    s.head()->_prev = m_tail;
+    m_tail = s.tail();
+    m_count += s.size();
+    s.zero();
+  }
+
+  void push(T *value)
   {
     locked_guard lcked(&m_lock);
     pushUnlock(value);
   }
 
-  bool front(**outValue)
+  void push(const invList<T> &s)
+  {
+    locked_guard lcked(&m_lock);
+    pushUnlock(s);
+  }
+
+  bool front(T **outValue)
   {
     locked_guard lcked(&m_lock);
     if (m_head == nullptr)
@@ -299,18 +331,18 @@ public:
       return false;
     }
 
-    *outValue = m_head;
+    *outValue = (T *)m_head;
     return true;
   }
 
-  void *popUnlock()
+  T *popUnlock()
   {
     if (m_head == NULL)
     {
       return nullptr;
     }
 
-    dequeNode2<T> *tmp = nullptr;
+    invNode *tmp = nullptr;
     if (m_head == m_tail)
     {
       tmp = m_head;
@@ -325,35 +357,54 @@ public:
     }
 
     --m_count;
-    return (void *)tmp;
+    return (T *)tmp;
   }
 
-  void *pop()
+  T *pop()
   {
     locked_guard lcked(&m_lock);
     return popUnlock();
   }
 
-  void *popBackUnlock()
+  T *popBackUnlock()
   {
     if (m_tail == nullptr)
     {
       return nullptr;
     }
 
-    dequeNode2<T> *tmp = m_tail;
-    m_tail = m_tail->prev;
-    m_tail->next = nullptr;
-    tmp->next = tmp->prev = nullptr;
+    invNode *tmp = m_tail;
+    m_tail = m_tail->_prev;
+    m_tail->_next = nullptr;
+    tmp->_next = tmp->_prev = nullptr;
 
     --m_count;
-    return (void *)tmp;
+    return (T *)tmp;
   }
 
-  void *popBack()
+  invList<T> popBackAllUnlock()
+  {
+    if (empty())
+    {
+      return invList<T>();
+    }
+
+    invList<T> o(m_head, m_tail, size);
+    m_head = m_tail = nullptr;
+    m_count = 0;
+    return o;
+  }
+
+  T *popBack()
   {
     locked_guard lcked(&m_lock);
     return popBackUnlock();
+  }
+
+  invList<T> popBackAll()
+  {
+    locked_guard lcked(&m_lock);
+    return popBackAllUnlock();
   }
 
   size_t size()
@@ -380,8 +431,8 @@ public:
   }
 
 private:
-  dequeNode2<T> *m_head;
-  dequeNode2<T> *m_tail;
+  invNode *m_head;
+  invNode *m_tail;
   lock_handle m_lock;
 
   volatile size_t m_count;
