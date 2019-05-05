@@ -7,7 +7,7 @@
 
 namespace engine
 {
-struct Releaser
+/*struct Releaser
 {
     typedef void (*func_t)(struct task *ptr, void *arg);
     func_t _func;
@@ -21,17 +21,17 @@ struct Releaser
         if (_func)
             _func(ptr, _arg);
     }
-};
+};*/
 
 struct task
 {
     uint64_t m_id;
-    Releaser m_releaser;
+    //Releaser m_releaser;
 
     task() {}
     ~task()
     {
-        m_releaser(this);
+        //m_releaser(this);
     }
 
     void Run()
@@ -41,10 +41,10 @@ struct task
         }
     }
 
-    void setReleaser(struct Releaser r)
-    {
-        m_releaser = r;
-    }
+    //void setReleaser(struct Releaser r)
+    //{
+    //    m_releaser = r;
+    // }
 
 private:
     task(task const &) = delete;

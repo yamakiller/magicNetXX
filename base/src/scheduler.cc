@@ -78,7 +78,7 @@ void scheduler::doShutdown()
 void scheduler::createTask()
 {
   task *t = new task();
-  t->setReleaser(Releaser(&scheduler::releaseTask, this));
+  //t->setReleaser(Releaser(&scheduler::releaseTask, this));
   t->m_id = ++getIdFactory();
   //设置委托释放器
   ++m_taskCount;

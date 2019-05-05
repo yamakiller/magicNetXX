@@ -11,23 +11,15 @@ struct SharedRefObject;
 
 struct Releaser
 {
-    typedef void (*func_t)(SharedRefObject *ptr, void *arg);
+    typedef void (*func_t)(struct SharedRefObject *ptr, void *arg);
     func_t _func;
     void *_arg;
 
     Releaser() : _func(nullptr), _arg(nullptr) {}
     Releaser(func_t func, void *arg) : _func(func), _arg(arg) {}
 
-    inline void operator(SharedRefObject *ptr);
+    inline void operator()(struct SharedRefObject *ptr);
 };
-
-inline void Releaser::operator()(SharedRefObject *ptr)
-{
-    if (_func)
-        _func(ptr, _arg);
-    else
-        delete ptr;
-}
 
 struct SharedRefObject
 {
@@ -38,53 +30,73 @@ struct SharedRefObject
     {
     }
 
-    ~SharedRefObject() {}
+    virtual ~SharedRefObject() {}
 
     void incrementRef()
     {
-        ++*reference_;
+        fprintf(stderr, "inc 1-1:%d\n", (long)_reference);
+        ++_reference;
     }
 
-    virtual bool decrementRef()
+    bool decrementRef()
     {
-        if (--*_reference == 0)
+        fprintf(stderr, "dec 1-1:%d,%p\n", (long)_reference, this);
+        if (--_reference == 0)
         {
+            fprintf(stderr, "dec 1-2\n");
             _releaser(this);
+            fprintf(stderr, "dec 1-3\n");
             return true;
         }
+        fprintf(stderr, "dec 1-4:%d\n", (long)_reference);
         return false;
     }
 
     long useCount()
     {
-        return *_reference;
+        return _reference;
     }
 
     void setReleaser(Releaser rd)
     {
         _releaser = rd;
     }
+
+    SharedRefObject(SharedRefObject const &) = delete;
+    SharedRefObject &operator=(SharedRefObject const &) = delete;
 };
 
-void incrementRef(void *p)
+inline void
+Releaser::operator()(struct SharedRefObject *ptr)
 {
-    struct SharedRefObject *object = dynamic_cast<struct SharedRefObject *>(p);
-    if (p == nullptr)
-    {
-        return;
-    }
-
-    object->incrementRef();
+    if (_func)
+        _func(ptr, _arg);
+    else
+        delete ptr;
 }
 
-bool decrementRef(void *p)
+template <typename T>
+typename std::enable_if<std::is_base_of<SharedRefObject, T>::value>::type
+incrementRef(T *ptr)
 {
-    struct SharedRefObject *object = dynamic_cast<struct SharedRefObject *>(p);
-    if (p == nullptr)
-    {
-        return;
-    }
-    return object->decrementRef();
+    ptr->incrementRef();
+}
+template <typename T>
+typename std::enable_if<!std::is_base_of<SharedRefObject, T>::value>::type
+incrementRef(T *ptr)
+{
+}
+template <typename T>
+typename std::enable_if<std::is_base_of<SharedRefObject, T>::value>::type
+decrementRef(T *ptr)
+{
+    ptr->decrementRef();
+}
+template <typename T>
+typename std::enable_if<!std::is_base_of<SharedRefObject, T>::value>::type
+decrementRef(T *ptr)
+{
+    fprintf(stderr, "null\n");
 }
 
 // ID
