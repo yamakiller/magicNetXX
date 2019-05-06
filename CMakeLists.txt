@@ -5,6 +5,8 @@ project(CisEngine)
 
 set(CMAKE_BUILD_TYPE Debug)
 
+include(ExternalProject)
+
 if(UNIX)
 set(CMAKE_C_FLAGS_DEBUG		"-Wall -g -pg")
 set(CMAKE_C_FLAGS_RELEASE	"-Wall -o4")
@@ -55,9 +57,11 @@ set_property(GLOBAL PROPERTY USE_FOLDERS On)
 
 #add_subdirectory(launcher)
 add_subdirectory(3rd)
-add_subdirectory(base)
+
+include(${ROOT_DIR}/cmake/External_base.cmake)
+#add_subdirectory(base)
 #add_subdirectory(module)
-add_subdirectory(example)
+#add_subdirectory(example)
 
 
 

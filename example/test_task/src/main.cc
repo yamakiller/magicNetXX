@@ -26,9 +26,57 @@ private:
     atask &operator=(atask &&) = delete;
 };
 
+struct A1
+{
+    int32_t c;
+    int32_t d;
+
+    A1()
+    {
+    }
+
+    ~A1()
+    {
+    }
+};
+
+struct A2
+{
+    int32_t e;
+    int32_t f;
+
+    A2()
+    {
+    }
+
+    ~A2()
+    {
+    }
+};
+
+struct CATest : public A1, public A2
+{
+    int32_t a;
+    int32_t b;
+
+    CATest()
+    {
+    }
+
+    ~CATest()
+    {
+    }
+};
+
 int main(int argc, char *argv[])
 {
-    engine::invDeque<atask, false> q;
+    CATest *test = new CATest();
+    A1 *pa1 = static_cast<A1 *>(test);
+    A2 *pa2 = static_cast<A2 *>(test);
+
+    fprintf(stderr, "CA:%p, A1:%p, A2:%p\n", test, pa1, pa2);
+
+    /*engine::invDeque<atask, false> q;
 
     for (int i = 0; i < 1; i++)
     {
@@ -40,7 +88,7 @@ int main(int argc, char *argv[])
     }
 
     fprintf(stderr, "push end\n");
-    q.assertLink();
+    q.assertLink();*/
     /*1.engine::scheduler::instance()->doStart(6);
 
     while (1)
