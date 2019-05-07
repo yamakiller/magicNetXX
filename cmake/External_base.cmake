@@ -1,8 +1,7 @@
 set(base_source "${CMAKE_CURRENT_SOURCE_DIR}/base")
 set(base_build "${CMAKE_CURRENT_BINARY_DIR}/base")
 
-set(_deps "CisEngine")
-add_optional_deps(_deps "jemalloc")
+add_optional_deps(_deps "boost")
 
 ExternalProject_Add(base
   SOURCE_DIR ${base_source}
@@ -14,3 +13,10 @@ ExternalProject_Add(base
   DEPENDS
     ${_deps}
 )
+
+if(FORCE_STEP)
+  ExternalProject_Add_Step(base forcebuild
+    COMMAND ${CMAKE_COMMAND} -E echo "Force build of base sdk"
+    ${FORCE_STEP_ARGS}
+    ALWAYS 1)
+endif()

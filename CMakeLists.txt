@@ -10,8 +10,8 @@ include(ExternalProject)
 if(UNIX)
 set(CMAKE_C_FLAGS_DEBUG		"-Wall -g -pg")
 set(CMAKE_C_FLAGS_RELEASE	"-Wall -o4")
-set(CMAKE_CXX_FLAGS_DEBUG	"-std=c++11 -Wall -g -pg -fPIC")
-set(CMAKE_CXX_FLAGS_RELEASE	"-std=c++11 -Wall -o4 -fPIC")
+set(CMAKE_CXX_FLAGS_DEBUG	"-std=c++17 -Wall -g -pg -fPIC")
+set(CMAKE_CXX_FLAGS_RELEASE	"-std=c++17 -Wall -o4 -fPIC")
 ELSEIF(WIN32)
 add_definitions(-W2)
 endif(UNIX)
@@ -44,6 +44,13 @@ set(MODULE_INCLUDE_DIRECTORIES
 	${THIRDLIB_DIR}/spdlog-master/include/spdlog	
 	${LAUNCHER_DIR}/src
 )
+
+macro(add_optional_deps dep_var)
+  foreach(_dependency ${ARGN})
+    string(TOUPPER "${_dependency}" _uDependency)
+      list(APPEND ${dep_var} ${_dependency})
+  endforeach()
+endmacro()
 
 set(MODULE_LINK_LIBRARIES
 	base
