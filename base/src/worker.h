@@ -48,7 +48,7 @@ private:
 
   void addTask(task *t);
 
-  list<task *> *steal(size_t n);
+  util::list<task> steal(size_t n);
 
   void gc();
 
@@ -68,12 +68,12 @@ private:
   bool m_notified;
   //--------------------
   task *m_runnable;
-  typedef deque<task *, true> tkdeque;
+  typedef util::deque<task, true> tkdeque;
   tkdeque m_runnableQueue;
   tkdeque m_newQueue;
   tkdeque m_waitQueue;
 
-  typedef deque<task *, false> untkdeque;
+  typedef util::deque<task, false> untkdeque;
   untkdeque m_gccQueue;
 };
 } // namespace engine

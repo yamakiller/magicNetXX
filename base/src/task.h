@@ -23,15 +23,13 @@ namespace engine
     }
 };*/
 
-struct task
+struct task : public util::node, public shared_ref
 {
     uint64_t m_id;
-    //Releaser m_releaser;
 
     task() {}
     ~task()
     {
-        //m_releaser(this);
     }
 
     void Run()
@@ -40,11 +38,6 @@ struct task
         {
         }
     }
-
-    //void setReleaser(struct Releaser r)
-    //{
-    //    m_releaser = r;
-    // }
 
 private:
     task(task const &) = delete;

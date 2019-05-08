@@ -156,7 +156,8 @@ void scheduler::dispatcherWork()
     // 3. 东西
     // 阻塞线程的任务steal出来
     {
-      list<task *> *tasks = new list<task *>();
+
+      /*list<task *> *tasks = new list<task *>();
       for (auto &kv : busyings)
       {
         auto p = m_works[kv.first];
@@ -167,10 +168,10 @@ void scheduler::dispatcherWork()
           tasks->push(tmp->pop());
         }
         delete tmp;
-      }
+      }*/
 
       //分发任务
-      if (!tasks->empty())
+      /*if (!tasks->empty())
       {
         auto range = loadMaps.equal_range(loadMaps.begin()->first);
         std::size_t avg = tasks->size() / std::distance(range.first, range.second);
@@ -217,11 +218,11 @@ void scheduler::dispatcherWork()
               LoadMap::value_type{w->getRunnableNum(), it->second});
         }
         newLoadMaps.swap(loadMaps);
-      }
+      }*/
     }
 
     // 如果还有在等待的线程, 从任务多的线程中拿一些给它
-    if (loadMaps.begin()->first == 0)
+    /*if (loadMaps.begin()->first == 0)
     {
       auto range = loadMaps.equal_range(loadMaps.begin()->first);
       size_t waitN = std::distance(range.first, range.second);
@@ -269,7 +270,7 @@ void scheduler::dispatcherWork()
         }
       }
       delete tasks;
-    }
+    }*/
   }
 
   size_t n = m_works.size();

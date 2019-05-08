@@ -16,7 +16,7 @@
 
 namespace engine
 {
-class vpid;
+/*class vpid;
 enum class actorState
 {
     runnable,
@@ -63,5 +63,5 @@ private:
     actor &operator=(actor &&) = delete;
 };
 
-const char *getActorStateName(actorState state);
+const char *getActorStateName(actorState state);*/
 } // namespace engine

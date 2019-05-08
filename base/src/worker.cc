@@ -21,8 +21,8 @@ worker::~worker() {}
 
 void worker::addTask(task *t)
 {
-  std::unique_lock<tkdeque::lock_t> lock(m_newQueue.lockRef());
-  m_newQueue.pushUnLock(t);
+  std::unique_lock<tkdeque::lock_handle> lock(m_newQueue.lockRef());
+  m_newQueue.pushUnlock(t);
   if (m_waiting)
   {
     m_cv.notify_all();
@@ -58,7 +58,7 @@ size_t worker::getRunnableNum()
 
 void worker::waitCondition()
 {
-  std::unique_lock<tkdeque::lock_t> lock(m_runnableQueue.lockRef());
+  std::unique_lock<tkdeque::lock_handle> lock(m_runnableQueue.lockRef());
   if (m_notified)
   {
     m_notified = false;
@@ -72,7 +72,7 @@ void worker::waitCondition()
 
 void worker::notifyCondition()
 {
-  std::unique_lock<tkdeque::lock_t> lock(m_newQueue.lockRef());
+  std::unique_lock<tkdeque::lock_handle> lock(m_newQueue.lockRef());
   if (m_waiting)
   {
     m_cv.notify_all();
@@ -95,17 +95,16 @@ worker *&worker::getCurrentWorker()
   return lpworker;
 }
 
-void worker::moveRunnable() { m_runnableQueue.push(m_newQueue.popAll()); }
+void worker::moveRunnable() { m_runnableQueue.push(m_newQueue.popBackAll()); }
 
 void worker::gc() //需要修改
 {
-  list<task *> *list = m_gccQueue.popAll();
-  while (!list->empty())
+  auto l = m_gccQueue.popBackAll();
+  for (task &tk : l)
   {
-    task *p = list->pop();
-    delete p;
+    tk.decrementRef();
   }
-  delete list;
+  l.clear();
 }
 
 void worker::process()
@@ -114,7 +113,7 @@ void worker::process()
   m_ntsTick = clock::instance()->now();
   while (!m_lpsch->isShutdown())
   {
-    m_runnable = m_runnableQueue.popFront();
+    m_runnable = m_runnableQueue.pop();
     if (m_runnable != nullptr)
     {
       ++m_nts;
@@ -136,24 +135,40 @@ void worker::process()
   }
 }
 
-list<task *> *worker::steal(size_t n)
+util::list<task> worker::steal(size_t n)
 {
-  int other = 0;
-  list<task *> *steal_q = m_newQueue.popBack(n);
   if (n > 0)
   {
-    if (steal_q->size() >= n)
-      return steal_q;
-    other = n - steal_q->size();
-  }
+    m_newQueue.assertLink();
+    auto steal_list = m_newQueue.popBack(n);
+    m_newQueue.assertLink();
+    if (steal_list.size() >= 0)
+      return steal_list;
 
-  list<task *> *steal_q_1 = m_runnableQueue.popBack(other);
-  while (!steal_q->empty())
-  {
-    steal_q_1->push(steal_q->pop());
+    auto steal_list_2 = m_runnableQueue.popBack(n - steal_list.size());
+
+    steal_list_2.append(std::move(steal_list));
+    if (!steal_list_2.empty())
+    {
+      fprintf(stderr, "Proc(%d).Stealed = %d", m_id, (int)steal_list_2.size());
+    }
+
+    return steal_list_2;
   }
-  delete steal_q;
-  return steal_q_1;
+  else
+  {
+    m_newQueue.assertLink();
+    auto steal_list = m_newQueue.popBackAll();
+    m_newQueue.assertLink();
+
+    auto steal_list_2 = m_runnableQueue.popBackAll();
+    steal_list_2.append(std::move(steal_list));
+    if (!steal_list_2.empty())
+    {
+      fprintf(stderr, "Proc(%d).Stealed = %d", m_id, (int)steal_list_2.size());
+    }
+    return steal_list_2;
+  }
 }
 
 } // namespace engine

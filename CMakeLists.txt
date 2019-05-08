@@ -3,8 +3,15 @@ cmake_minimum_required(VERSION 3.10)
 
 project(CisEngine)
 
+
+set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake"
+  ${CMAKE_MODULE_PATH})
+
+
 set(CMAKE_BUILD_TYPE Debug)
 
+include(BuildType)
+include(BuildLocation)
 include(ExternalProject)
 
 if(UNIX)
@@ -34,7 +41,8 @@ set(MODULE_DIR ${PROJECT_SOURCE_DIR}/module)
 set(CisEngine_INSTALL_PREFIX "${CisEngine_BINARY_DIR}/prefix")
 set(CisEngine_DEFAULT_ARGS
   "-DCMAKE_PREFIX_PATH:PATH=${CisEngine_INSTALL_PREFIX};${CMAKE_PREFIX_PATH}"
-  "-DCMAKE_INSTALL_PREFIX:PATH=${CisEngine_INSTALL_PREFIX}")
+  "-DCMAKE_INSTALL_PREFIX:PATH=${CisEngine_INSTALL_PREFIX}"
+  "-DCMAKE_CXX_COMPILER:PATH=${CMAKE_CXX_COMPILER}")
 
 set(download_dir "${CMAKE_CURRENT_BINARY_DIR}/Downloads")
 
@@ -88,6 +96,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS On)
 add_subdirectory(3rd)
 
 include(${ROOT_DIR}/cmake/External_base.cmake)
+include(${ROOT_DIR}/cmake/External_example.cmake)
 #add_subdirectory(base)
 #add_subdirectory(module)
 #add_subdirectory(example)

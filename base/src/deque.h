@@ -1,137 +1,270 @@
-#ifndef CIS_ENGINE_DEQUE_H
-#define CIS_ENGINE_DEQUE_H
+#ifndef CIS_ENGINE_TWOWAYDEQUE_H
+#define CIS_ENGINE_TWOWAYDEQUE_H
 
-#include <assert.h>
-#include <condition_variable>
-#include <deque>
-#include <mutex>
-#include <queue>
-
+#include "base.h"
 #include "list.h"
 #include "spinlock.h"
 
 namespace engine
 {
 
-template <class T, bool threadSafe>
+namespace util
+{
+template <typename T, bool threadSafe>
 class deque final
 {
 public:
-  typedef
-      typename std::conditional<threadSafe, spinlock, unspinlock>::type lock_t;
-  typedef typename std::conditional<threadSafe, std::lock_guard<spinlock>,
-                                    unslk_lock_guard>::type locked_guard;
+    typedef typename std::conditional<threadSafe, spinlock, unspinlock>::type
+        lock_handle;
+    typedef typename std::conditional<threadSafe, std::lock_guard<spinlock>,
+                                      unslk_lock_guard>::type locked_guard_hd;
 
 public:
-  deque() = default;
-  ~deque() = default;
-
-  // LIFO
-
-  void pushUnLock(const T &val) { m_deque.push_back(val); }
-
-  void push(const T &val)
-  {
-    locked_guard l(m_lock);
-    pushUnLock(val);
-  }
-
-  void pushUnLock(list<T> *ls)
-  {
-
-    while (!ls->empty())
+    deque()
     {
-      m_deque.push_back(std::move(ls->pop()));
-    }
-    delete ls;
-  }
-
-  void push(list<T> *ls)
-  {
-    locked_guard l(m_lock);
-    pushUnLock(ls);
-  }
-
-  T popFront()
-  {
-    locked_guard l(m_lock);
-
-    if (m_deque.empty())
-    {
-      return nullptr;
+        m_head = m_tail = nullptr;
+        m_count = 0;
     }
 
-    T val = m_deque.front();
-    m_deque.pop_front();
-
-    return val;
-  }
-
-  // for steal FIFO
-  list<T> *popBack(int n)
-  {
-    locked_guard l(m_lock);
-    list<T> *result = new list<T>();
-
-    if (m_deque.empty())
+    ~deque()
     {
-      return result;
+        locked_guard_hd lcked(m_lock);
+        while (m_tail)
+        {
+            node *prev = m_tail->_prev;
+            decrementRef(static_cast<T *>(m_tail));
+            m_tail = prev;
+        }
+        m_head = nullptr;
     }
 
-    if (n > 0)
+    void pushUnlock(T *value)
     {
-      for (int i = 0; i < n && !m_deque.empty(); i++)
-      {
-        T val = m_deque.back();
-        m_deque.pop_back();
-        result->push(val);
-      }
-    }
-    else
-    {
-      while (!m_deque.empty())
-      {
-        T val = m_deque.back();
-        m_deque.pop_back();
-        result->push(val);
-      }
-    }
+        node *newNode = static_cast<node *>(value);
 
-    return result;
-  }
+        if (m_head == nullptr)
+        {
+            m_head = m_tail = newNode;
+            newNode->_prev = newNode->_next = NULL;
+        }
+        else
+        {
+            m_tail->_next = newNode;
+            newNode->_prev = m_tail;
+            newNode->_next = nullptr;
+            m_tail = newNode;
+        }
 
-  list<T> *popAll()
-  {
-    locked_guard l(m_lock);
-    return popUnLockAll();
-  }
-
-  list<T> *popUnLockAll()
-  {
-    list<T> *result = new list<T>();
-    while (!m_deque.empty())
-    {
-      result->push(std::move(m_deque.front()));
-      m_deque.pop_front();
+        incrementRef(value);
+        ++m_count;
     }
 
-    return result;
-  }
+    void pushUnlock(list<T> &&s)
+    {
+        if (s.empty())
+        {
+            return;
+        }
 
-  lock_t &lockRef() { return m_lock; }
+        if (empty())
+        {
+            m_head = s.head();
+            m_tail = s.tail();
+            m_count = s.size();
+            s.zero();
+            return;
+        }
 
-  size_t size()
-  {
-    locked_guard l(m_lock);
-    return m_deque.size();
-  }
+        m_tail->_next = s.head();
+        s.head()->_prev = m_tail;
+        m_tail = s.tail();
+        m_count += s.size();
+        s.zero();
+    }
 
-  bool empty() { return m_deque.empty(); }
+    void push(T *value)
+    {
+        locked_guard_hd lcked(m_lock);
+        pushUnlock(value);
+    }
+
+    void push(list<T> &&s)
+    {
+        locked_guard_hd lcked(m_lock);
+        pushUnlock(std::move(s));
+    }
+
+    bool front(T **outValue)
+    {
+        locked_guard_hd lcked(m_lock);
+        if (m_head == nullptr)
+        {
+            *outValue = nullptr;
+            return false;
+        }
+
+        *outValue = (T *)m_head;
+        return true;
+    }
+
+    T *popUnlock()
+    {
+        if (m_head == NULL)
+        {
+            return nullptr;
+        }
+
+        node *tmp = nullptr;
+        if (m_head == m_tail)
+        {
+            tmp = m_head;
+            m_head = m_tail = nullptr;
+        }
+        else
+        {
+            tmp = m_head;
+            m_head = m_head->_next;
+            m_head->_prev = nullptr;
+            tmp->_prev = tmp->_next = nullptr;
+        }
+
+        decrementRef((T *)tmp);
+        --m_count;
+        return (T *)tmp;
+    }
+
+    T *pop()
+    {
+        locked_guard_hd lcked(m_lock);
+        return popUnlock();
+    }
+
+    T *popBackUnlock()
+    {
+        if (m_tail == nullptr)
+        {
+            return nullptr;
+        }
+
+        node *tmp = m_tail;
+        m_tail = m_tail->_prev;
+        m_tail->_next = nullptr;
+        tmp->_next = tmp->_prev = nullptr;
+
+        --m_count;
+        return (T *)tmp;
+    }
+
+    list<T> popBackAllUnlock()
+    {
+        if (empty())
+        {
+            return list<T>();
+        }
+
+        T *first = (T *)m_head;
+        T *last = (T *)m_tail;
+        size_t c = m_count;
+        m_count = 0;
+        m_head = m_tail = nullptr;
+
+        return list<T>(first, last, c);
+    }
+
+    list<T> popBackUnlock(uint32_t n)
+    {
+        if (m_head == m_tail)
+        {
+            return list<T>();
+        }
+
+        node *last = m_tail;
+        node *first = last;
+        uint32_t c = 1;
+
+        for (; c < n && first->_prev != m_head; ++c)
+        {
+            assert(first->_prev != nullptr);
+            first = first->_prev;
+        }
+
+        m_tail = first->_prev;
+        first->_prev = m_tail->_next = nullptr;
+        m_count -= c;
+
+        return list<T>((T *)first, (T *)last, c);
+    }
+
+    T *popBack()
+    {
+        locked_guard_hd lcked(m_lock);
+        return popBackUnlock();
+    }
+
+    list<T> popBackAll()
+    {
+        locked_guard_hd lcked(m_lock);
+        return popBackAllUnlock();
+    }
+
+    list<T> popBack(uint32_t n)
+    {
+        locked_guard_hd lcked(m_lock);
+        return popBackUnlock(n);
+    }
+
+    size_t size()
+    {
+        return m_count;
+    }
+
+    bool empty()
+    {
+        locked_guard_hd lcked(m_lock);
+        if (m_head == nullptr)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    lock_handle &lockRef()
+    {
+        return m_lock;
+    }
+
+    void assertLink()
+    {
+        //---调试用---
+        if (m_head == nullptr)
+        {
+            return;
+        }
+
+        assert(!m_head->_prev);
+        assert(m_tail);
+        assert(!m_tail->_next);
+
+        int n = 0;
+        node *pos = m_tail;
+        for (; pos != m_head; pos = pos->_prev, ++n)
+        {
+            assert(!!pos->_prev);
+        }
+        assert(pos == m_head);
+    }
 
 private:
-  std::deque<T> m_deque;
-  lock_t m_lock;
+    node *m_head;
+    node *m_tail;
+    lock_handle m_lock;
+
+    volatile size_t m_count;
 };
+} // namespace util
 } // namespace engine
 
 #endif

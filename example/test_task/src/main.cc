@@ -1,13 +1,13 @@
+#include <api.h>
 #include <chrono>
-#include <scheduler.h>
 #include <stdlib.h>
 #include <string>
 #include <thread>
 
 //测试数据结构
-#include <deque2.h>
+#include <deque.h>
 
-struct atask : public engine::invNode, public engine::SharedRefObject
+struct atask : public engine::util::node, public engine::shared_ref
 {
     int32_t id;
     atask()
@@ -16,7 +16,6 @@ struct atask : public engine::invNode, public engine::SharedRefObject
 
     ~atask()
     {
-        fprintf(stderr, "~atask\n");
     }
 
 private:
@@ -26,69 +25,26 @@ private:
     atask &operator=(atask &&) = delete;
 };
 
-struct A1
-{
-    int32_t c;
-    int32_t d;
-
-    A1()
-    {
-    }
-
-    ~A1()
-    {
-    }
-};
-
-struct A2
-{
-    int32_t e;
-    int32_t f;
-
-    A2()
-    {
-    }
-
-    ~A2()
-    {
-    }
-};
-
-struct CATest : public A1, public A2
-{
-    int32_t a;
-    int32_t b;
-
-    CATest()
-    {
-    }
-
-    ~CATest()
-    {
-    }
-};
-
 int main(int argc, char *argv[])
 {
-    CATest *test = new CATest();
-    A1 *pa1 = static_cast<A1 *>(test);
-    A2 *pa2 = static_cast<A2 *>(test);
 
-    fprintf(stderr, "CA:%p, A1:%p, A2:%p\n", test, pa1, pa2);
+    engine::util::deque<atask, false> q;
 
-    /*engine::invDeque<atask, false> q;
-
-    for (int i = 0; i < 1; i++)
+    for (int i = 0; i < 1000; i++)
     {
         atask *p = new atask();
         p->id = 1 + i;
-        engine::invNode *test = static_cast<engine::invNode *>(p);
-        fprintf(stderr, "base struct:%p, first struct:%p\n", p, test);
-        //q.push(p);
+        q.push(p);
+        engine::decrementRef<atask>(p);
     }
 
     fprintf(stderr, "push end\n");
-    q.assertLink();*/
+    q.assertLink();
+
+    auto l = q.popBackAll();
+    auto o = l.cut(10);
+    l.append(std::move(o));
+
     /*1.engine::scheduler::instance()->doStart(6);
 
     while (1)

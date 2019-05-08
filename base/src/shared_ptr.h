@@ -7,48 +7,42 @@
 namespace engine
 {
 
-struct SharedRefObject;
+struct shared_ref;
 
-struct Releaser
+struct releaser
 {
-    typedef void (*func_t)(struct SharedRefObject *ptr, void *arg);
+    typedef void (*func_t)(struct shared_ref *ptr, void *arg);
     func_t _func;
     void *_arg;
 
-    Releaser() : _func(nullptr), _arg(nullptr) {}
-    Releaser(func_t func, void *arg) : _func(func), _arg(arg) {}
+    releaser() : _func(nullptr), _arg(nullptr) {}
+    releaser(func_t func, void *arg) : _func(func), _arg(arg) {}
 
-    inline void operator()(struct SharedRefObject *ptr);
+    inline void operator()(struct shared_ref *ptr);
 };
 
-struct SharedRefObject
+struct shared_ref
 {
     atomic_t<long> _reference;
-    Releaser _releaser;
+    releaser _releaser;
 
-    SharedRefObject() : _reference{1}
+    shared_ref() : _reference{1}
     {
     }
-
-    virtual ~SharedRefObject() {}
+    virtual ~shared_ref() {}
 
     void incrementRef()
     {
-        fprintf(stderr, "inc 1-1:%d\n", (long)_reference);
         ++_reference;
     }
 
     bool decrementRef()
     {
-        fprintf(stderr, "dec 1-1:%d,%p\n", (long)_reference, this);
         if (--_reference == 0)
         {
-            fprintf(stderr, "dec 1-2\n");
             _releaser(this);
-            fprintf(stderr, "dec 1-3\n");
             return true;
         }
-        fprintf(stderr, "dec 1-4:%d\n", (long)_reference);
         return false;
     }
 
@@ -57,17 +51,17 @@ struct SharedRefObject
         return _reference;
     }
 
-    void setReleaser(Releaser rd)
+    void setReleaser(releaser rd)
     {
         _releaser = rd;
     }
 
-    SharedRefObject(SharedRefObject const &) = delete;
-    SharedRefObject &operator=(SharedRefObject const &) = delete;
+    shared_ref(shared_ref const &) = delete;
+    shared_ref &operator=(shared_ref const &) = delete;
 };
 
 inline void
-Releaser::operator()(struct SharedRefObject *ptr)
+releaser::operator()(struct shared_ref *ptr)
 {
     if (_func)
         _func(ptr, _arg);
@@ -76,40 +70,38 @@ Releaser::operator()(struct SharedRefObject *ptr)
 }
 
 template <typename T>
-typename std::enable_if<std::is_base_of<SharedRefObject, T>::value>::type
+typename std::enable_if<std::is_base_of<shared_ref, T>::value>::type
 incrementRef(T *ptr)
 {
     ptr->incrementRef();
 }
 template <typename T>
-typename std::enable_if<!std::is_base_of<SharedRefObject, T>::value>::type
+typename std::enable_if<!std::is_base_of<shared_ref, T>::value>::type
 incrementRef(T *ptr)
 {
 }
 template <typename T>
-typename std::enable_if<std::is_base_of<SharedRefObject, T>::value>::type
+typename std::enable_if<std::is_base_of<shared_ref, T>::value>::type
 decrementRef(T *ptr)
 {
     ptr->decrementRef();
 }
 template <typename T>
-typename std::enable_if<!std::is_base_of<SharedRefObject, T>::value>::type
+typename std::enable_if<!std::is_base_of<shared_ref, T>::value>::type
 decrementRef(T *ptr)
 {
-    fprintf(stderr, "null\n");
 }
 
-// ID
-/*template <typename T>
-struct IdCounter
+template <typename T>
+struct id_counter
 {
-    IdCounter() { id_ = ++counter(); }
-    IdCounter(IdCounter const &) { id_ = ++counter(); }
-    IdCounter(IdCounter &&) { id_ = ++counter(); }
+    id_counter() { _id = ++counter(); }
+    id_counter(id_counter const &) { _id = ++counter(); }
+    id_counter(id_counter &&) { _id = ++counter(); }
 
     long getId() const
     {
-        return id_;
+        return _id;
     }
 
 private:
@@ -119,8 +111,8 @@ private:
         return c;
     }
 
-    long id_;
-};*/
+    long _id;
+};
 
 ///////////////////////////////////////
 

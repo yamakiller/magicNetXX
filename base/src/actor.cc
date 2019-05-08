@@ -3,7 +3,7 @@
 namespace engine
 {
 
-actor::actor(acb const &cb, size_t stacksize)
+/*actor::actor(acb const &cb, size_t stacksize)
     : ctx(&actor::defaultExecute, (void *)this, stacksize),
       fn(cb)
 {
@@ -44,5 +44,5 @@ const char *getActorStateName(actorState state)
     default:
         return "UNKONW";
     }
-}
+}*/
 } // namespace engine
