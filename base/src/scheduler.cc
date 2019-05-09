@@ -78,24 +78,21 @@ void scheduler::doShutdown()
 void scheduler::createTask()
 {
   task *t = new task();
-  //t->setReleaser(Releaser(&scheduler::releaseTask, this));
+  t->setReleaser(releaser(&scheduler::releaseTask, this));
   t->m_id = ++getIdFactory();
-  //设置委托释放器
   ++m_taskCount;
-
   addTask(t);
 }
 
-void scheduler::releaseTask(task *t, void *arg)
+void scheduler::releaseTask(shared_ref *t, void *arg)
 {
   scheduler *sch = static_cast<scheduler *>(arg);
-  //delete/free
+  delete t;
   --sch->m_taskCount;
 }
 
 void scheduler::addTask(task *t)
 {
-
   auto work = worker::getCurrentWorker();
   if (work && !work->isBusy())
   {
@@ -156,6 +153,50 @@ void scheduler::dispatcherWork()
     // 3. 东西
     // 阻塞线程的任务steal出来
     {
+      util::list<task> tasks;
+      for (auto &kv : busyings)
+      {
+        auto p = m_works[kv.first];
+        tasks.append(p->steal(0));
+      }
+
+      if (!tasks.empty())
+      {
+        auto range = loadMaps.equal_range(loadMaps.begin()->first);
+        size_t avg = tasks.size() / std::distance(range.first, range.second);
+        if (avg == 0)
+          avg = 1;
+
+        LoadMap newLoadMaps;
+        for (auto it = range.second; it != loadMaps.end(); ++it)
+        {
+          newLoadMaps.insert(*it);
+        }
+
+        for (auto it = range.first; it != range.second; ++it)
+        {
+          util::list<task> in = tasks.cut(avg);
+          if (in.empty())
+          {
+            break;
+          }
+
+          auto w = m_works[it->second];
+          w->addTask(std::move(in));
+          newLoadMaps.insert(LoadMap::value_type{w->getRunnableNum(), it->second});
+        }
+
+        if (!tasks.empty())
+          m_works[range.first->second]->addTask(std::move(tasks));
+
+        for (auto it = range.first; it != range.second; ++it)
+        {
+          auto w = m_works[it->second];
+          newLoadMaps.insert(
+              LoadMap::value_type{w->getRunnableNum(), it->second});
+        }
+        newLoadMaps.swap(loadMaps);
+      }
 
       /*list<task *> *tasks = new list<task *>();
       for (auto &kv : busyings)
@@ -221,56 +262,44 @@ void scheduler::dispatcherWork()
       }*/
     }
 
-    // 如果还有在等待的线程, 从任务多的线程中拿一些给它
-    /*if (loadMaps.begin()->first == 0)
+    if (loadMaps.begin()->first == 0)
     {
       auto range = loadMaps.equal_range(loadMaps.begin()->first);
       size_t waitN = std::distance(range.first, range.second);
       if (waitN == loadMaps.size())
       {
-        // 都没任务了, 不用偷了
         continue;
       }
 
       auto maxP = m_works[loadMaps.rbegin()->second];
       std::size_t stealN = (std::min)(maxP->getRunnableNum() / 2, waitN * 1024);
       auto tasks = maxP->steal(stealN);
-      if (tasks->empty())
+      if (tasks.empty())
       {
-        delete tasks;
         continue;
       }
 
-      std::size_t avg = tasks->size() / waitN;
+      size_t avg = tasks.size() / waitN;
       if (avg == 0)
         avg = 1;
 
       for (auto it = range.first; it != range.second; ++it)
       {
-        list<task *> *in = tasks->cut(avg);
-        if (in->empty())
+        util::list<task> in = tasks.cut(avg);
+        if (in.empty())
         {
-          delete in;
           break;
         }
 
         auto w = m_works[it->second];
-        while (!in->empty())
-        {
-          w->addTask(std::move(in->pop()));
-        }
-        delete in;
+        w->addTask(std::move(in));
       }
 
-      if (!tasks->empty())
+      if (!tasks.empty())
       {
-        while (!tasks->empty())
-        {
-          m_works[range.first->second]->addTask(std::move(tasks->pop()));
-        }
+        m_works[range.first->second]->addTask(std::move(tasks));
       }
-      delete tasks;
-    }*/
+    }
   }
 
   size_t n = m_works.size();

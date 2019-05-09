@@ -6,7 +6,7 @@
 
 int main(int argc, char *argv[])
 {
-    /*1.engine::scheduler::instance()->doStart(6);
+    engine::scheduler::instance()->doStart(6);
 
     while (1)
     {
@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
         std::string debug_info = engine::scheduler::instance()->debug();
         fprintf(stderr, "\033[2J");
         fprintf(stderr, "%s", debug_info.c_str());
-    }*/
+    }
 
     //2.测试数据结构
     return 0;

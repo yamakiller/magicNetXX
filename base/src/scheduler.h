@@ -46,7 +46,7 @@ protected:
 
     void addTask(task *t);
 
-    static void releaseTask(task *t, void *arg);
+    static void releaseTask(shared_ref *t, void *arg);
 
 private:
     void newWorker();

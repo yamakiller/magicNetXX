@@ -66,7 +66,7 @@ public:
             return;
         }
 
-        if (empty())
+        if (m_head == nullptr)
         {
             m_head = s.head();
             m_tail = s.tail();
@@ -157,7 +157,7 @@ public:
 
     list<T> popBackAllUnlock()
     {
-        if (empty())
+        if (m_head == nullptr)
         {
             return list<T>();
         }
@@ -165,6 +165,7 @@ public:
         T *first = (T *)m_head;
         T *last = (T *)m_tail;
         size_t c = m_count;
+
         m_count = 0;
         m_head = m_tail = nullptr;
 

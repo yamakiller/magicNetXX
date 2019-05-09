@@ -111,10 +111,8 @@ public:
         erase(ptr);
         return it;
     }
-    void erase(void *param)
+    void erase(T *ptr)
     {
-        node *ptr = static_cast<node *>(param);
-        assert(ptr);
         if (ptr->_prev)
         {
             ptr->_prev->_next = ptr->_next;
@@ -123,7 +121,6 @@ public:
         {
             m_head = static_cast<T *>(m_head->_next);
         }
-
         if (ptr->_next)
         {
             ptr->_next->_prev = ptr->_prev;
@@ -132,10 +129,8 @@ public:
         {
             m_tail = static_cast<T *>(m_tail->_prev);
         }
-
         ptr->_prev = ptr->_next = nullptr;
         --m_count;
-
         decrementRef((shared_ref *)(ptr));
     }
 

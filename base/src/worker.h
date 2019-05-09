@@ -48,6 +48,8 @@ private:
 
   void addTask(task *t);
 
+  void addTask(util::list<task> &&slist);
+
   util::list<task> steal(size_t n);
 
   void gc();

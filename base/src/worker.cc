@@ -33,6 +33,20 @@ void worker::addTask(task *t)
   }
 }
 
+void worker::addTask(util::list<task> &&slist)
+{
+  std::unique_lock<tkdeque::lock_handle> lock(m_newQueue.lockRef());
+  m_newQueue.pushUnlock(std::move(slist));
+  if (m_waiting)
+  {
+    m_cv.notify_all();
+  }
+  else
+  {
+    m_notified = true;
+  }
+}
+
 int32_t worker::isBusy()
 {
   if (m_ntsMark == m_nts)
@@ -97,7 +111,7 @@ worker *&worker::getCurrentWorker()
 
 void worker::moveRunnable() { m_runnableQueue.push(m_newQueue.popBackAll()); }
 
-void worker::gc() //需要修改
+void worker::gc()
 {
   auto l = m_gccQueue.popBackAll();
   for (task &tk : l)
