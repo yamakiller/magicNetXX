@@ -183,15 +183,23 @@ public:
         node *first = last;
         uint32_t c = 1;
 
-        for (; c < n && first->_prev != m_head; ++c)
+        for (; c < n && first != m_head; ++c)
         {
-            assert(first->_prev != nullptr);
+            assert(first);
             first = first->_prev;
         }
 
-        m_tail = first->_prev;
-        first->_prev = m_tail->_next = nullptr;
-        m_count -= c;
+        if (first == m_head)
+        {
+            m_head = m_tail = nullptr;
+            m_count = 0;
+        }
+        else
+        {
+            m_tail = first->_prev;
+            first->_prev = m_tail->_next = nullptr;
+            m_count -= c;
+        }
 
         return list<T>((T *)first, (T *)last, c);
     }
@@ -239,7 +247,7 @@ public:
 
     void assertLink()
     {
-        //---调试用---
+        locked_guard_hd lcked(m_lock);
         if (m_head == nullptr)
         {
             return;

@@ -54,7 +54,7 @@ int32_t worker::isBusy()
     return 0;
   }
 
-  return clock::instance()->now() > m_ntsTick + 2000;
+  return clock::instance()->now() > m_ntsTick + 20;
 }
 
 void worker::restBusy()
@@ -164,7 +164,7 @@ util::list<task> worker::steal(size_t n)
     steal_list_2.append(std::move(steal_list));
     if (!steal_list_2.empty())
     {
-      fprintf(stderr, "Proc(%d).Stealed = %d", m_id, (int)steal_list_2.size());
+      //fprintf(stderr, "Proc(%d).Stealed = %d\n", m_id, (int)steal_list_2.size());
     }
 
     return steal_list_2;
@@ -179,7 +179,7 @@ util::list<task> worker::steal(size_t n)
     steal_list_2.append(std::move(steal_list));
     if (!steal_list_2.empty())
     {
-      fprintf(stderr, "Proc(%d).Stealed = %d", m_id, (int)steal_list_2.size());
+      //fprintf(stderr, "Proc(%d).Stealed = %d\n", m_id, (int)steal_list_2.size());
     }
     return steal_list_2;
   }

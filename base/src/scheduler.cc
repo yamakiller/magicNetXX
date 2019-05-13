@@ -117,7 +117,7 @@ void scheduler::dispatcherWork()
 {
   while (!m_shutdown)
   {
-    std::this_thread::sleep_for(std::chrono::microseconds(1000));
+    std::this_thread::sleep_for(std::chrono::microseconds(10));
 
     size_t workCount = m_works.size();
     size_t totalLoadaverage = 0;
@@ -131,6 +131,7 @@ void scheduler::dispatcherWork()
       if (w->isBusy())
       {
         busyings[i] = w->getRunnableNum();
+        w->restBusy();
       }
     }
 
@@ -142,7 +143,6 @@ void scheduler::dispatcherWork()
       totalLoadaverage += loadaverage;
 
       loadMaps.insert(LoadMap::value_type{loadaverage, i});
-      w->restBusy();
 
       if (loadaverage > 0 && w->isWaiting())
       {
@@ -192,74 +192,10 @@ void scheduler::dispatcherWork()
         for (auto it = range.first; it != range.second; ++it)
         {
           auto w = m_works[it->second];
-          newLoadMaps.insert(
-              LoadMap::value_type{w->getRunnableNum(), it->second});
+          newLoadMaps.insert(LoadMap::value_type{w->getRunnableNum(), it->second});
         }
         newLoadMaps.swap(loadMaps);
       }
-
-      /*list<task *> *tasks = new list<task *>();
-      for (auto &kv : busyings)
-      {
-        auto p = m_works[kv.first];
-
-        list<task *> *tmp = p->steal(0);
-        while (!tmp->empty())
-        {
-          tasks->push(tmp->pop());
-        }
-        delete tmp;
-      }*/
-
-      //分发任务
-      /*if (!tasks->empty())
-      {
-        auto range = loadMaps.equal_range(loadMaps.begin()->first);
-        std::size_t avg = tasks->size() / std::distance(range.first, range.second);
-        if (avg == 0)
-          avg = 1;
-
-        LoadMap newLoadMaps;
-        for (auto it = range.second; it != loadMaps.end(); ++it)
-        {
-          newLoadMaps.insert(*it);
-        }
-
-        for (auto it = range.first; it != range.second; ++it)
-        {
-          list<task *> *in = tasks->cut(avg);
-          if (in->empty())
-          {
-            delete in;
-            break;
-          }
-
-          auto w = m_works[it->second];
-          while (!in->empty())
-          {
-            w->addTask(std::move(in->pop()));
-          }
-          delete in;
-          newLoadMaps.insert(LoadMap::value_type{w->getRunnableNum(), it->second});
-        }
-
-        if (!tasks->empty())
-        {
-          while (!tasks->empty())
-          {
-            m_works[range.first->second]->addTask(std::move(tasks->pop()));
-          }
-        }
-        delete tasks;
-
-        for (auto it = range.first; it != range.second; ++it)
-        {
-          auto w = m_works[it->second];
-          newLoadMaps.insert(
-              LoadMap::value_type{w->getRunnableNum(), it->second});
-        }
-        newLoadMaps.swap(loadMaps);
-      }*/
     }
 
     if (loadMaps.begin()->first == 0)
