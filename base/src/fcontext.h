@@ -1,14 +1,14 @@
 #ifndef CIS_ENGINE_FCONTEXT_H
 #define CIS_ENGINE_FCONTEXT_H
 
+#include "base.h"
 #include <boost/context/detail/fcontext.hpp>
 #include <functional>
 
-#define STACK_MALLOC(sz) ::malloc(sz)
-#define STACK_FREE(p) ::free(p)
+#define STACK_MALLOC(sz) en_malloc(sz)
+#define STACK_FREE(p) en_free(p)
 
-namespace engine
-{
+namespace engine {
 
 using boost::context::detail::fcontext_t;
 using boost::context::detail::jump_fcontext;
@@ -20,13 +20,12 @@ using boost::context::detail::transfer_t;
 
 typedef void (*fn_t)(transfer_t);
 
-struct StackTraits
-{
-    static int &getProtectStackPageSize();
+struct StackTraits {
+  static int &getProtectStackPageSize();
 
-    static bool protectStack(void *stack, size_t size, int pageSize);
+  static bool protectStack(void *stack, size_t size, int pageSize);
 
-    static void unprotectStack(void *stack, int pageSize);
+  static void unprotectStack(void *stack, int pageSize);
 };
 
 } // namespace engine

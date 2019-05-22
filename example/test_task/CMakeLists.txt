@@ -6,22 +6,26 @@ file(GLOB SRCLIST ./src/*.*)
 
 add_executable(${PROJ_NAME} ${SRCLIST})
 
+set(Boost_USE_STATIC_LIBS ON)
 find_package(Boost COMPONENTS system coroutine context REQUIRED)
 
 include_directories(
 	./src/
 	${Base_INCLUDE_DIR}
-	${MODULE_DIR}/modules/src
 	${Boost_INCLUDE_DIRS})
 
 
 set(dl dl)
 set(pthread pthread)
 set(base ${Base_LIBRARIES}/libbase.so)
+set(launcher ${Launcher_LIBRARIES}/liblauncher.a)
+set(jemalloc ${Jemalloc_LIBRARIES}/libjemalloc.so)
 
 
 target_link_libraries(${PROJ_NAME} 
 	${base}
+	${launcher}
+	${jemalloc}
 	${dl}
 	${pthread})
 

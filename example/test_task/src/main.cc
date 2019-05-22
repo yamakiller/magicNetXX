@@ -1,26 +1,20 @@
-#include <api.h>
-#include <chrono>
-#include <stdlib.h>
-#include <string>
-#include <thread>
+#include <framework.h>
 
-int main(int argc, char *argv[])
-{
-    engine::scheduler::instance()->doStart(6);
+namespace engine {
 
-    while (1)
-    {
-        std::this_thread::sleep_for(std::chrono::microseconds(1000000));
-        for (int i = 0; i < 30; i++)
-        {
-            engine::scheduler::instance()->createTask();
-        }
+namespace example {
 
-        std::string debug_info = engine::scheduler::instance()->debug();
-        fprintf(stderr, "\033[2J");
-        fprintf(stderr, "%s", debug_info.c_str());
-    }
+class testFramework : public engine::framework {
+private:
+protected:
+  virtual bool initialize() { return true; }
 
-    //2.测试数据结构
-    return 0;
-}
+  virtual bool loop() { return true; }
+
+  virtual void finalize() {}
+};
+
+static testFramework app;
+
+} // namespace example
+} // namespace engine

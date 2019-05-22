@@ -4,115 +4,69 @@
 #include "base.h"
 #include <string>
 
-namespace engine
-{
+namespace engine {
 
 struct shared_ref;
 
-struct releaser
-{
-    typedef void (*func_t)(struct shared_ref *ptr, void *arg);
-    func_t _func;
-    void *_arg;
+struct releaser {
+  typedef void (*func_t)(struct shared_ref *ptr, void *arg);
+  func_t _func;
+  void *_arg;
 
-    releaser() : _func(nullptr), _arg(nullptr) {}
-    releaser(func_t func, void *arg) : _func(func), _arg(arg) {}
+  releaser() : _func(nullptr), _arg(nullptr) {}
+  releaser(func_t func, void *arg) : _func(func), _arg(arg) {}
 
-    inline void operator()(struct shared_ref *ptr);
+  inline void operator()(struct shared_ref *ptr);
 };
 
-struct shared_ref
-{
-    atomic_t<long> _reference;
-    releaser _releaser;
+struct shared_ref {
+  atomic_t<long> _reference;
+  releaser _releaser;
 
-    shared_ref() : _reference{1}
-    {
+  shared_ref() : _reference{1} {}
+  virtual ~shared_ref() {}
+
+  void incrementRef() { ++_reference; }
+
+  bool decrementRef() {
+    if (--_reference == 0) {
+      _releaser(this);
+      return true;
     }
-    virtual ~shared_ref() {}
+    return false;
+  }
 
-    void incrementRef()
-    {
-        ++_reference;
-    }
+  long useCount() { return _reference; }
 
-    bool decrementRef()
-    {
-        if (--_reference == 0)
-        {
-            _releaser(this);
-            return true;
-        }
-        return false;
-    }
+  void setReleaser(releaser rd) { _releaser = rd; }
 
-    long useCount()
-    {
-        return _reference;
-    }
-
-    void setReleaser(releaser rd)
-    {
-        _releaser = rd;
-    }
-
-    shared_ref(shared_ref const &) = delete;
-    shared_ref &operator=(shared_ref const &) = delete;
+  shared_ref(shared_ref const &) = delete;
+  shared_ref &operator=(shared_ref const &) = delete;
 };
 
-inline void
-releaser::operator()(struct shared_ref *ptr)
-{
-    if (_func)
-        _func(ptr, _arg);
-    else
-        delete ptr;
+inline void releaser::operator()(struct shared_ref *ptr) {
+  if (_func)
+    _func(ptr, _arg);
+  else
+    delete ptr;
 }
 
 template <typename T>
 typename std::enable_if<std::is_base_of<shared_ref, T>::value>::type
-incrementRef(T *ptr)
-{
-    ptr->incrementRef();
+incrementRef(T *ptr) {
+  ptr->incrementRef();
 }
 template <typename T>
 typename std::enable_if<!std::is_base_of<shared_ref, T>::value>::type
-incrementRef(T *ptr)
-{
-}
+incrementRef(T *ptr) {}
 template <typename T>
 typename std::enable_if<std::is_base_of<shared_ref, T>::value>::type
-decrementRef(T *ptr)
-{
-    ptr->decrementRef();
+decrementRef(T *ptr) {
+  ptr->decrementRef();
 }
 template <typename T>
 typename std::enable_if<!std::is_base_of<shared_ref, T>::value>::type
-decrementRef(T *ptr)
-{
-}
-
-template <typename T>
-struct id_counter
-{
-    id_counter() { _id = ++counter(); }
-    id_counter(id_counter const &) { _id = ++counter(); }
-    id_counter(id_counter &&) { _id = ++counter(); }
-
-    long getId() const
-    {
-        return _id;
-    }
-
-private:
-    static atomic_t<long> &counter()
-    {
-        static atomic_t<long> c;
-        return c;
-    }
-
-    long _id;
-};
+decrementRef(T *ptr) {}
 
 ///////////////////////////////////////
 

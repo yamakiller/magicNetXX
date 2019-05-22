@@ -5,273 +5,262 @@
 #include "list.h"
 #include "spinlock.h"
 
-namespace engine
-{
+namespace engine {
 
-namespace util
-{
-template <typename T, bool threadSafe>
-class deque final
-{
+namespace util {
+template <typename T, bool threadSafe> class deque final {
 public:
-    typedef typename std::conditional<threadSafe, spinlock, unspinlock>::type
-        lock_handle;
-    typedef typename std::conditional<threadSafe, std::lock_guard<spinlock>,
-                                      unslk_lock_guard>::type locked_guard_hd;
+  typedef typename std::conditional<threadSafe, spinlock, unspinlock>::type
+      lock_handle;
+  typedef typename std::conditional<threadSafe, std::lock_guard<spinlock>,
+                                    unslk_lock_guard>::type locked_guard_hd;
 
 public:
-    deque()
-    {
-        m_head = m_tail = nullptr;
-        m_count = 0;
+  deque() {
+    m_head = m_tail = nullptr;
+    m_count = 0;
+  }
+
+  ~deque() {
+    locked_guard_hd lcked(m_lock);
+    while (m_tail) {
+      node *prev = m_tail->_prev;
+      decrementRef(static_cast<T *>(m_tail));
+      m_tail = prev;
+    }
+    m_head = nullptr;
+  }
+
+  void pushUnlock(T *value) {
+    node *newNode = static_cast<node *>(value);
+
+    if (m_head == nullptr) {
+      m_head = m_tail = newNode;
+      newNode->_prev = newNode->_next = NULL;
+    } else {
+      m_tail->_next = newNode;
+      newNode->_prev = m_tail;
+      newNode->_next = nullptr;
+      m_tail = newNode;
     }
 
-    ~deque()
-    {
-        locked_guard_hd lcked(m_lock);
-        while (m_tail)
-        {
-            node *prev = m_tail->_prev;
-            decrementRef(static_cast<T *>(m_tail));
-            m_tail = prev;
-        }
-        m_head = nullptr;
+    incrementRef(value);
+    ++m_count;
+  }
+
+  size_t pushOutUnlock(T *value) {
+    pushUnlock(value);
+    return m_count;
+  }
+
+  void pushUnlock(list<T> &&s) {
+    if (s.empty()) {
+      return;
     }
 
-    void pushUnlock(T *value)
-    {
-        node *newNode = static_cast<node *>(value);
-
-        if (m_head == nullptr)
-        {
-            m_head = m_tail = newNode;
-            newNode->_prev = newNode->_next = NULL;
-        }
-        else
-        {
-            m_tail->_next = newNode;
-            newNode->_prev = m_tail;
-            newNode->_next = nullptr;
-            m_tail = newNode;
-        }
-
-        incrementRef(value);
-        ++m_count;
+    if (m_head == nullptr) {
+      m_head = s.head();
+      m_tail = s.tail();
+      m_count = s.size();
+      s.zero();
+      return;
     }
 
-    void pushUnlock(list<T> &&s)
-    {
-        if (s.empty())
-        {
-            return;
-        }
+    m_tail->_next = s.head();
+    s.head()->_prev = m_tail;
+    m_tail = s.tail();
+    m_count += s.size();
+    s.zero();
+  }
 
-        if (m_head == nullptr)
-        {
-            m_head = s.head();
-            m_tail = s.tail();
-            m_count = s.size();
-            s.zero();
-            return;
-        }
+  void push(T *value) {
+    locked_guard_hd lcked(m_lock);
+    pushUnlock(value);
+  }
 
-        m_tail->_next = s.head();
-        s.head()->_prev = m_tail;
-        m_tail = s.tail();
-        m_count += s.size();
-        s.zero();
+  size_t pushOut(T *value) {
+    locked_guard_hd lcked(m_lock);
+    return pushOutUnlock(value);
+  }
+
+  void push(list<T> &&s) {
+    locked_guard_hd lcked(m_lock);
+    pushUnlock(std::move(s));
+  }
+
+  bool front(T **outValue) {
+    locked_guard_hd lcked(m_lock);
+    if (m_head == nullptr) {
+      *outValue = nullptr;
+      return false;
     }
 
-    void push(T *value)
-    {
-        locked_guard_hd lcked(m_lock);
-        pushUnlock(value);
+    *outValue = (T *)m_head;
+    return true;
+  }
+
+  T *popUnlock() {
+    if (m_head == NULL) {
+      return nullptr;
     }
 
-    void push(list<T> &&s)
-    {
-        locked_guard_hd lcked(m_lock);
-        pushUnlock(std::move(s));
+    node *tmp = nullptr;
+    if (m_head == m_tail) {
+      tmp = m_head;
+      m_head = m_tail = nullptr;
+    } else {
+      tmp = m_head;
+      m_head = m_head->_next;
+      m_head->_prev = nullptr;
+      tmp->_prev = tmp->_next = nullptr;
     }
 
-    bool front(T **outValue)
-    {
-        locked_guard_hd lcked(m_lock);
-        if (m_head == nullptr)
-        {
-            *outValue = nullptr;
-            return false;
-        }
+    decrementRef((T *)tmp);
+    --m_count;
+    return (T *)tmp;
+  }
 
-        *outValue = (T *)m_head;
-        return true;
+  T *pop() {
+    locked_guard_hd lcked(m_lock);
+    return popUnlock();
+  }
+
+  T *popBackUnlock() {
+    if (m_tail == nullptr) {
+      return nullptr;
     }
 
-    T *popUnlock()
-    {
-        if (m_head == NULL)
-        {
-            return nullptr;
-        }
+    node *tmp = m_tail;
+    m_tail = m_tail->_prev;
+    m_tail->_next = nullptr;
+    tmp->_next = tmp->_prev = nullptr;
 
-        node *tmp = nullptr;
-        if (m_head == m_tail)
-        {
-            tmp = m_head;
-            m_head = m_tail = nullptr;
-        }
-        else
-        {
-            tmp = m_head;
-            m_head = m_head->_next;
-            m_head->_prev = nullptr;
-            tmp->_prev = tmp->_next = nullptr;
-        }
+    --m_count;
+    return (T *)tmp;
+  }
 
-        decrementRef((T *)tmp);
-        --m_count;
-        return (T *)tmp;
+  list<T> popBackAllUnlock() {
+    if (m_head == nullptr) {
+      return list<T>();
     }
 
-    T *pop()
-    {
-        locked_guard_hd lcked(m_lock);
-        return popUnlock();
+    T *first = (T *)m_head;
+    T *last = (T *)m_tail;
+    size_t c = m_count;
+
+    m_count = 0;
+    m_head = m_tail = nullptr;
+
+    return list<T>(first, last, c);
+  }
+
+  list<T> popBackUnlock(uint32_t n) {
+    if (m_head == m_tail) {
+      return list<T>();
     }
 
-    T *popBackUnlock()
-    {
-        if (m_tail == nullptr)
-        {
-            return nullptr;
-        }
+    node *last = m_tail;
+    node *first = last;
+    uint32_t c = 1;
 
-        node *tmp = m_tail;
-        m_tail = m_tail->_prev;
-        m_tail->_next = nullptr;
-        tmp->_next = tmp->_prev = nullptr;
-
-        --m_count;
-        return (T *)tmp;
+    for (; c < n && first != m_head; ++c) {
+      assert(first);
+      first = first->_prev;
     }
 
-    list<T> popBackAllUnlock()
-    {
-        if (m_head == nullptr)
-        {
-            return list<T>();
-        }
-
-        T *first = (T *)m_head;
-        T *last = (T *)m_tail;
-        size_t c = m_count;
-
-        m_count = 0;
-        m_head = m_tail = nullptr;
-
-        return list<T>(first, last, c);
+    if (first == m_head) {
+      m_head = m_tail = nullptr;
+      m_count = 0;
+    } else {
+      m_tail = first->_prev;
+      first->_prev = m_tail->_next = nullptr;
+      m_count -= c;
     }
 
-    list<T> popBackUnlock(uint32_t n)
-    {
-        if (m_head == m_tail)
-        {
-            return list<T>();
-        }
+    return list<T>((T *)first, (T *)last, c);
+  }
 
-        node *last = m_tail;
-        node *first = last;
-        uint32_t c = 1;
+  bool eraseUnLock(T *hook) {
 
-        for (; c < n && first != m_head; ++c)
-        {
-            assert(first);
-            first = first->_prev;
-        }
+    assert(m_head != nullptr);
 
-        if (first == m_head)
-        {
-            m_head = m_tail = nullptr;
-            m_count = 0;
-        }
-        else
-        {
-            m_tail = first->_prev;
-            first->_prev = m_tail->_next = nullptr;
-            m_count -= c;
-        }
-
-        return list<T>((T *)first, (T *)last, c);
+    if (hook->_prev) {
+      hook->_prev->_next = hook->_next;
     }
 
-    T *popBack()
-    {
-        locked_guard_hd lcked(m_lock);
-        return popBackUnlock();
+    if (hook->_next) {
+      hook->_next->_prev = hook->_prev;
+    } else if (hook == m_tail) {
+      m_tail = m_tail->_prev;
     }
 
-    list<T> popBackAll()
-    {
-        locked_guard_hd lcked(m_lock);
-        return popBackAllUnlock();
+    if (m_tail == nullptr || m_head == nullptr) {
+      m_tail = m_head = nullptr;
+    }
+    hook->_next = hook->_prev = nullptr;
+    assert(m_count > 0);
+    --m_count;
+    decrementRef((T *)hook);
+    return true;
+  }
+
+  T *popBack() {
+    locked_guard_hd lcked(m_lock);
+    return popBackUnlock();
+  }
+
+  list<T> popBackAll() {
+    locked_guard_hd lcked(m_lock);
+    return popBackAllUnlock();
+  }
+
+  list<T> popBack(uint32_t n) {
+    locked_guard_hd lcked(m_lock);
+    return popBackUnlock(n);
+  }
+
+  bool erase(T *hook) {
+    locked_guard_hd lcked(m_lock);
+    return eraseUnLock(hook);
+  }
+
+  size_t size() { return m_count; }
+
+  bool empty() {
+    locked_guard_hd lcked(m_lock);
+    if (m_head == nullptr) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  lock_handle &lockRef() { return m_lock; }
+
+  void assertLink() {
+    locked_guard_hd lcked(m_lock);
+    if (m_head == nullptr) {
+      return;
     }
 
-    list<T> popBack(uint32_t n)
-    {
-        locked_guard_hd lcked(m_lock);
-        return popBackUnlock(n);
+    assert(!m_head->_prev);
+    assert(m_tail);
+    assert(!m_tail->_next);
+
+    int n = 0;
+    node *pos = m_tail;
+    for (; pos != m_head; pos = pos->_prev, ++n) {
+      assert(!!pos->_prev);
     }
-
-    size_t size()
-    {
-        return m_count;
-    }
-
-    bool empty()
-    {
-        locked_guard_hd lcked(m_lock);
-        if (m_head == nullptr)
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
-    lock_handle &lockRef()
-    {
-        return m_lock;
-    }
-
-    void assertLink()
-    {
-        locked_guard_hd lcked(m_lock);
-        if (m_head == nullptr)
-        {
-            return;
-        }
-
-        assert(!m_head->_prev);
-        assert(m_tail);
-        assert(!m_tail->_next);
-
-        int n = 0;
-        node *pos = m_tail;
-        for (; pos != m_head; pos = pos->_prev, ++n)
-        {
-            assert(!!pos->_prev);
-        }
-        assert(pos == m_head);
-    }
+    assert(pos == m_head);
+  }
 
 private:
-    node *m_head;
-    node *m_tail;
-    lock_handle m_lock;
+  node *m_head;
+  node *m_tail;
+  lock_handle m_lock;
 
-    volatile size_t m_count;
+  volatile size_t m_count;
 };
 } // namespace util
 } // namespace engine

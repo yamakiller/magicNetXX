@@ -12,62 +12,57 @@
 #include "singleton.h"
 #include "worker.h"
 
-namespace engine
-{
+namespace engine {
 
-class scheduler : public singleton<scheduler>, public noncopyable
-{
-    friend class worker;
+class scheduler : public singleton<scheduler>, public noncopyable {
+  friend class worker;
 
 public:
-    static const int g_ulimitedMaxThreadNumber = 40960;
+  static const int g_ulimitedMaxThreadNumber = 40960;
 
-    int32_t doStart(int32_t threadNumber);
+  int32_t doStart(int32_t threadNumber);
 
-    void doShutdown();
+  void doShutdown();
 
-    inline int32_t isShutdown()
-    {
-        return m_shutdown;
-    }
+  inline int32_t isShutdown() { return m_shutdown; }
 
-    void createTask();
+  void createTask(taskFunc const &fn, size_t const &stackSize);
 
-    scheduler();
-    ~scheduler();
+  scheduler();
+  ~scheduler();
 
-    std::string debug();
+  std::string debug();
 
 protected:
-    scheduler(scheduler const &) = delete;
-    scheduler(scheduler &&) = delete;
-    scheduler &operator=(scheduler const &) = delete;
-    scheduler &operator=(scheduler &&) = delete;
+  scheduler(scheduler const &) = delete;
+  scheduler(scheduler &&) = delete;
+  scheduler &operator=(scheduler const &) = delete;
+  scheduler &operator=(scheduler &&) = delete;
 
-    void addTask(task *t);
+  void addTask(task *t);
 
-    static void releaseTask(shared_ref *t, void *arg);
-
-private:
-    void newWorker();
-
-    void dispatcherWork();
-
-    void timeTick();
+  static void releaseTask(shared_ref *t, void *arg);
 
 private:
-    std::vector<worker *> m_works;
-    spinlock m_started;
+  void newWorker();
 
-    atomic_t<uint32_t> m_taskCount;
+  void dispatcherWork();
 
-    int32_t m_maxThreadNumber;
+  void timeTick();
 
-    std::thread m_dispatchThread; //调度线程
-    std::thread m_timeThread;
+private:
+  std::vector<worker *> m_works;
+  spinlock m_started;
 
-    std::mutex m_shutdownMtx;
-    int32_t m_shutdown;
+  atomic_t<uint32_t> m_taskCount;
+
+  int32_t m_maxThreadNumber;
+
+  std::thread m_dispatchThread; //调度线程
+  std::thread m_timeThread;
+
+  std::mutex m_shutdownMtx;
+  int32_t m_shutdown;
 };
 } // namespace engine
 

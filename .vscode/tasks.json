@@ -4,16 +4,25 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "lable": "make build",
+            "label": "make build",
             "type": "shell",
-            "command": "cd build & cmake .. & make",
+            "command": "cd build;cmake ..;make",
             "group": {
                 "kind": "build",
                 "isDefault": true
+            },
+            "problemMatcher": [
+                "$gcc" // 使用gcc捕获错误,
+            ],
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared"
             }
         },
         {
-            "label": "clean",
+            "label": "make clean",
             "type": "shell",
             "command": "make clean"
         }

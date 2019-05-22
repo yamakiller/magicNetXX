@@ -12,25 +12,25 @@ ExternalProject_Add(jemalloc
     CFLAGS=-std=gnu99\ -Wall\ -pipe\ -g3\ -O3\ -funroll-loops
     BUILD_COMMAND ${MAKE}
     INSTALL_DIR "${CisEngine_INSTALL_PREFIX}"
-    INSTALL_COMMAND $(MAKE) install_lib_shared install_include
+    INSTALL_COMMAND ""
     BUILD_IN_SOURCE 1
     CMAKE_CACHE_ARGS
     ${CisEngine_DEFAULT_ARGS}
     ${CisEngine_THIRDPARTYLIBS_ARGS}
     )
 
+ExternalProject_Get_Property(jemalloc install_dir)
 set(JEMALLOC_ROOT "${CMAKE_CURRENT_BINARY_DIR}/jemalloc" CACHE INTERNAL "")
-set(JEMALLOC_LIB "${BOOST_ROOT}/stage/lib" CACHE INTERNAL "")
+set(JEMALLOC_LIB "${JEMALLOC_ROOT}/lib" CACHE INTERNAL "")
 
 list(APPEND CisEngine_THIRDPARTYLIBS_ARGS
     # Add Boost properties so correct version of Boost is found.
       "-DJEMALLOC_ROOT:PATH=${JEMALLOC_ROOT}"
       "-DJemalloc_INCLUDE_DIR:PATH=${JEMALLOC_ROOT}"
       "-DJemalloc_LIBRARIES:PATH=${JEMALLOC_LIB}")
-    
 
-#add_library(libjemalloc SHARED IMPORTED GLOBAL)
-#set_target_properties(libjemalloc PROPERTIES IMPORTED_LOCATION ${JEMALLOC_LIB_PATH})
-#add_dependencies(libjemalloc jemalloc)
-#include_directories("${CMAKE_CURRENT_BINARY_DIR}/include/")
+add_custom_command(TARGET jemalloc POST_BUILD
+                   COMMAND ${CMAKE_COMMAND} -E copy_directory
+                   ${JEMALLOC_LIB} ${CisEngine_INSTALL_PREFIX}/lib)
+    
 

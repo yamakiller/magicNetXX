@@ -3,7 +3,6 @@
 #ifndef CIS_ENGINE_WORKER_H
 #define CIS_ENGINE_WORKER_H
 
-#include "actor.h"
 #include <atomic>
 #include <condition_variable>
 #include <mutex>
@@ -12,13 +11,11 @@
 #include "deque.h"
 #include "task.h"
 
-namespace engine
-{
+namespace engine {
 
 class scheduler;
 
-class worker
-{
+class worker {
   friend class scheduler;
 
 public:
@@ -29,7 +26,41 @@ public:
 
   static worker *&getCurrentWorker();
 
+  static scheduler *getCurrentScheduler();
+
+  static task *getCurrentTask();
+
+  inline static void operCoYield();
+
   size_t getRunnableNum();
+
+  inline scheduler *getScheduler() { return m_lpsch; }
+
+  struct suspendEntry {
+    task *_tk;
+    uint64_t _id;
+
+    explicit operator bool() const { return !!_tk; }
+
+    friend bool operator==(suspendEntry const &lhs, suspendEntry const &rhs) {
+      return lhs._tk == rhs._tk && lhs._id == rhs._id;
+    }
+
+    friend bool operator<(suspendEntry const &lhs, suspendEntry const &rhs) {
+      if (lhs._id == rhs._id)
+        return lhs._tk < rhs._tk;
+      return lhs._id < rhs._id;
+    }
+
+    bool isExpire() const { return worker::isExpire(*this); }
+  };
+
+  static struct suspendEntry suspend();
+
+  static bool wakeup(struct suspendEntry const &entry,
+                     std::function<void()> const &functor = NULL);
+
+  static bool isExpire(struct suspendEntry const &entry);
 
 private:
   void waitCondition();
@@ -57,6 +88,14 @@ private:
   void process();
 
 private:
+  inline void coYield();
+
+  struct suspendEntry suspendBySelf(task *tk);
+
+  bool wakeupBySelf(task *tk, uint64_t id,
+                    std::function<void()> const &functor);
+
+private:
   int m_id;
   scheduler *m_lpsch;
   std::thread m_pid;
@@ -78,6 +117,22 @@ private:
   typedef util::deque<task, false> untkdeque;
   untkdeque m_gccQueue;
 };
+
+inline void worker::operCoYield() {
+  auto work = getCurrentWorker();
+  if (work) {
+    work->coYield();
+  }
+}
+
+inline void worker::coYield() {
+  task *tk = getCurrentTask();
+  assert(tk);
+
+  ++tk->_yieldCount;
+
+  tk->SwapOut();
+}
 } // namespace engine
 
 #endif
