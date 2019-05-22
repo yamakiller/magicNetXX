@@ -1,6 +1,7 @@
 #ifndef CIS_ENGINE_BASE_H
 #define CIS_ENGINE_BASE_H
 
+#include "format.h"
 #include <algorithm>
 #include <assert.h>
 #include <atomic>

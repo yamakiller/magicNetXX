@@ -30,8 +30,8 @@ void framework::startLoop() {
   }
 }
 
-bool framework::doInit() {
-  assert(initialize());
+bool framework::doInit(const icommandLine *opt) {
+  assert(initialize(opt));
   engine::scheduler::instance()->doStart(
       coroutineOptions::instance()->_threadNum);
   return true;

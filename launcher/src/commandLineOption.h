@@ -1,13 +1,11 @@
 #ifndef LAUNCHER_ENGINE_COMMANDLINEOPTION_H
 #define LAUNCHER_ENGINE_COMMANDLINEOPTION_H
 
-#include <cinttypes>
-#include <map>
-#include <string>
+#include <icommandLine.h>
 
 namespace engine {
 
-class commandLineOption {
+class commandLineOption : public icommandLine {
 public:
   void setOption(const std::string &name, bool required);
   bool parse(int32_t num, char *args[]);

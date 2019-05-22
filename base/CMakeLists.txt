@@ -1,5 +1,5 @@
 
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.14)
 
 set(PROJ_NAME base)
 file(GLOB SRCLIST ./src/*.*)
@@ -7,13 +7,13 @@ file(GLOB SRCLIST ./src/*.*)
 add_library(${PROJ_NAME} SHARED ${SRCLIST})
 add_definitions(-DUSE_JEMALLOC)
 
-
-
 find_package(Boost COMPONENTS system coroutine context REQUIRED)
 find_library(jemalloc ${Jemalloc_LIBRARIES})
 set(jemalloc ${Jemalloc_LIBRARIES}/libjemalloc.so)
 
+
 include_directories(
+	${Cppformat_INCLUDE_DIR}
 	${Boost_INCLUDE_DIRS}
 	${Jemalloc_INCLUDE_DIR}
 )

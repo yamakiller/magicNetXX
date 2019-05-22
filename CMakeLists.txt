@@ -35,23 +35,16 @@ set(ROOT_DIR ${PROJECT_SOURCE_DIR})
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 set(THIRDLIB_DIR ${PROJECT_SOURCE_DIR}/3rd)
-set(BASE_DIR ${PROJECT_SOURCE_DIR}/base)
-set(LAUNCHER_DIR ${PROJECT_SOURCE_DIR}/launcher)
-set(MODULE_DIR ${PROJECT_SOURCE_DIR}/module)
+
 set(CisEngine_INSTALL_PREFIX "${CisEngine_BINARY_DIR}/prefix")
 set(CisEngine_DEFAULT_ARGS
   "-DCMAKE_PREFIX_PATH:PATH=${CisEngine_INSTALL_PREFIX};${CMAKE_PREFIX_PATH}"
   "-DCMAKE_INSTALL_PREFIX:PATH=${CisEngine_INSTALL_PREFIX}"
-  "-DCMAKE_CXX_COMPILER:PATH=${CMAKE_CXX_COMPILER}")
+  "-DCMAKE_CXX_COMPILER:PATH=${CMAKE_CXX_COMPILER}"
+ )
 
 set(download_dir "${CMAKE_CURRENT_BINARY_DIR}/Downloads")
 
-set(MODULE_INCLUDE_DIRECTORIES
-	${BASE_DIR}/src
-	${THIRDLIB_DIR}/cppformat-master
-	${THIRDLIB_DIR}/spdlog-master/include/spdlog	
-	${LAUNCHER_DIR}/src
-)
 
 set(FORCE_STEP_DEFAULT "build")
 if(CMAKE_CONFIGURATION_TYPES)
@@ -82,12 +75,11 @@ macro(add_optional_deps dep_var)
   endforeach()
 endmacro()
 
-set(MODULE_LINK_LIBRARIES
-	base
-	launcher
-	cppformat
+set(base
+	  launcher
+	  cppformat
 
-	ws2_32
+	  ws2_32
 )
 
 set_property(GLOBAL PROPERTY USE_FOLDERS On)

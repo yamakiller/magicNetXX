@@ -26,7 +26,7 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
-  if (!framework->doInit()) {
+  if (!framework->doInit(&option)) {
     return 0;
   }
 
