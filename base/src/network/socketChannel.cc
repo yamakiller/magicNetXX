@@ -1,0 +1,165 @@
+
+
+#include "socketChannel.h"
+#include "socketSystem.h"
+
+#include <assert.h>
+#include <errno.h>
+#include <string.h>
+#include <unistd.h>
+
+namespace engine {
+namespace network {
+
+socketChannel::socketChannel() {
+  m_iocp = iocp;
+  m_recvCtrl = CHANNEL_INVALID;
+  m_sendCtrl = CHANNEL_INVALID;
+  m_controlCtrl = CHANNEL_INVALID;
+
+  FD_ZERO(&m_rsfds);
+  int fd[2];
+  if (pipe(fd)) {
+    fprintf(stderr, "ctrl: create socket pair failed.\n");
+    assert(nullptr);
+    return;
+  }
+
+  if (!INSTGET_VAR(socketSystem, m_iocp)->doRegister(fd[0], nullptr)) {
+    ::close(fd[0]);
+    ::close(fd[1]);
+    assert(nullptr);
+    return;
+  }
+
+  m_recvCtrl = fd[0];
+  m_sendCtrl = fd[1];
+  m_controlCtrl = 1;
+
+  assert(m_recvCtrl < FD_SETSIZE);
+}
+
+socketChannel::~socketChannel() {
+  doCloseCtrl(m_recvCtrl);
+  doCloseCtrl(m_sendCtrl);
+  m_controlCtrl = CHANNEL_INVALID;
+  m_iocp = nullptr;
+}
+
+bool socketChannel::isInvalid() {
+  return m_recvCtrl != CHANNEL_INVALID && m_sendCtrl != CHANNEL_INVALID &&
+         m_controlCtrl != CHANNEL_INVALID;
+}
+
+int socketChannel::getError() { return m_error; }
+
+void socketChannel::doSend(struct requestPacket *request, char type, int len) {
+  request->header[0] = (uint8_t)type;
+  request->header[1] = (uint8_t)len;
+  onSend((const char *)&request->header[0], len + 2);
+}
+
+void socketChannel::doSend(const char *data, const size_t bytes) {
+  for (;;) {
+    ssize_t n = ::write(m_sendCtrl, data, bytes);
+    if (n < 0) {
+      if (errno != EINTR) {
+        fprintf(stderr, "Socket Channel : send command error %s.\n",
+                strerror(errno));
+      }
+      continue;
+    }
+    assert((const size_t)n == bytes);
+    return;
+  }
+}
+
+void socketChannel::doRecv(void *buffer, const size_t bytes) {
+  for (;;) {
+    int n = ::read(m_recvCtrl, buffer, bytes);
+    if (n < 0) {
+      if (errno == EINTR)
+        continue;
+      fprintf(stderr, "Socket Channel : read pipe error %s.\n",
+              strerror(errno));
+      return;
+    }
+    assert((const size_t)n == bytes);
+    return;
+  }
+}
+
+void socketChannel::doRest() { m_controlCtrl = 1; }
+
+void socketChannel::doCloseCtrl(int *ctrl) {
+  if (*ctrl != CHANNEL_INVALID) {
+    if (m_iocp) {
+      INSTGET_VAR(socketSystem, m_iocp)->doUnRegister(*ctrl);
+    }
+    close(*ctrl);
+    *ctrl = CHANNEL_INVALID;
+  }
+}
+
+bool socketChannel::isRecv() {
+  struct timeval tv = {0, 0};
+  int retval;
+
+  FD_SET(m_recvCtrl, &m_rsfds);
+  retval = ::select(m_recvCtrl + 1, &m_rsfds, NULL, NULL, &tv);
+  if (retval == 1)
+    return true;
+  return false;
+}
+
+int socketChannel::doWait() {
+  if (!m_controlCtrl) {
+    m_error = errCode::CH_ERROR;
+    return -1;
+  }
+
+  if (!isRecv()) {
+    m_controlCtrl = 0;
+    m_error = errCode::CH_ERROR;
+    return -1;
+  }
+
+  return doProccess();
+}
+
+int socketChannel::doProccess() {
+  /* data Piece */
+  uint8_t data[256];
+  /* [0 bit command][ 1 bit bytes] */
+  uint8_t header[2];
+
+  doRecv(header, sizeof(header));
+  int command = header[0];
+  int bytes = header[1];
+
+  doRecv(data, bytes);
+
+  switch (command) {
+  case 'D':
+  case 'P':
+    struct requestSend *request = (struct requestSend *)data;
+    int ret = m_sendFunc(request, nullptr);
+    m_error = errCode::CH_EINTR;
+    return -1;
+  case 'K':
+    m_closeFunc((struct requestClose *)data);
+    break;
+  case 'X':
+    error = errCode::CH_EXIT;
+    return -1;
+
+  default:
+    fprintf(stderr, "Socket Channel: Unknown command %c.\n", command);
+    break;
+  }
+
+  error = errCode::ERROR;
+  return -1;
+}
+} // namespace network
+} // namespace engine

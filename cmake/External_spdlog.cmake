@@ -1,27 +1,23 @@
-set(spdlog_source "${CMAKE_CURRENT_SOURCE_DIR}/spdlog")
-set(spdlog_build "${CMAKE_CURRENT_BINARY_DIR}/spdlog")
+#set(spdlog_source "${CMAKE_CURRENT_SOURCE_DIR}/spdlog")
+#set(spdlog_build "${CMAKE_CURRENT_BINARY_DIR}/spdlog")
 
-# CMAKE_CACHE_ARGS ${CMAKE_CACHE_ARGS} "-DSPDLOG_BUILD_TESTS:BOOL=OFF" "-DSPDLOG_BUILD_EXAMPLES:BOOL=OFF" "-DSPDLOG_BUILD_BENCH:BOOL=OFF"
 ExternalProject_Add(spdlog
-  SOURCE_DIR ${spdlog_source}
-  BINARY_DIR ${spdlog_build}
-  CMAKE_CACHE_ARGS ${CMAKE_CACHE_ARGS} "-DSPDLOG_BUILD_TESTS:BOOL=OFF" "-DSPDLOG_BUILD_EXAMPLES:BOOL=OFF" "-DSPDLOG_BUILD_BENCH:BOOL=OFF"
-  CONFIGURE_COMMAND "" 
-  BUILD_COMMAND "" 
-  INSTALL_COMMAND "" 
-  UPDATE_COMMAND "" 
+  DOWNLOAD_DIR ${download_dir}
+  URL https://github.com/gabime/spdlog/archive/v1.3.1.tar.gz
+  SOURCE_DIR "${CMAKE_CURRENT_BINARY_DIR}/spdlog"
+  INSTALL_DIR "${CisEngine_INSTALL_PREFIX}"
+  CMAKE_ARGS ${CisEngine_DEFAULT_ARGS} ${CisEngine_THIRDPARTYLIBS_ARGS} -DSPDLOG_BUILD_BENCH=OFF -DSPDLOG_BUILD_TESTS=OFF -DSPDLOG_BUILD_EXAMPLES=OFF
 )
 
 
-
 list(APPEND CisEngine_THIRDPARTYLIBS_ARGS
-    # Add spdlog engine properties so correct version of Boost is found.
-      "-DSpdlog_INCLUDE_DIR:PATH=${spdlog_source}/include"
-      "-DSpdlog_LIBRARIES:PATH=${LIBRARY_OUTPUT_PATH}")
-    
+# Add Spdlog properties so correct version of Boost is found.
+  "-DSpdlog_INCLUDE_DIR:PATH=${CMAKE_CURRENT_BINARY_DIR}/spdlog/include"
+  "-DSpdlog_LIBRARIES:PATH=${CMAKE_CURRENT_BINARY_DIR}/spdlog")
+
 if(FORCE_STEP)
   ExternalProject_Add_Step(spdlog forcebuild
-    COMMAND ${CMAKE_COMMAND} -E echo "Force build of spdlog sdk"
+    COMMAND ${CMAKE_COMMAND} -E echo "Force build of spdlog 3rd"
     ${FORCE_STEP_ARGS}
-   ALWAYS 1)
-endif() 
+    ALWAYS 1)
+endif()

@@ -20,10 +20,12 @@ set(pthread pthread)
 set(base ${Base_LIBRARIES}/libbase.so)
 set(launcher ${Launcher_LIBRARIES}/liblauncher.a)
 set(jemalloc ${Jemalloc_LIBRARIES}/libjemalloc.so)
+set(cppformat ${Cppformat_LIBRARIES}/libcppformat.so)
 
 
 target_link_libraries(${PROJ_NAME} 
 	${base}
+	${cppformat}
 	${launcher}
 	${jemalloc}
 	${dl}

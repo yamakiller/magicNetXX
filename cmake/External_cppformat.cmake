@@ -6,6 +6,7 @@ ExternalProject_Add(cppformat
   SOURCE_DIR ${cppformat_source}
   BINARY_DIR ${cppformat_build}
   INSTALL_COMMAND ""
+  CMAKE_ARGS -DBUILD_SHARED_LIBS=ON
   CMAKE_CACHE_ARGS
     ${CisEngine_DEFAULT_ARGS}
     ${CisEngine_THIRDPARTYLIBS_ARGS}
@@ -21,11 +22,11 @@ list(APPEND CisEngine_THIRDPARTYLIBS_ARGS
 
 add_custom_command(TARGET cppformat POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy
-            ${cppformat_build}/*.a ${LIBRARY_OUTPUT_PATH})
+            ${cppformat_build}/*.so ${LIBRARY_OUTPUT_PATH})
 
 if(FORCE_STEP)
   ExternalProject_Add_Step(cppformat forcebuild
-    COMMAND ${CMAKE_COMMAND} -E echo "Force build of cppformat sdk"
+    COMMAND ${CMAKE_COMMAND} -E echo "Force build of cppformat 3rd"
     ${FORCE_STEP_ARGS}
     ALWAYS 1)
 endif()

@@ -20,7 +20,7 @@ daemonOption::daemonOption() {
   sprintf(szDmupName, "%d_%d_%d_%d_%d_%d.dmp", ptm->tm_year + 1900, ptm->tm_mon,
           ptm->tm_mday, ptm->tm_hour, ptm->tm_min, ptm->tm_sec);
 
-  m_pidFile = stringUtil::strdup(szDmupName);
+  m_pidFile = util::stringUtil::strdup(szDmupName);
 
   signal(SIGINT, SIG_IGN);
   signal(SIGHUP, SIG_IGN);
@@ -31,7 +31,7 @@ daemonOption::daemonOption() {
   signal(SIGTERM, SIG_IGN);
 }
 
-daemonOption::~daemonOption() { stringUtil::strdel(m_pidFile); }
+daemonOption::~daemonOption() { util::memory::free(m_pidFile); }
 
 int daemonOption::init() {
   int pid = local_check_pid();
