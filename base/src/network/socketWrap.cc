@@ -11,10 +11,13 @@
 //#include <sys/types.h>
 //#include <unistd.h>
 
-namespace engine {
-namespace network {
+namespace engine
+{
+namespace network
+{
 
-struct sockaddr_in ip4Addr(const char *ip, int32_t port) {
+struct sockaddr_in ip4Addr(const char *ip, int32_t port)
+{
   struct sockaddr_in addr;
   memset(&addr, 0, sizeof(addr));
   addr.sin_family = AF_INET;
@@ -24,7 +27,8 @@ struct sockaddr_in ip4Addr(const char *ip, int32_t port) {
   return addr;
 }
 
-int32_t socketWrap::init() {
+int32_t socketWrap::init()
+{
 #ifdef UT_PLATFORM_WINDOWS
   WSADATA wsa_data;
   return WSAStartup(MAKEWORD(2, 2), &wsa_data) == 0 ? 0 : -ut_wsalasterror();
@@ -32,26 +36,37 @@ int32_t socketWrap::init() {
   return 0;
 }
 
-int32_t socketWrap::cleanup() {
+int32_t socketWrap::cleanup()
+{
 #ifdef UT_PLATFORM_WINDOWS
   return WSACleanup();
 #endif
   return 0;
 }
 
-int32_t socketWrap::netAddr(const char *ip) {
-  if (ip == 0) {
+int32_t socketWrap::netAddr(const char *ip)
+{
+  if (ip == 0)
+  {
     return 0;
-  } else {
+  }
+  else
+  {
     return (int32_t)inet_addr(ip);
   }
 }
 
 int16_t socketWrap::netPort(int16_t port) { return htons(port); }
 
+wsocket_t socketWrap::socket(int family, int type, int proto)
+{
+  return ::socket(family, type, proto);
+}
+
 wsocket_t socketWrap::invalid() { return INVALID_SOCKET; }
 
-int32_t socketWrap::close(wsocket_t sock) {
+int32_t socketWrap::close(wsocket_t sock)
+{
 #ifdef UT_PLATFORM_WINDOWS
   return 0 == closesocket(sock) ? 0 : errorWrap::wsalasterror();
 #elif defined(UT_PLATFORM_LINUX)
@@ -59,7 +74,8 @@ int32_t socketWrap::close(wsocket_t sock) {
 #endif
 }
 
-int32_t socketWrap::shutdown(wsocket_t sock) {
+int32_t socketWrap::shutdown(wsocket_t sock)
+{
 #ifdef UT_PLATFORM_WINDOWS
   return 0 == ::shutdown(sock, 2) ? 0 : errorWrap::wsalasterror();
 #elif defined(UT_PLATFORM_LINUX)
@@ -67,7 +83,8 @@ int32_t socketWrap::shutdown(wsocket_t sock) {
 #endif
 }
 
-int32_t socketWrap::setNonblock(wsocket_t sock) {
+int32_t socketWrap::setNonblock(wsocket_t sock)
+{
 #ifdef UT_PLATFORM_WINDOWS
   unsigned long ul = 1;
   return ioctlsocket(sock, FIONBIO, (unsigned long *)&ul) == 0
@@ -76,7 +93,8 @@ int32_t socketWrap::setNonblock(wsocket_t sock) {
 #elif defined(UT_PLATFORM_LINUX)
   int32_t err = -1;
   err = fcntl(sock, F_GETFL, 0);
-  if (err == -1) {
+  if (err == -1)
+  {
     return errorWrap::wsalasterror();
   }
   err = fcntl(sock, F_SETFL, err | O_NONBLOCK);
@@ -85,52 +103,43 @@ int32_t socketWrap::setNonblock(wsocket_t sock) {
 #endif
 }
 
-int32_t socketWrap::bind(wsocket_t sock, const sockaddr *addr, socklen_t len) {
+int32_t socketWrap::bind(wsocket_t sock, const sockaddr *addr, socklen_t len)
+{
   return ::bind(sock, addr, len) == 0 ? 0 : errorWrap::wsalasterror();
 }
 
-int32_t socketWrap::connect(wsocket_t sock, const char *ip, int32_t port) {
-  struct sockaddr_in addr = ip4Addr(ip, port);
-  return ::connect(sock, (struct sockaddr *)&addr, sizeof(addr)) == 0
-             ? 0
-             : errorWrap::wsalasterror();
+int32_t socketWrap::connect(wsocket_t sock, const sockaddr *addr, socklen_t len)
+{
+  return ::connect(sock, addr, len);
 }
 
-int32_t socketWrap::connectI(wsocket_t sock, int32_t ip, int32_t port) {
-  struct sockaddr_in addr;
-  memset(&addr, 0, sizeof(addr));
-  addr.sin_family = AF_INET;
-  addr.sin_port = netPort((int16_t)port);
-  addr.sin_addr.s_addr = ip;
-
-  return ::connect(sock, (struct sockaddr *)&addr, sizeof(addr)) == 0
-             ? 0
-             : errorWrap::wsalasterror();
+int32_t socketWrap::listen(wsocket_t sock, int32_t que)
+{
+  return listen(sock, que) == 0;
 }
 
-int32_t socketWrap::listen(wsocket_t sock, int32_t que) {
-  return listen(sock, que) == 0 ? 0 : errorWrap::wsalasterror();
-}
-
-wsocket_t socketWrap::accept(wsocket_t sock) { return ::accept(sock, 0, 0); }
+wsocket_t socketWrap::accept(wsocket_t sock, sockaddr *addr, socklen_t *len) { return ::accept(sock, addr, len); }
 
 int32_t socketWrap::isvalidate(wsocket_t sock) { return sock != invalid(); }
 
-int32_t socketWrap::setSendbufSize(wsocket_t sock, int32_t size) {
+int32_t socketWrap::setSendbufSize(wsocket_t sock, int32_t size)
+{
   int32_t sizelen = sizeof(size);
   return setsockopt(sock, SOL_SOCKET, SO_SNDBUF, (char *)&size, sizelen) == 0
              ? 0
              : errorWrap::wsalasterror();
 }
 
-int32_t socketWrap::setRecvbufSize(wsocket_t sock, int32_t size) {
+int32_t socketWrap::setRecvbufSize(wsocket_t sock, int32_t size)
+{
   int32_t sizelen = sizeof(size);
   return setsockopt(sock, SOL_SOCKET, SO_RCVBUF, (char *)&size, sizelen) == 0
              ? 0
              : errorWrap::wsalasterror();
 }
 
-int32_t socketWrap::setKeepalive(wsocket_t sock) {
+int32_t socketWrap::setKeepalive(wsocket_t sock)
+{
 #ifdef UT_PLATFORM_WINDOWS
   int32_t nerr = SOCKET_ERROR;
   struct tcp_keepalive alive_in = {0};
@@ -141,7 +150,8 @@ int32_t socketWrap::setKeepalive(wsocket_t sock) {
   assert(sock != 0);
 
   if (0 != setsockopt(sock, SOL_SOCKET, SO_KEEPALIVE, (char *)&nKeepAlive,
-                      sizeof(nKeepAlive))) {
+                      sizeof(nKeepAlive)))
+  {
     return errorWrap::wsalasterror();
   }
 
@@ -160,14 +170,39 @@ FAIL:
   int32_t err;
   err = setsockopt(sock, SOL_SOCKET, SO_KEEPALIVE, (void *)&keepalive,
                    sizeof(keepalive));
-  if (0 != err) {
+  if (0 != err)
+  {
     return errorWrap::wsalasterror();
   }
   return 0;
 #endif
 }
 
-int32_t socketWrap::getPeerInfo(wsocket_t sock, int32_t *ip, int32_t *port) {
+int32_t socketWrap::getAddrInfo(const char *addr, const char *strPort, const addrinfo *req, addrinfo **rest)
+{
+  return getaddrinfo(addr, strPort, req, rest);
+}
+
+void socketWrap::freeAddrInfo(void *p)
+{
+#ifdef UT_PLATFORM_WINDOWS
+  freeaddrinfo((PADDRINFOA)p);
+#else
+  freeaddrinfo((addrinfo *)p);
+#endif
+}
+
+const char *socketWrap::inetNtop(int32_t af, const void *cp, char *buf, socklen_t len)
+{
+#ifdef UT_PLATFORM_WINDOWS
+  return rtc_inet_ntop(af, cp, buf, len);
+#else
+  return inet_ntop(af, cp, buf, len);
+#endif
+}
+
+/*int32_t socketWrap::getPeerInfo(wsocket_t sock, int32_t *ip, int32_t *port)
+{
   struct sockaddr_in addr;
   socklen_t addrlen = 0;
   addrlen = sizeof(addr);
@@ -179,7 +214,8 @@ int32_t socketWrap::getPeerInfo(wsocket_t sock, int32_t *ip, int32_t *port) {
   *ip = 0;
   *port = 0;
 
-  if (0 != getpeername(sock, (struct sockaddr *)&addr, &addrlen)) {
+  if (0 != getpeername(sock, (struct sockaddr *)&addr, &addrlen))
+  {
     return errorWrap::wsalasterror();
   }
 
@@ -194,9 +230,10 @@ int32_t socketWrap::getPeerInfo(wsocket_t sock, int32_t *ip, int32_t *port) {
 
 FAIL:
   return -1;
-}
+}*/
 
-int32_t socketWrap::getSockInfo(wsocket_t sock, int32_t *ip, int32_t *port) {
+/*int32_t socketWrap::getSockInfo(wsocket_t sock, int32_t *ip, int32_t *port)
+{
   struct sockaddr_in addr;
   socklen_t addrlen = 0;
   addrlen = sizeof(addr);
@@ -208,7 +245,8 @@ int32_t socketWrap::getSockInfo(wsocket_t sock, int32_t *ip, int32_t *port) {
   *ip = 0;
   *port = 0;
 
-  if (0 != getsockname(sock, (struct sockaddr *)&addr, &addrlen)) {
+  if (0 != getsockname(sock, (struct sockaddr *)&addr, &addrlen))
+  {
     return errorWrap::wsalasterror();
   }
 
@@ -223,9 +261,10 @@ int32_t socketWrap::getSockInfo(wsocket_t sock, int32_t *ip, int32_t *port) {
 
 FAIL:
   return -1;
-}
+}*/
 
-int32_t socketWrap::send(wsocket_t sock, const char *data, int32_t size) {
+int32_t socketWrap::send(wsocket_t sock, const char *data, int32_t size)
+{
   int32_t nerr = -1;
 
 #ifdef UT_PLATFORM_LINUX
@@ -235,27 +274,31 @@ int32_t socketWrap::send(wsocket_t sock, const char *data, int32_t size) {
   nerr = ::send(sock, data, size, 0);
 #endif
 
-  return nerr >= 0 ? nerr : errorWrap::wsalasterror();
+  return nerr;
 }
 
-int32_t socketWrap::recv(wsocket_t sock, char *data, int32_t size) {
+int32_t socketWrap::recv(wsocket_t sock, char *data, int32_t size)
+{
   int32_t nerr = -1;
 
-  if (data == 0 || size <= 0) {
+  if (data == 0 || size <= 0)
+  {
     return -1;
   }
 
   nerr = ::recv(sock, data, size, 0);
 
-  return nerr >= 0 ? nerr : errorWrap::wsalasterror();
+  return nerr;
 }
 
 int32_t socketWrap::sendto(wsocket_t sock, int32_t ip, int32_t port,
-                           const char *data, int32_t size) {
+                           const char *data, int32_t size)
+{
   struct sockaddr_in addr;
   int32_t nerr = -1;
 
-  if (data == 0 || size <= 0) {
+  if (data == 0 || size <= 0)
+  {
     return -1;
   }
 
@@ -272,16 +315,18 @@ int32_t socketWrap::sendto(wsocket_t sock, int32_t ip, int32_t port,
   nerr = ::sendto(sock, data, size, 0, (struct sockaddr *)&addr, sizeof(addr));
 #endif
 
-  return nerr >= 0 ? nerr : errorWrap::wsalasterror();
+  return nerr;
 }
 
 int32_t socketWrap::recvfrom(wsocket_t sock, int32_t *ip, int32_t *port,
-                             char *data, int32_t size) {
+                             char *data, int32_t size)
+{
   struct sockaddr_in addr;
   socklen_t addrlen = sizeof(addr);
   int32_t nerr = -1;
 
-  if (data == 0 || size <= 0) {
+  if (data == 0 || size <= 0)
+  {
     return -1;
   }
 
@@ -292,21 +337,22 @@ int32_t socketWrap::recvfrom(wsocket_t sock, int32_t *ip, int32_t *port,
 
   nerr = ::recvfrom(sock, data, size, 0, (struct sockaddr *)&addr, &addrlen);
 
-  if (ip != 0) {
+  if (ip != 0)
+  {
     *ip = addr.sin_addr.s_addr;
   }
-  if (port != 0) {
+  if (port != 0)
+  {
     *port = ntohs(addr.sin_port);
   }
-  return nerr >= 0 ? nerr : errorWrap::wsalasterror();
+  return nerr;
 }
 
-int32_t socketWrap::reuseaddr(wsocket_t sock) {
+int32_t socketWrap::reuseaddr(wsocket_t sock)
+{
   int32_t reuseaddr = 1;
   return setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (char *)&reuseaddr,
-                    sizeof(reuseaddr)) == 0
-             ? 0
-             : errorWrap::wsalasterror();
+                    sizeof(reuseaddr));
 }
 
 } // namespace network

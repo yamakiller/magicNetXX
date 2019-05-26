@@ -7,17 +7,21 @@
 #elif defined(UT_PLATFORM_WINDOW)
 // TODO:
 #endif
+#include "errorWrap.h"
 
-namespace engine {
-namespace network {
-socketSystem::socketSystem() {
+namespace engine
+{
+namespace network
+{
+socketSystem::socketSystem()
+{
   m_iocp = nullptr;
   m_channel = nullptr;
-  m_shutdown = false;
 }
 socketSystem::~socketSystem() {}
 
-int32_t socketSystem::doStart() {
+int32_t socketSystem::doStart()
+{
 #ifdef UT_PLATFORM_LINUX
   m_iocp = new iocpEpoll();
 #elif defined(UT_PLATFORM_APPLE)
@@ -28,54 +32,76 @@ int32_t socketSystem::doStart() {
   m_channel = new socketChannel();
   assert(m_channel);
 
-  m_channel->doRegisterSendFunc(std::build(&socketSystem::doSendProccess, this,
-                                           placeholders::_1, placeholders::_2));
+  m_channel->doRegisterConnectFunc(
+      std::bind(&socketSystem::doRequestConnect, this, std::placeholders::_1));
+  m_channel->doRegisterSendFunc(std::bind(&socketSystem::doRequestSend, this,
+                                          std::placeholders::_1,
+                                          std::placeholders::_2));
+  m_channel->doRegisterSetOptFunc(std::bind(&socketSystem::doRequestSetOpt, this, std::placeholders::_1));
   m_channel->doRegisterCloseFunc(
-      std::bind(&socketSystem::doCloseProccess，this, placeholders::_1));
+      std::bind(&socketSystem::doRequestClose, this, std::placeholders::_1));
+
+  m_channel->doRegisterClearClosedFunc(std::bind(
+      &socketSystem::doRequestClearClosedEvent, this, std::placeholders::_1,
+      std::placeholders::_2, std::placeholders::_3));
 
   std::thread t([this]() { this->doPoll(); });
   m_pid.swap(t);
   return 0;
 }
 
-void socketSystem::doShutdown() {
-  m_shutdown = true;
-  if (m_pid.joinable()) {
+void socketSystem::doShutdown()
+{
+  socketChannel::requestPacket request;
+  request.u.exit._opaque = 0;
+  m_channel->doSend(&request, 'X', sizeof(request.u.exit));
+
+  if (m_pid.joinable())
+  {
     m_pid.join();
   }
+  //销毁
+
   delete m_channel;
   delete m_iocp;
 }
 
+void socketSystem::doRegisterEvent(socketMessageType type, socketEventFunc Func)
+{
+  m_eFunc[getEventFuncPos(type)] = Func;
+}
+
 int32_t socketSystem::doSocketListen(uintptr_t opaque, const char *addr,
-                                     int32_t port, int32_t block) {
+                                     int32_t port, int32_t block)
+{
 
   int32_t handle;
   socketHandle *s = nullptr;
   wsocket_t sock = doSocketBind(addr, port, IPPROTO_TCP);
-  if (sock == INVALID_SOCKET) {
+  if (sock == INVALID_SOCKET)
+  {
     return SOCKET_HANDLE_INVALID;
   }
 
-  if (socketWrap::listen(sock, block) != 0) {
+  if (socketWrap::listen(sock, block) != 0)
+  {
     goto _FAILED;
   }
 
   handle = getReserve();
-  if (handle == SOCKET_HANDLE_INVALID) {
+  if (handle == SOCKET_HANDLE_INVALID)
+  {
     goto _FAILED;
   }
 
   s = getSocket(handle);
   assert(s);
   assert(s->setCompareState(socketState::RESERVE, socketState::RESERVE));
-  std::unique_lock<util::spinlock> lock(*s->getMutexRef());
 
-  s->setSocket(sock);
-  s->setOpaque(opaque);
-  s->setProtocol(socketProtocol::TCP);
+  s->getMutexRef()->lock();
+  s->doInit(opaque, handle, sock, socketProtocol::TCP);
   s->setState(socketState::PLISTEN);
-  s->setRecvBufferSize(64);
+  s->getMutexRef()->unlock();
 
   return handle;
 _FAILED:
@@ -83,65 +109,85 @@ _FAILED:
   return SOCKET_HANDLE_INVALID;
 }
 
-int32_t socketSystem::doSocketOpen(const int32_t handle) {
-  socketHandle *s = getSocket(handle);
-  std::unique_lock<util::spinlock> lock(*s->getMutexRef());
-  if (s->getState() == socketState::INVALID || s->getHandle() != handle) {
-    return SOCKET_ERROR;
+int32_t socketSystem::doSocketConnect(uintptr_t opaque, const char *addr,
+                                      int32_t port)
+{
+  socketChannel::requestPacket request;
+  int len = strlen(addr);
+  if (len + sizeof(request.u.connect) >= 256)
+  {
+    fprintf(stderr, "Socket System : Invalid addr %s.\n", addr);
+    return -1;
   }
 
-  if (s->getState() == socketState::PACCEPT ||
-      s->getState() == socketState::PLISTEN) {
-    if (!m_iocp->doRegister(s->getSocket(), (void *)s)) {
-      s->doClose();
-      return SOCKET_ERROR;
-    }
-
-    s->setState((s->getState() == socketState::PACCEPT) ? socketState::CONNECTED
-                                                        : socketState::LISTEN);
-    return 0;
-  } else if (s->getState() socketState::CONNECTED) {
-    return 0;
+  int32_t handle = getReserve();
+  if (handle < 0)
+  {
+    return -1;
   }
-  return SOCKET_ERROR;
+
+  request.u.connect._opaque = opaque;
+  request.u.connect._handle = handle;
+  request.u.connect._port = port;
+  memcpy(request.u.connect._addr, addr, len);
+  request.u.connect._addr[len] = '\0';
+
+  m_channel->doSend(&request, 'C', sizeof(request.u.connect) + len);
+
+  return handle;
+}
+
+int32_t socketSystem::doSocketStart(uintptr_t opaque, const int32_t handle)
+{
+  socketChannel::requestPacket request;
+  request.u.start._handle = handle;
+  request.u.start._opaque = opaque;
+
+  m_channel->doSend(&request, 'S', sizeof(request.u.start));
+
+  return 0;
 }
 
 int32_t socketSystem::doSocketSend(int32_t handle, const char *data,
-                                   size_t sz) {
+                                   size_t sz)
+{
   socketHandle *s = getSocket(handle);
   if (s->getState() == socketState::INVALID ||
       s->getState() == socketState::HALFCLOSE ||
-      s->getState() == socketState::PACCEPT) {
-    util::memory::free(data);
+      s->getState() == socketState::PACCEPT)
+  {
+    util::memory::free((void *)data);
     return SOCKET_ERROR;
   }
 
   if (s->getState() == socketState::PLISTEN ||
-      s->getState() == socketState::LISTEN) {
-    fprintf(stderr, "Socket System: write to listen fd %d.\n", socketId);
-    util::memory::free(data);
+      s->getState() == socketState::LISTEN)
+  {
+    fprintf(stderr, "Socket System: write to listen fd %d.\n", handle);
+    util::memory::free((void *)data);
     return SOCKET_ERROR;
   }
 
-  if (s->getMutexRef()->try_lock()) {
-    if (s->isCanSend(handle)) {
+  if (s->getMutexRef()->try_lock())
+  {
+    if (s->isCanSend(handle))
+    {
       // TODO: 立即发送数据
       int n = socketWrap::send(s->getSocket(), data, sz);
-      if (n < 0) {
+      if (n < 0)
+      {
         // ignore error, let socket thread try again
         n = 0;
       }
 
-      if (n == so.sz) {
+      if (n == sz)
+      {
         s->getMutexRef()->unlock();
-        util::memory::free(data);
+        util::memory::free((void *)data);
         return 0;
       }
 
-      sendData *curData = s->getCurrentSendBuffer();
-      curData->_data = data;
-      curData->_ptr = data + n;
-      curData->_sz = sz;
+      s->setCurrentSendBuffer((void *)data, (char *)data + n, sz);
 
       m_iocp->doToWrite(s->getSocket(), s, true);
       s->getMutexRef()->unlock();
@@ -150,8 +196,9 @@ int32_t socketSystem::doSocketSend(int32_t handle, const char *data,
     s->getMutexRef()->unlock();
   }
 
-  if (s->decSendIn() != 0) {
-    memory::free(data);
+  if (s->incSendIn() != 0)
+  {
+    util::memory::free((void *)data);
     return SOCKET_ERROR;
   }
 
@@ -164,7 +211,18 @@ int32_t socketSystem::doSocketSend(int32_t handle, const char *data,
   return 0;
 }
 
-void socketSystem::doSocketClose(uintptr_t opaque, int32_t handle) {
+int32_t socketSystem::doSocketNodelay(int32_t handle)
+{
+  socketChannel::requestPacket request;
+  request.u.setopt._handle = handle;
+  request.u.setopt._what = TCP_NODELAY;
+  request.u.setopt._value = 1;
+  m_channel->doSend(&request, 'T', sizeof(request.u.setopt));
+  return 0;
+}
+
+void socketSystem::doSocketClose(uintptr_t opaque, int32_t handle)
+{
 
   socketChannel::requestPacket request;
   request.u.close._handle = handle;
@@ -174,7 +232,8 @@ void socketSystem::doSocketClose(uintptr_t opaque, int32_t handle) {
   m_channel->doSend(&request, 'K', sizeof(request.u.close));
 }
 
-void socketSystem::doSocketShutdown(uintptr_t opaque, int32_t handle) {
+void socketSystem::doSocketShutdown(uintptr_t opaque, int32_t handle)
+{
 
   socketChannel::requestPacket request;
   request.u.close._handle = handle;
@@ -184,74 +243,89 @@ void socketSystem::doSocketShutdown(uintptr_t opaque, int32_t handle) {
   m_channel->doSend(&request, 'K', sizeof(request.u.close));
 }
 
-wsocket_t socketSystem::doSocketBind(const char *addr, int port, int protocol) {
+wsocket_t socketSystem::doSocketBind(const char *addr, int port, int protocol)
+{
 
   char strPort[16];
   struct addrinfo aiHints;
   struct addrinfo *aiList = nullptr;
 
-  if (addr == NULL || addr[0] == 0) {
+  if (addr == NULL || addr[0] == 0)
+  {
     addr = "0.0.0.0";
   }
 
   sprintf(strPort, "%d", port);
-  memset(&ai_hints, 0, sizeof(ai_hints));
+  memset(&aiHints, 0, sizeof(aiHints));
 
   aiHints.ai_family = AF_UNSPEC;
-  if (protocol == IPPROTO_TCP) {
+  if (protocol == IPPROTO_TCP)
+  {
     aiHints.ai_socktype = SOCK_STREAM;
-  } else {
+  }
+  else
+  {
     assert(protocol == IPPROTO_UDP);
     aiHints.ai_socktype = SOCK_DGRAM;
   }
   aiHints.ai_protocol = protocol;
 
-  int status = ::getaddrinfo(addr, strPort, &aiHints, &aiList);
-  if (status != 0) {
+  int status = socketWrap::getAddrInfo(addr, strPort, &aiHints, &aiList);
+  if (status != 0)
+  {
     return INVALID_SOCKET;
   }
 
   int family = aiList->ai_family;
-  wsocket_t sock = ::socket(family, aiList->ai_socktype, 0);
-  if (sock == INVALID_SOCKET) {
+  wsocket_t sock = socketWrap::socket(family, aiList->ai_socktype, 0);
+  if (sock == INVALID_SOCKET)
+  {
     goto _FAILED_FD;
   }
 
-  if (socketWrap::reuseaddr(sock) == -1) {
+  if (socketWrap::reuseaddr(sock) == -1)
+  {
     goto _FAILED;
   }
 
   status = socketWrap::bind(sock, (struct sockaddr *)aiList->ai_addr,
                             aiList->ai_addrlen);
-  if (status != 0) {
+  if (status != 0)
+  {
     goto _FAILED;
   }
 
-  freeaddrinfo(aiList);
+  socketWrap::freeAddrInfo((void *)aiList);
   return sock;
 
 _FAILED:
   socketWrap::close(sock);
 _FAILED_FD:
-  freeaddrinfo(aiList);
   return INVALID_SOCKET;
 }
 
-int32_t socketSystem::getReserve() {
+int32_t socketSystem::getReserve()
+{
   int i;
-  for (i = 0; i < MAX_SOCKET; i++) {
+  for (i = 0; i < MAX_SOCKET; i++)
+  {
     int32_t handle = ++m_sockSequence;
-    if (handle < 0) {
+    if (handle < 0)
+    {
       handle = (m_sockSequence &= 0x7FFFFFFF);
     }
 
     socketHandle *s = &m_sockGroup[SOCKET_GET(handle)];
-    if (s->getState() == socketState::INVALID) {
-      if (s->setCompareState(socketState::INVALID, socketState::RESERVE)) {
+    if (s->getState() == socketState::INVALID)
+    {
+      if (s->setCompareState(socketState::INVALID, socketState::RESERVE))
+      {
         s->doRest();
         s->setHandle(handle);
         return handle;
-      } else {
+      }
+      else
+      {
         --i;
       }
     }
@@ -259,12 +333,146 @@ int32_t socketSystem::getReserve() {
   return -1;
 }
 
-socketHandle *socketSystem::getSocket(int32_t handle) {
+socketHandle *socketSystem::getSocket(int32_t handle)
+{
   return &m_sockGroup[SOCKET_GET(handle)];
 }
 
-int32_t socketSystem::doSendProccess(socketChannel::requestSend *request,
-                                     const uint8_t address) {
+int32_t socketSystem::doRequestStart(socketChannel::requestStart *request)
+{
+  int32_t handle = request->_handle;
+  socketHandle *s = getSocket(handle);
+  if (s->getState() == socketState::INVALID || s->getHandle() != handle)
+  {
+    getEventFunc(socketMessageType::M_SOCKET_ERROR)(request->_opaque, request->_handle, 0, nullptr, 0);
+    return (int32_t)socketMessageType::M_SOCKET_ERROR;
+  }
+
+  if (s->getState() == socketState::PACCEPT ||
+      s->getState() == socketState::PLISTEN)
+  {
+    if (!m_iocp->doRegister(s->getSocket(), (void *)s))
+    {
+      s->getMutexRef()->lock();
+      forceClose(s);
+      s->getMutexRef()->unlock();
+      getEventFunc(socketMessageType::M_SOCKET_ERROR)(request->_opaque, request->_handle, 0, strerror(errorWrap::wsalasterror()), 0);
+      return (int32_t)socketMessageType::M_SOCKET_ERROR;
+    }
+
+    s->setState((s->getState() == socketState::PACCEPT) ? socketState::CONNECTED
+                                                        : socketState::LISTEN);
+    getEventFunc(socketMessageType::M_SOCKET_START)(request->_opaque, request->_handle, 0, (void *)"start", 0);
+    return -1;
+  }
+  else if (s->getState() == socketState::CONNECTED)
+  {
+    getEventFunc(socketMessageType::M_SOCKET_START)(request->_opaque, request->_handle, 0, (void *)"transfer", 0);
+    return -1;
+  }
+  return -1;
+}
+
+int32_t socketSystem::doRequestConnect(socketChannel::requestConnect *request)
+{
+  int32_t handle = request->_handle;
+  uintptr_t opaque = request->_opaque;
+
+  char strPort[16];
+  char strBuffer[64];
+  void *errorPtr = nullptr;
+  struct addrinfo aiHints;
+  struct addrinfo *aiList = nullptr;
+  struct addrinfo *aiPtr = nullptr;
+
+  sprintf(strPort, "%d", request->_port);
+  memset(&aiHints, 0, sizeof(aiHints));
+  aiHints.ai_family = AF_UNSPEC;
+  aiHints.ai_socktype = SOCK_STREAM;
+  aiHints.ai_protocol = IPPROTO_TCP;
+
+  wsocket_t sock = INVALID_SOCKET;
+
+  socketHandle *s = getSocket(handle);
+  assert(s);
+
+  int status = socketWrap::getAddrInfo(request->_addr, strPort, &aiHints, &aiList);
+  if (status != 0)
+  {
+    errorPtr = (void *)gai_strerror(status);
+    goto _FAILED;
+  }
+
+  for (aiPtr = aiList; aiPtr != NULL; aiPtr = aiPtr->ai_next)
+  {
+    sock = socketWrap::socket(aiPtr->ai_family, aiPtr->ai_socktype, aiPtr->ai_protocol);
+    if (sock < 0)
+    {
+      continue;
+    }
+
+    socketWrap::setKeepalive(sock);
+    socketWrap::setNonblock(sock);
+
+    status = socketWrap::connect(sock, aiPtr->ai_addr, aiPtr->ai_addrlen);
+    if (status != 0 && errorWrap::wsalasterror() != EINPROGRESS)
+    {
+      socketWrap::close(sock);
+      sock = INVALID_SOCKET;
+      continue;
+    }
+    break;
+  }
+
+  if (sock < 0)
+  {
+    errorPtr = (void *)strerror(errorWrap::wsalasterror());
+    goto _FAILED;
+  }
+
+  if (m_iocp->doRegister(sock, s) != 0)
+  {
+    socketWrap::close(sock);
+    errorPtr = (void *)"reach network socket number limit";
+    goto _FAILED;
+  }
+
+  s->doInit(opaque, handle, sock, socketProtocol::TCP);
+
+  if (status == 0)
+  {
+    s->setState(socketState::CONNECTED);
+    struct sockaddr *addr = aiPtr->ai_addr;
+    void *sin_addr = (aiPtr->ai_family == AF_INET)
+                         ? (void *)&((struct sockaddr_in *)addr)->sin_addr
+                         : (void *)&((struct sockaddr_in6 *)addr)->sin6_addr;
+    if (socketWrap::inetNtop(aiPtr->ai_family, sin_addr, strBuffer, sizeof(strBuffer)))
+    {
+      errorPtr = strBuffer;
+    }
+
+    socketWrap::freeAddrInfo((void *)aiList);
+    getEventFunc(socketMessageType::M_SOCKET_START)(request->_opaque, request->_handle, 0, errorPtr, 0);
+    return -1;
+  }
+  else
+  {
+    s->setState(socketState::CONNECTING);
+    m_iocp->doToWrite(s->getSocket(), s, true);
+  }
+
+  socketWrap::freeAddrInfo((void *)aiList);
+  return -1;
+_FAILED:
+  socketWrap::freeAddrInfo((void *)aiList);
+  s->setState(socketState::INVALID);
+  getEventFunc(socketMessageType::M_SOCKET_ERROR)(request->_opaque, request->_handle, 0, errorPtr, 0);
+  return (int32_t)socketMessageType::M_SOCKET_ERROR;
+}
+
+int32_t socketSystem::doRequestSend(socketChannel::requestSend *request,
+                                    const uint8_t *address)
+{
   int32_t handle = request->_handle;
   socketHandle *s = getSocket(handle);
   /* mutex */
@@ -272,132 +480,202 @@ int32_t socketSystem::doSendProccess(socketChannel::requestSend *request,
 
   if (s->getState() == socketState::INVALID ||
       s->getState() == socketState::HALFCLOSE ||
-      s->getState() == socketState::PACCEPT || s->getHandle() != handle) {
+      s->getState() == socketState::PACCEPT || s->getHandle() != handle)
+  {
     util::memory::free(request->_data);
-    return SOCKET_ERROR;
+    return -1;
   }
 
   if (s->getState() == socketState::PLISTEN ||
-      s->getState() == socketState::LISTEN) {
+      s->getState() == socketState::LISTEN)
+  {
     fprintf(stderr, "Socket System: write to listen fd %d.\n", handle);
     util::memory::free(request->_data);
-    return SOCKET_ERROR;
+    return -1;
   }
 
-  if (s->isSendQEmpty() && s->getState() == socketState::CONNECTED) {
+  if (s->isSendQEmpty() && s->getState() == socketState::CONNECTED)
+  {
     s->appendSendQs(request->_data, request->_sz);
     m_iocp->doToWrite(s->getSocket(), (void *)s, true);
-  } else {
+  }
+  else
+  {
     s->appendSendQs(request->_data, request->_sz);
   }
-  return SOCKET_ERROR;
+
+  uint32_t warnRet = s->getWarning();
+  if (warnRet > 0)
+  {
+    getEventFunc(socketMessageType::M_SOCKET_WARNING)(s->getOpaque(), request->_handle, warnRet, nullptr, 0);
+  }
+  return -1;
 }
 
-int32_t socketSystem::doCloseProccess(socketChannel::requestClose *request) {
+int32_t socketSystem::doRequestSetOpt(socketChannel::requestSetopt *request)
+{
   int32_t handle = request->_handle;
   socketHandle *s = getSocket(handle);
-  if (s->getState() == socketState::INVALID || s->getHandle() != handle) {
-    // TODO 发送关闭信息
+  if (s->getState() == socketState::INVALID || s->getHandle() != handle)
+  {
     return -1;
+  }
+  int32_t v = request->_value;
+  setsockopt(s->getSocket(), IPPROTO_TCP, request->_what, &v, sizeof(v));
+  return -1;
+}
+
+int32_t socketSystem::doRequestClose(socketChannel::requestClose *request)
+{
+  int32_t handle = request->_handle;
+  socketHandle *s = getSocket(handle);
+  if (s->getState() == socketState::INVALID || s->getHandle() != handle)
+  {
+    getEventFunc(socketMessageType::M_SOCKET_CLOSE)(request->_opaque, request->_handle, 0, nullptr, 0);
+    return (int32_t)socketMessageType::M_SOCKET_CLOSE;
   }
 
   s->getMutexRef()->lock();
-  if (s->isSending()) {
+  if (s->isSending())
+  {
     int ret = s->doSend();
-    if (ret == MESSAGE_SOCKET_CLOSE) {
+    if (ret == (int32_t)socketMessageType::M_SOCKET_CLOSE)
+    {
+      forceClose(s);
       s->getMutexRef()->unlock();
-      // TODO 发送关闭消息
-      return -1;
+      getEventFunc(socketMessageType::M_SOCKET_CLOSE)(request->_opaque, request->_handle, 0, nullptr, 0);
+      return (int32_t)socketMessageType::M_SOCKET_CLOSE;
     }
   }
 
-  if (request->_shutdown || !s->isSending()) {
-    // force_close(ss, s, &l, result);
+  if (request->_shutdown || !s->isSending())
+  {
+    forceClose(s);
     s->getMutexRef()->unlock();
-    // TODO 发送关闭消息
-    return -1;
+    getEventFunc(socketMessageType::M_SOCKET_CLOSE)(request->_opaque, request->_handle, 0, nullptr, 0);
+    return (int32_t)socketMessageType::M_SOCKET_CLOSE;
   }
   s->getMutexRef()->unlock();
   s->setState(socketState::HALFCLOSE);
   return -1;
 }
 
-int32_t socketSystem::doConnectProccess(socketHandle *s) {
+void socketSystem::doRequestClearClosedEvent(int32_t handle, int32_t idx,
+                                             int32_t n)
+{
+
+  for (int i = idx; i < n; i++)
+  {
+    struct iocpEvent *e = m_iocp->getEvent(i);
+    socketHandle *s = static_cast<socketHandle *>(e->s);
+    if (s)
+    {
+      if (s->getState() == socketState::INVALID && s->getHandle() == handle)
+      {
+        e->s = nullptr;
+        break;
+      }
+    }
+  }
+}
+
+int32_t socketSystem::doConnectProc(socketHandle *s)
+{
   int error;
+  int32_t handle = s->getHandle();
+  uintptr_t opaque = s->getOpaque();
+
   socklen_t len = sizeof(error);
   int code = getsockopt(s->getSocket(), SOL_SOCKET, SO_ERROR, &error, &len);
-  if (code < 0 || error) {
-    // force_close(ss, s, l, result);
-    // if (code >= 0)
-    //  result->data = strerror(error);
-    // else
-    //  result->data = strerror(errno);
-    // TODO 发送错误消息
+  if (code < 0 || error)
+  {
+    s->getMutexRef()->lock();
+    forceClose(s);
+    s->getMutexRef()->unlock();
+
+    getEventFunc(socketMessageType::M_SOCKET_ERROR)(opaque, handle, 0, code >= 0 ? (void *)strerror(errorWrap::wsalasterror()) : (void *)strerror(errorWrap::wsalasterror()), 0);
     return -1;
-  } else {
+  }
+  else
+  {
 
     s->setState(socketState::CONNECTED);
 
-    if (!s->isSending()) {
+    if (!s->isSending())
+    {
       m_iocp->doToWrite(s->getSocket(), s, false);
     }
 
     union socketAddr u;
     socklen_t slen = sizeof(u);
-    if (getpeername(s->getSocket(), &u.s, &slen) == 0) {
+    if (getpeername(s->getSocket(), &u.s, &slen) == 0)
+    {
       void *sin_addr = (u.s.sa_family == AF_INET) ? (void *)&u.v4.sin_addr
                                                   : (void *)&u.v6.sin6_addr;
-      char buffer[64];
-      if (inet_ntop(u.s.sa_family, sin_addr, buffer, sizeof(buffer))) {
-        // TODO 设置客户端地址信息
-        // TODO 发送OPEN事件
+      char buffer[128];
+      if (socketWrap::inetNtop(u.s.sa_family, sin_addr, buffer, sizeof(buffer)))
+      {
+        getEventFunc(socketMessageType::M_SOCKET_START)(opaque, handle, 0, (void *)buffer, 0);
         return -1;
       }
     }
-    result->data = NULL;
-    // TODO 发送OPEN事件
+    getEventFunc(socketMessageType::M_SOCKET_START)(opaque, handle, 0, nullptr, 0);
     return -1;
   }
 }
 
-int32_t socketSystem::doAcceptProccess(socketHandle *s) {
+int32_t socketSystem::doAcceptProc(socketHandle *s)
+{
   union socketAddr u;
+  int32_t handle = s->getHandle();
+  uintptr_t opaque = s->getOpaque();
 
   socklen_t len = sizeof(u);
-  wsocket_t clientSock = ::accept(s->getSocket(), &u.s, &len);
-  if (clientSock < 0) {
-    if (errno == EMFILE || errno == ENFILE) {
-      // TODO 发送错误信息
+  wsocket_t clientSock = socketWrap::accept(s->getSocket(), &u.s, &len);
+  if (clientSock < 0)
+  {
+    if (errorWrap::wsalasterror() == EMFILE ||
+        errorWrap::wsalasterror() == ENFILE)
+    {
+      getEventFunc(socketMessageType::M_SOCKET_ERROR)(opaque, handle, 0, (void *)strerror(errorWrap::wsalasterror()), 0);
       return -1;
-    } else {
-      // TODO 需要关闭，或者
+    }
+    else
+    {
       return 0;
     }
   }
 
-  int32_t handle = getReserve();
-  if (handle < 0) {
+  int32_t clientHandle = getReserve();
+  if (clientHandle < 0)
+  {
     socketWrap::close(clientSock);
     return 0;
   }
 
   socketWrap::setKeepalive(clientSock);
   socketWrap::setNonblock(clientSock);
-  socketHandle *cs = getSocket(handle);
+  socketHandle *cs = getSocket(clientHandle);
   assert(cs->getState() == socketState::RESERVE);
-  cs->setHandle(handle);
-  cs->setSocket(clientSock);
-  cs->setOpaque(socketProtocol::TCP);
-  cs->setOpaque(s->getOpaque());
-  cs->setRecvBufferSize(64);
+  cs->doInit(s->getOpaque(), clientHandle, clientSock, socketProtocol::TCP);
 
-  // TODO 设置客户端IP端口
+  void *sin_addr = (u.s.sa_family == AF_INET) ? (void *)&u.v4.sin_addr : (void *)&u.v6.sin6_addr;
+  int sin_port = ntohs((u.s.sa_family == AF_INET) ? u.v4.sin_port : u.v6.sin6_port);
+  char tmp[INET6_ADDRSTRLEN];
+  char buffer[128];
+  char *ipAddr = nullptr;
+  if (socketWrap::inetNtop(u.s.sa_family, sin_addr, tmp, sizeof(tmp)))
+  {
+    snprintf(buffer, sizeof(buffer), "%s:%d", tmp, sin_port);
+    ipAddr = buffer;
+  }
 
-  // TODO 发送ACCEPT事件
+  getEventFunc(socketMessageType::M_SOCKET_ACCEPT)(opaque, handle, clientHandle, ipAddr, 0);
   return 0;
 }
 
-int32_t socketSystem::doRecvProccess(socketHandle *s) {
+int32_t socketSystem::doRecvProc(socketHandle *s)
+{
   int32_t handle = s->getHandle();
   uintptr_t opaque = s->getOpaque();
 
@@ -405,65 +683,86 @@ int32_t socketSystem::doRecvProccess(socketHandle *s) {
   char *buffer = (char *)util::memory::malloc(bufferSize);
   assert(buffer);
   int n = socketWrap::recv(s->getSocket(), buffer, bufferSize);
-  if (n < 0) {
+  if (n < 0)
+  {
     util::memory::free(buffer);
-    switch (errno) {
+    switch (errorWrap::wsalasterror())
+    {
     case EINTR:
       break;
     case AGAIN_WOULDBLOCK:
       fprintf(stderr, "Socket System: EAGAIN capture.\n");
       break;
     default:
-      // TODO: onClose(rl);
-      return MESSAGE_SOCKET_CLOSE;
+      s->getMutexRef()->lock();
+      forceClose(s);
+      s->getMutexRef()->unlock();
+      getEventFunc(socketMessageType::M_SOCKET_ERROR)(opaque, handle, 0, (void *)strerror(errorWrap::wsalasterror()), 0);
+      return (int32_t)socketMessageType::M_SOCKET_ERROR;
     }
     return -1;
   }
 
-  if (n == 0) {
+  if (n == 0)
+  {
     util::memory::free(buffer);
-    // TODO: onClose(rl);
-    return MESSAGE_SOCKET_CLOSE;
+    s->getMutexRef()->lock();
+    forceClose(s);
+    s->getMutexRef()->unlock();
+    getEventFunc(socketMessageType::M_SOCKET_CLOSE)(opaque, handle, 0, nullptr, 0);
+    return (int32_t)socketMessageType::M_SOCKET_CLOSE;
   }
-  if (s->getState() == socketState::HALFCLOSE) {
+  if (s->getState() == socketState::HALFCLOSE)
+  {
     util::memory::free(buffer);
     return -1;
   }
 
-  if (n == sz) {
+  if (n == bufferSize)
+  {
     bufferSize *= 2;
-  } else if (sz > 64 && n * 2 > bufferSize) {
+  }
+  else if (bufferSize > SOCKET_HANDLE_MINRECVBUFFER_MAX &&
+           n * 2 > bufferSize)
+  {
     bufferSize /= 2;
   }
   s->setRecvBufferSize(bufferSize);
   s->doUpdateRecv(0, n);
 
-  // TODO: 推送数据
-  memory::free(buffer);
-  return MESSAGE_SOCKET_DATA;
+  getEventFunc(socketMessageType::M_SOCKET_DATA)(opaque, handle, 0, buffer, n);
+  return (int32_t)socketMessageType::M_SOCKET_DATA;
 }
 
-int32_t socketSystem::doSendProccess(socketHandle *s) {
-  if (!s->getMutexRef()->try_lock()) {
+int32_t socketSystem::doSendProc(socketHandle *s)
+{
+  if (!s->getMutexRef()->try_lock())
+  {
     return -1;
   }
 
-  if (s->doSend() == MESSAGE_SOCKET_CLOSE) {
+  int32_t handle = s->getHandle();
+  uintptr_t opaque = s->getOpaque();
+
+  if (s->doSend() == (int32_t)socketMessageType::M_SOCKET_CLOSE)
+  {
+    forceClose(s);
     s->getMutexRef()->unlock();
-    // TODO 发送
+    getEventFunc(socketMessageType::M_SOCKET_CLOSE)(opaque, handle, 0, nullptr, 0);
     return -1;
   }
 
-  if (s->isSendQEmpty()) {
+  if (s->isSendQEmpty())
+  {
     m_iocp->doToWrite(s->getSocket(), s, false);
   }
 
-  if (s->getState() == socketState::HALFCLOSE) {
-    // TODO: onClose
-    // force_close(ss, s, l, result);
+  if (s->getState() == socketState::HALFCLOSE)
+  {
+    forceClose(s);
     s->getMutexRef()->unlock();
-    // TODO: 发送
-    return MESSAGE_SOCKET_CLOSE;
+    getEventFunc(socketMessageType::M_SOCKET_CLOSE)(opaque, handle, 0, nullptr, 0);
+    return (int32_t)socketMessageType::M_SOCKET_CLOSE;
   }
 
   s->getMutexRef()->unlock();
@@ -471,25 +770,53 @@ int32_t socketSystem::doSendProccess(socketHandle *s) {
   return -1;
 }
 
-void socketSystem::doPoll() {
-  int32_t n, idx = 0;
-  while (!m_shutdown) {
+void socketSystem::forceClose(socketHandle *s)
+{
+  if (s->getState() == socketState::INVALID)
+  {
+    return;
+  }
 
-    int r = m_channel->doWait();
-    if (r == -1) {
-      if (m_channel->getError() == socketChannel::errCode::CH_EINTR) {
+  assert(s->getState() != socketState::RESERVE);
+
+  if (s->getState() != socketState::PACCEPT &&
+      s->getState() != socketState::PLISTEN)
+  {
+    m_iocp->doUnRegister(s->getSocket());
+  }
+
+  s->doClose();
+}
+
+void socketSystem::doPoll()
+{
+  int32_t n, idx = 0;
+  for (;;)
+  {
+
+    int r = m_channel->doWait(idx, n);
+    if (r == -1)
+    {
+      if (m_channel->getError() == socketChannel::errCode::CH_EINTR ||
+          m_channel->getError() == socketChannel::errCode::CH_ERROR)
+      {
         continue;
-      } else if (m_channel->getError() == socketChannel::errCode::CH_EXIT) {
+      }
+      else if (m_channel->getError() == socketChannel::errCode::CH_EXIT)
+      {
         return;
       }
     }
 
-    if (idx == n) {
+    if (idx == n)
+    {
       n = m_iocp->onWait();
       idx = 0;
-      if (n < 0) {
+      if (n < 0)
+      {
         n = 0;
-        if (errno == EINTR) {
+        if (errorWrap::wsalasterror() == EINTR)
+        {
           continue;
         }
 
@@ -499,65 +826,82 @@ void socketSystem::doPoll() {
 
     struct iocpEvent *e = m_iocp->getEvent(idx++);
     socketHandle *s = static_cast<socketHandle *>(e->s);
-    if (s == nullptr) {
+    if (s == nullptr)
+    {
       continue;
     }
 
-    //是否构建锁
-    switch (s->getState()) {
+    switch (s->getState())
+    {
     case socketState::CONNECTING:
-      doConnectProccess(s);
+      doConnectProc(s);
       break;
     case socketState::LISTEN:
-      doAcceptProccess(s);
+      doAcceptProc(s);
       break;
     case socketState::INVALID:
       break;
     default:
-      if (e->isread) {
-        int type = doRecvProccess(s);
-        if (e->iswrite && type == MESSAGE_SOCKET_CLOSE) {
+      if (e->isread)
+      {
+        int32_t type = doRecvProc(s);
+        if (e->iswrite && type != (int32_t)socketMessageType::M_SOCKET_CLOSE && type != (int32_t)socketMessageType::M_SOCKET_ERROR)
+        {
           e->isread = false;
           --idx;
         }
         break;
       }
-      if (e->iswrite) {
-        doSendProccess(s);
+      if (e->iswrite)
+      {
+        doSendProc(s);
         break;
       }
-      if (e->iserror) {
+      if (e->iserror)
+      {
+        int error;
+        socklen_t len = sizeof(error);
+        int code =
+            getsockopt(s->getSocket(), SOL_SOCKET, SO_ERROR, &error, &len);
+        const char *err = NULL;
+        if (code < 0)
+        {
+          err = strerror(errorWrap::wsalasterror());
+        }
+        else if (error != 0)
+        {
+          err = strerror(error);
+        }
+        else
+        {
+          err = "Unknown error";
+        }
+
+        int32_t handle = s->getHandle();
+        uintptr_t opaque = s->getOpaque();
+
+        s->getMutexRef()->lock();
+        forceClose(s);
+        s->getMutexRef()->unlock();
+
+        getEventFunc(socketMessageType::M_SOCKET_ERROR)(opaque, handle, 0, (void *)err, 0);
+        break;
       }
-      if (e->iseof) {
+      if (e->iseof)
+      {
+        int32_t handle = s->getHandle();
+        uintptr_t opaque = s->getOpaque();
+
+        s->getMutexRef()->lock();
+        forceClose(s);
+        s->getMutexRef()->unlock();
+
+        getEventFunc(socketMessageType::M_SOCKET_CLOSE)(opaque, handle, 0, nullptr, 0);
       }
       break;
     }
   }
 }
-
-// int32_t socketSystem::doChannelRecv() {
-/* data Piece */
-//  uint8_t data[256];
-/* [0 bit command][ 1 bit bytes] */
-//  uint8_t header[2];
-/*
-  m_channel->doRecv(header, sizeof(header));
-  int command = header[0];
-  int bytes = header[1];
-
-  m_channel->doRecv(data, bytes);
-
-  switch (command) {
-  case 'D':
-  case 'P':
-    break;
-  case 'X':
-    return -1;
-
-  default:
-    break;
-  }
-}*/
 
 } // namespace network
 } // namespace engine

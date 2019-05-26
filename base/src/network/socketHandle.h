@@ -6,18 +6,24 @@
 #include <deque>
 
 #define SOCKET_HANDLE_INVALID -1
+#define SOCKET_HANDLE_MINRECVBUFFER_MAX 128
 
-namespace engine {
-namespace network {
+namespace engine
+{
+namespace network
+{
 
-class socketHandle {
-  struct sendData {
+class socketHandle
+{
+  struct sendData
+  {
     void *_data;
     char *_ptr;
     uint32_t _sz;
   };
 
-  struct socketInfo {
+  struct socketInfo
+  {
     uint64_t _recvLastTime;
     uint64_t _sendLastTime;
     uint64_t _recvBytes;
@@ -32,6 +38,8 @@ public:
   virtual ~socketHandle();
 
 public:
+  void doInit(uintptr_t opaque, int32_t handle, wsocket_t sock,
+              socketProtocol proto);
   void doRest();
   void doClose();
   int32_t doSend();
@@ -52,18 +60,22 @@ public:
   void setHandle(int32_t val);
   int32_t getHandle() const;
 
-  void setOpaque(uintptr_t val);
   uintptr_t getOpaque() const;
 
-  void setSocket(wsocket_t val);
   wsocket_t getSocket();
 
-  sendData *getCurrentSendBuffer() { return &m_sendData; }
+  void setCurrentSendBuffer(void *data, char *ptr, uint32_t sz)
+  {
+    m_curSender._data = data;
+    m_curSender._ptr = ptr;
+    m_curSender._sz = sz;
+  }
 
-  void setRecvBufferSize(int32_t val);
-  int32_t getRecvBufferSize() { return val; }
+  uint32_t getWarning();
 
-  void setProtocol(socketProtocol val);
+  void setRecvBufferSize(int32_t val) { m_recvBufferSize = val; }
+  int32_t getRecvBufferSize() { return m_recvBufferSize; }
+
   socketProtocol getProtocol() const;
 
   void setState(socketState val);
@@ -75,6 +87,9 @@ public:
   socketInfo getInfo() const;
 
 private:
+  static void sendBufferFree(sendData *p);
+
+private:
   int32_t m_handle;
   uintptr_t m_opaque;
   wsocket_t m_sock;
@@ -84,6 +99,7 @@ private:
   uint32_r m_sendIn;
   sender_q m_sendQs;
   uint32_t m_sendBytes;
+  uint32_t m_sendWarn;
   uint32_t m_recvBufferSize;
 
 private:
