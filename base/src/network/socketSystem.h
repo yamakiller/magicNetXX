@@ -9,17 +9,27 @@
 #include "util/spinlock.h"
 #include <thread>
 
-namespace engine
-{
-namespace network
-{
+#define REG_SOCK_MESSAGE(type, className, func)                                \
+  INST(network::socketSystem, doRegisterEvent, type,                           \
+       [](uintptr_t opaque, int32_t handle, int32_t ud, void *data,            \
+          size_t sz) {                                                         \
+         if (!INSTGET(className)) {                                            \
+           return;                                                             \
+         }                                                                     \
+         INST(className, func, opaque, handle, ud, data, sz);                  \
+       })
 
-class socketSystem : public util::singleton<socketSystem>
-{
+namespace engine {
+namespace network {
+
+class socketSystem : public util::singleton<socketSystem> {
 
   friend class socketChannel;
-  typedef std::function<void(uintptr_t opaque, int32_t handle, int32_t ud, void *data, size_t sz)> socketEventFunc;
-  static constexpr int socketEventMax = (((int32_t)socketMessageType::M_SOCKET_MAX) - 1);
+  typedef std::function<void(uintptr_t opaque, int32_t handle, int32_t ud,
+                             void *data, size_t sz)>
+      socketEventFunc;
+  static constexpr int socketEventMax =
+      (((int32_t)socketMessageType::M_SOCKET_MAX) - 1);
 
 public:
   socketSystem();
@@ -52,13 +62,11 @@ private:
   int32_t getReserve();
   socketHandle *getSocket(int32_t handle);
 
-  int32_t getEventFuncPos(socketMessageType type)
-  {
+  int32_t getEventFuncPos(socketMessageType type) {
     return ((int32_t)type) - 1;
   }
 
-  socketEventFunc getEventFunc(socketMessageType type)
-  {
+  socketEventFunc getEventFunc(socketMessageType type) {
     return m_eFunc[getEventFuncPos(type)];
   }
 

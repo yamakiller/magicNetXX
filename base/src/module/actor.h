@@ -3,28 +3,24 @@
 
 #include "base.h"
 #include "message.h"
-#include "util/queue.h"
 #include "operation/clock.h"
+#include "util/queue.h"
 #include <functional>
-#include <optional>
 
-namespace engine
-{
-namespace module
-{
+namespace engine {
+namespace module {
 class actorSystem;
-class actor
-{
+class actorComponent;
+class actor {
   friend class actorWorker;
+  friend class actorComponent;
 
-  class messageQueue : public util::queue<struct message>
-  {
+  class messageQueue : public util::queue<struct message> {
   private:
     virtual void local_dropevent(struct message *val);
   };
 
-  struct timeSingle
-  {
+  struct timeSingle {
     uint32_t _handle;
     int32_t _session;
   };
@@ -47,10 +43,7 @@ protected:
 
 protected:
   operation::clock::timeEntery doTimeOut(int time, int session);
-  void setRunFunc(runFunc func)
-  {
-    m_func = func;
-  }
+  void setRunFunc(runFunc func) { m_func = func; }
 
 public:
   void dispatch();
@@ -59,6 +52,7 @@ protected:
   uint32_t m_handle;
   bool m_inglobal;
   messageQueue m_mqs;
+  actorComponent *m_compt;
   runFunc m_func;
 };
 
