@@ -11,11 +11,14 @@
 #include "task.h"
 #include "util/deque.h"
 
-namespace engine {
-namespace operation {
+namespace engine
+{
+namespace operation
+{
 class scheduler;
 
-class worker {
+class worker
+{
   friend class scheduler;
 
 public:
@@ -36,17 +39,20 @@ public:
 
   inline scheduler *getScheduler() { return m_lpsch; }
 
-  struct suspendEntry {
+  struct suspendEntry
+  {
     util::weakPtr<task> _tk;
     uint64_t _id;
 
     explicit operator bool() const { return !!_tk; }
 
-    friend bool operator==(suspendEntry const &lhs, suspendEntry const &rhs) {
+    friend bool operator==(suspendEntry const &lhs, suspendEntry const &rhs)
+    {
       return lhs._tk == rhs._tk && lhs._id == rhs._id;
     }
 
-    friend bool operator<(suspendEntry const &lhs, suspendEntry const &rhs) {
+    friend bool operator<(suspendEntry const &lhs, suspendEntry const &rhs)
+    {
       if (lhs._id == rhs._id)
         return lhs._tk < rhs._tk;
       return lhs._id < rhs._id;
@@ -115,22 +121,24 @@ private:
   tkdeque m_waitQueue;
 
   typedef util::deque<task, false> untkdeque;
-  untkdeque m_gccQueue;
+  untkdeque m_gccQueue; //TODO 资源的回复
 };
 
-inline void worker::operCoYield() {
+inline void worker::operCoYield()
+{
   auto work = getCurrentWorker();
-  if (work) {
+  if (work)
+  {
     work->coYield();
   }
 }
 
-inline void worker::coYield() {
+inline void worker::coYield()
+{
   task *tk = getCurrentTask();
   assert(tk);
 
   ++tk->_yieldCount;
-
   tk->SwapOut();
 }
 } // namespace operation

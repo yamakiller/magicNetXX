@@ -3,12 +3,16 @@
 
 #include <string>
 
-namespace engine {
-namespace log {
-class ilog {
+namespace engine
+{
+namespace log
+{
+class ilog
+{
 public:
   virtual ~ilog() {}
-  enum class logLevel {
+  enum logLevel
+  {
     L_TRACE,
     L_DEBUG,
     L_INFO,
@@ -20,8 +24,10 @@ public:
   virtual bool doLog(logLevel level, const std::string &msg) = 0;
 
 protected:
-  inline logLevel getLevel(int32_t level) {
-    switch (level) {
+  inline logLevel getLevel(int32_t level)
+  {
+    switch (level)
+    {
     case 0:
       return logLevel::L_TRACE;
     case 1:

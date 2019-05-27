@@ -10,11 +10,14 @@
 
 #define ACOTR_ID_MARK 0xffffff
 
-namespace engine {
-namespace module {
+namespace engine
+{
+namespace module
+{
 
 class actor;
-class actorSystem : public util::singleton<actorSystem> {
+class actorSystem : public util::singleton<actorSystem>
+{
   friend class actorWorker;
   typedef std::shared_ptr<actor> ptrActor;
   typedef std::weak_ptr<actor> wptrActor;
@@ -35,8 +38,13 @@ public:
 
   void clear();
 
+public:
+  int32_t doSendMessage(struct message *msg);
+  int32_t doSendMessage(uint32_t src, uint32_t dst, int msgId, int session = 0, void *data = nullptr, size_t sz = 0);
+
 private:
-  inline uint32_t local_addr(uint32_t handle) {
+  inline uint32_t local_addr(uint32_t handle)
+  {
     return handle & (m_actorCap - 1);
   }
 

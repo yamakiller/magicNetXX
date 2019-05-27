@@ -3,11 +3,14 @@
 #include "config.h"
 #include "scheduler.h"
 
-namespace engine {
-namespace operation {
+namespace engine
+{
+namespace operation
+{
 worker::worker(scheduler *sch, int id)
     : m_id(id), m_lpsch(sch), m_waiting({false}), m_ntsTick(0), m_ntsMark(0),
-      m_nts(0), m_notified(false), m_runnable(nullptr) {
+      m_nts(0), m_notified(false), m_runnable(nullptr)
+{
   std::thread t([this] {
     worker *p = static_cast<worker *>(this);
     p->process();
@@ -18,28 +21,38 @@ worker::worker(scheduler *sch, int id)
 
 worker::~worker() {}
 
-void worker::addTask(task *t) {
+void worker::addTask(task *t)
+{
   std::unique_lock<tkdeque::lock_handle> lock(m_newQueue.lockRef());
   m_newQueue.pushUnlock(t);
-  if (m_waiting) {
+  if (m_waiting)
+  {
     m_cv.notify_all();
-  } else {
+  }
+  else
+  {
     m_notified = true;
   }
 }
 
-void worker::addTask(util::list<task> &&slist) {
+void worker::addTask(util::list<task> &&slist)
+{
   std::unique_lock<tkdeque::lock_handle> lock(m_newQueue.lockRef());
   m_newQueue.pushUnlock(std::move(slist));
-  if (m_waiting) {
+  if (m_waiting)
+  {
     m_cv.notify_all();
-  } else {
+  }
+  else
+  {
     m_notified = true;
   }
 }
 
-int32_t worker::isBusy() {
-  if (m_ntsMark == m_nts) {
+int32_t worker::isBusy()
+{
+  if (m_ntsMark == m_nts)
+  {
     return 0;
   }
 
@@ -47,20 +60,24 @@ int32_t worker::isBusy() {
          m_ntsTick + INSTGET_VAR(coroutineOptions, _single_timeout_us);
 }
 
-void worker::restBusy() {
+void worker::restBusy()
+{
   m_ntsMark = m_nts;
   m_ntsTick = INST(clock, now);
 }
 
 int32_t worker::isWaiting() { return m_waiting ? 1 : 0; }
 
-size_t worker::getRunnableNum() {
+size_t worker::getRunnableNum()
+{
   return m_runnableQueue.size() + m_newQueue.size();
 }
 
-void worker::waitCondition() {
+void worker::waitCondition()
+{
   std::unique_lock<tkdeque::lock_handle> lock(m_runnableQueue.lockRef());
-  if (m_notified) {
+  if (m_notified)
+  {
     m_notified = false;
     return;
   }
@@ -70,55 +87,68 @@ void worker::waitCondition() {
   m_waiting = false;
 }
 
-void worker::notifyCondition() {
+void worker::notifyCondition()
+{
   std::unique_lock<tkdeque::lock_handle> lock(m_newQueue.lockRef());
-  if (m_waiting) {
+  if (m_waiting)
+  {
     m_cv.notify_all();
-  } else {
+  }
+  else
+  {
     m_notified = true;
   }
 }
 
-void worker::joinWait() {
+void worker::joinWait()
+{
   if (m_pid.joinable())
     m_pid.join();
 }
 
-worker *&worker::getCurrentWorker() {
+worker *&worker::getCurrentWorker()
+{
   static thread_local worker *lpworker = nullptr;
   return lpworker;
 }
 
-scheduler *worker::getCurrentScheduler() {
+scheduler *worker::getCurrentScheduler()
+{
   auto work = getCurrentWorker();
   return work ? work->m_lpsch : nullptr;
 }
 
-task *worker::getCurrentTask() {
+task *worker::getCurrentTask()
+{
   auto work = getCurrentWorker();
   return work ? work->m_runnable : nullptr;
 }
 
-bool worker::isExpire(struct suspendEntry const &entry) {
+bool worker::isExpire(struct suspendEntry const &entry)
+{
   util::incursivePtr<task> tkPtr = entry._tk.lock();
-  if (!tkPtr) {
+  if (!tkPtr)
+  {
     return false;
   }
 
-  if (entry._id != tkPtr->_supperId) {
+  if (entry._id != tkPtr->_supperId)
+  {
     return true;
   }
   return false;
 }
 
-worker::suspendEntry worker::suspend() {
+worker::suspendEntry worker::suspend()
+{
   task *tk = getCurrentTask();
   assert(tk);
   assert(tk->_lpWorker);
   return tk->_lpWorker->suspendBySelf(tk);
 }
 
-worker::suspendEntry worker::suspendBySelf(task *tk) {
+worker::suspendEntry worker::suspendBySelf(task *tk)
+{
   assert(tk == m_runnable);
   assert(tk->_state == taskState::runnable);
   tk->_state = taskState::block;
@@ -129,9 +159,11 @@ worker::suspendEntry worker::suspendBySelf(task *tk) {
 }
 
 bool worker::wakeup(struct suspendEntry const &entry,
-                    std::function<void()> const &functor) {
+                    std::function<void()> const &functor)
+{
   util::incursivePtr<task> tkPtr = entry._tk.lock();
-  if (!tkPtr) {
+  if (!tkPtr)
+  {
     return false;
   }
 
@@ -141,13 +173,16 @@ bool worker::wakeup(struct suspendEntry const &entry,
 }
 
 bool worker::wakeupBySelf(task *tk, uint64_t id,
-                          std::function<void()> const &functor) {
-  if (id != tk->_supperId) {
+                          std::function<void()> const &functor)
+{
+  if (id != tk->_supperId)
+  {
     return false;
   }
 
   std::unique_lock<tkdeque::lock_handle> lock(m_waitQueue.lockRef());
-  if (id != tk->_supperId) {
+  if (id != tk->_supperId)
+  {
     return false;
   }
 
@@ -159,7 +194,8 @@ bool worker::wakeupBySelf(task *tk, uint64_t id,
   assert(ret);
   lock.unlock();
   size_t sizeAfterPush = m_runnableQueue.pushOut(tk);
-  if (sizeAfterPush == 1 && getCurrentWorker() != this) {
+  if (sizeAfterPush == 1 && getCurrentWorker() != this)
+  {
     notifyCondition();
   }
   return true;
@@ -167,20 +203,25 @@ bool worker::wakeupBySelf(task *tk, uint64_t id,
 
 void worker::moveRunnable() { m_runnableQueue.push(m_newQueue.popBackAll()); }
 
-void worker::gc() {
+void worker::gc()
+{
   auto l = m_gccQueue.popBackAll();
-  for (task &tk : l) {
+  for (task &tk : l)
+  {
     tk.decrementRef();
   }
   l.clear();
 }
 
-void worker::process() {
+void worker::process()
+{
   worker::getCurrentWorker() = this;
   m_ntsTick = INST(clock, now);
-  while (!m_lpsch->isShutdown()) {
+  while (!m_lpsch->isShutdown())
+  {
     m_runnable = m_runnableQueue.pop();
-    if (m_runnable != nullptr) {
+    if (m_runnable != nullptr)
+    {
 
       ++m_nts;
 
@@ -189,7 +230,8 @@ void worker::process() {
 
       m_runnable->SwapIn();
 
-      switch (m_runnable->_state) {
+      switch (m_runnable->_state)
+      {
       case taskState::runnable:
       case taskState::block:
         m_runnable = nullptr;
@@ -204,7 +246,8 @@ void worker::process() {
       }
     }
 
-    if (m_runnableQueue.empty()) {
+    if (m_runnableQueue.empty())
+    {
       moveRunnable();
     }
 
@@ -214,8 +257,10 @@ void worker::process() {
   }
 }
 
-util::list<task> worker::steal(size_t n) {
-  if (n > 0) {
+util::list<task> worker::steal(size_t n)
+{
+  if (n > 0)
+  {
     m_newQueue.assertLink();
     auto steal_list = m_newQueue.popBack(n);
     m_newQueue.assertLink();
@@ -225,20 +270,24 @@ util::list<task> worker::steal(size_t n) {
     auto steal_list_2 = m_runnableQueue.popBack(n - steal_list.size());
 
     steal_list_2.append(std::move(steal_list));
-    if (!steal_list_2.empty()) {
+    if (!steal_list_2.empty())
+    {
       // fprintf(stderr, "Proc(%d).Stealed = %d\n", m_id,
       // (int)steal_list_2.size());
     }
 
     return steal_list_2;
-  } else {
+  }
+  else
+  {
     m_newQueue.assertLink();
     auto steal_list = m_newQueue.popBackAll();
     m_newQueue.assertLink();
 
     auto steal_list_2 = m_runnableQueue.popBackAll();
     steal_list_2.append(std::move(steal_list));
-    if (!steal_list_2.empty()) {
+    if (!steal_list_2.empty())
+    {
       // fprintf(stderr, "Proc(%d).Stealed = %d\n", m_id,
       // (int)steal_list_2.size());
     }

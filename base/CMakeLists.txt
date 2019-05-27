@@ -9,7 +9,8 @@ file(GLOB
 	./src/log/*.* 
 	./src/operation/*.* 
 	./src/module/*.* 
-	./src/network/*.*)
+	./src/network/*.*
+	./src/test/*.*)
 
 add_library(${PROJ_NAME} SHARED ${SRCLIST})
 add_definitions(-DUSE_JEMALLOC)

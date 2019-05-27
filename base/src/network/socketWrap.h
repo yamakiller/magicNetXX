@@ -76,7 +76,7 @@ enum class socketState
   BIND = 8,       // Bind状态
 };
 
-enum class socketMessageType
+enum socketMessageType
 {
   M_SOCKET_DATA = 1,
   M_SOCKET_START,

@@ -6,55 +6,71 @@
 #include <iostream>
 #include <vector>
 
-namespace engine {
-namespace module {
+#define MESSAGE_EXT_MAX 32
+#define MESSAGE_EXT_ID_BYTES sizeof(uint8_t)
+#define MESSAGE_EXT_SZ_BYTES MESSAGE_EXT_MAX - sizeof(uint8_t)
+#define MESSAGE_EXT_SZ_MASK 0xFFFFF
 
-class message {
-public:
-  template <typename T>
-  message(uint32_t source, const T &val) : m_source(source), m_value{val} {}
-
-  template <typename T>
-  message(uint32_t source, T &&val)
-      : m_source(source), m_value{std::move(val)} {}
-
-  message() = default;
-  message(const message &) = delete;
-  message(message &&) = default;
-  message &operator=(const message &) = delete;
-  message &operator=(message &&) = default;
-
-  template <typename T> bool is() const noexcept {
-    return typeid(T) == m_value.type();
-  }
-
-  template <typename T> auto get() { return boost::any_cast<T>(m_value); }
-
-  template <typename T> const auto get() const {
-    return boost::any_cast<T>(m_value);
-  }
-
-  template <typename T, typename U> message &match(U f) {
-    if (is<T>()) {
-      m_matched = true;
-      f(get<T>());
-    }
-
-    return *this;
-  }
-
-  template <typename U> void otherwise(U f) {
-    if (!m_matched)
-      f();
-  }
-
-  template <typename T, typename U> void expect(U f) { f(get<T>()); }
-
-private:
-  uint32_t m_source;
-  boost::any m_value;
-  bool m_matched = false;
+namespace engine
+{
+namespace module
+{
+enum messageId
+{
+  M_ID_ERROR = 1,
+  M_ID_TIMEOUT,
+  M_ID_RESOUE,
+  M_ID_TEXT,
+  M_ID_SOCKET,
+  M_ID_MAX,
 };
+
+struct message
+{
+  uint32_t _src;
+  uint32_t _dst;
+  int32_t _session;
+  void *_data;
+  char _ext[MESSAGE_EXT_MAX];
+};
+
+class messageApi
+{
+public:
+  static inline struct message getMessage(uint8_t msgId, uint32_t src, uint32_t dst, int32_t session = 0, void *data = nullptr, size_t sz = 0);
+  static inline int getMessageId(struct message *msg);
+  static inline uint32_t getMessageSize(struct message *msg);
+};
+
+struct message messageApi::getMessage(uint8_t msgId, uint32_t src, uint32_t dst, int32_t session, void *data, size_t sz)
+{
+  struct message msg;
+  msg._src = src;
+  msg._dst = dst;
+  msg._session = session;
+  msg._data = data;
+  uint32_t tmpsize = (sz & MESSAGE_EXT_SZ_MASK);
+  tmpsize <<= MESSAGE_EXT_ID_BYTES;
+  memcpy(&msg._ext[0], &msgId, MESSAGE_EXT_ID_BYTES);
+  memcpy(((char *)&msg._ext[0]) + MESSAGE_EXT_ID_BYTES, &tmpsize, MESSAGE_EXT_SZ_BYTES);
+
+  return msg;
+}
+
+int messageApi::getMessageId(struct message *msg)
+{
+  uint8_t msgId;
+  memcpy(&msgId, &msg->_ext[0], sizeof(uint8_t));
+  return (int)msgId;
+}
+
+uint32_t messageApi::getMessageSize(struct message *msg)
+{
+  uint32_t msgSize = 0;
+  memcpy(&msgSize, ((char *)&msg->_ext[0]) + MESSAGE_EXT_ID_BYTES, MESSAGE_EXT_SZ_BYTES);
+  msgSize >>= MESSAGE_EXT_ID_BYTES;
+  return msgSize;
+}
 
 } // namespace module
 } // namespace engine

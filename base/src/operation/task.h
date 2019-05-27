@@ -41,7 +41,7 @@ struct task : public util::node, public util::shared_ref {
 
 private:
   void execute();
-  static void defaultExecute(transfer_t trans);
+  static void defaultExecute(void *data);
 
 private:
   task(task const &) = delete;

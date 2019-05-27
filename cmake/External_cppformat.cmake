@@ -23,6 +23,12 @@ list(APPEND CisEngine_THIRDPARTYLIBS_ARGS
 add_custom_command(TARGET cppformat POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy
             ${cppformat_build}/*.so ${LIBRARY_OUTPUT_PATH})
+add_custom_command(TARGET cppformat POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy
+            ${cppformat_build}/*.so.1 ${LIBRARY_OUTPUT_PATH})
+add_custom_command(TARGET cppformat POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy
+            ${cppformat_build}/*.so.1.2.0 ${LIBRARY_OUTPUT_PATH})
 
 if(FORCE_STEP)
   ExternalProject_Add_Step(cppformat forcebuild
