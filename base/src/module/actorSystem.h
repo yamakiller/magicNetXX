@@ -4,6 +4,7 @@
 #include "actorWorker.h"
 #include "util/mutex.h"
 #include "util/singleton.h"
+#include "componentGroup.h"
 #include <memory>
 #include <thread>
 #include <vector>
@@ -16,6 +17,7 @@ namespace module
 {
 
 class actor;
+class actorComponent;
 class actorSystem : public util::singleton<actorSystem>
 {
   friend class actorWorker;
@@ -26,7 +28,7 @@ public:
   actorSystem();
   ~actorSystem();
 
-  int32_t doStart();
+  int32_t doStart(const char *componentPath);
   void doShutdown();
 
   uint32_t doRegister(actor *obj);
@@ -41,6 +43,7 @@ public:
 public:
   int32_t doSendMessage(struct message *msg);
   int32_t doSendMessage(uint32_t src, uint32_t dst, int msgId, int session = 0, void *data = nullptr, size_t sz = 0);
+  struct component *getComponent(const char *name);
 
 private:
   inline uint32_t local_addr(uint32_t handle)
@@ -50,9 +53,15 @@ private:
 
 private:
   int32_t m_actorSer;
+
   int32_t m_actorCap;
+
   actorWorker m_workpid;
+
   std::vector<ptrActor> m_actors;
+
+  componentGroup m_cptGroup;
+
   util::wrMutex m_rwmutex;
 };
 } // namespace module

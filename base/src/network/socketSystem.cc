@@ -10,15 +10,47 @@
 #include "errorWrap.h"
 #include "operation/clock.h"
 
+#define REG_SOCK_MESSAGE(type, func) doRegisterEvent(type,                                            \
+                                                     [](uintptr_t opaque, int32_t handle, int32_t ud, \
+                                                        void *data, size_t sz) {                      \
+                                                       func(opaque, handle, ud, data, sz);            \
+                                                     })
+
 namespace engine
 {
 namespace network
 {
+
+void onSocketAccept(uintptr_t opaque, int32_t handle, int32_t ud, void *data, size_t sz)
+{
+}
+
+void onSocketStart(uintptr_t opaque, int32_t handle, int32_t ud, void *data, size_t sz)
+{
+}
+
+void onSocketData(uintptr_t opaque, int32_t handle, int32_t ud, void *data, size_t sz)
+{
+}
+
+void onSocketClose(uintptr_t opaque, int32_t handle, int32_t ud, void *data, size_t sz)
+{
+}
+
+void onSocketError(uintptr_t opaque, int32_t handle, int32_t ud, void *data, size_t sz)
+{
+}
+
+void onSocketWarn(uintptr_t opaque, int32_t handle, int32_t ud, void *data, size_t sz)
+{
+}
+
 socketSystem::socketSystem()
 {
   m_iocp = nullptr;
   m_channel = nullptr;
 }
+
 socketSystem::~socketSystem() {}
 
 int32_t socketSystem::doStart()
@@ -45,6 +77,15 @@ int32_t socketSystem::doStart()
   m_channel->doRegisterClearClosedFunc(std::bind(
       &socketSystem::doRequestClearClosedEvent, this, std::placeholders::_1,
       std::placeholders::_2, std::placeholders::_3));
+
+  using smt = socketMessageType;
+  REG_SOCK_MESSAGE(smt::M_SOCKET_ACCEPT, onSocketAccept);
+  REG_SOCK_MESSAGE(smt::M_SOCKET_START, onSocketStart);
+  REG_SOCK_MESSAGE(smt::M_SOCKET_DATA, onSocketData);
+  REG_SOCK_MESSAGE(smt::M_SOCKET_ERROR, onSocketError);
+  REG_SOCK_MESSAGE(smt::M_SOCKET_CLOSE, onSocketClose);
+  REG_SOCK_MESSAGE(smt::M_SOCKET_WARNING, onSocketWarn);
+
   std::thread t([this]() { this->doPoll(); });
   m_pid.swap(t);
   return 0;

@@ -2,7 +2,7 @@ set(exampleapp_test_task_source "${CMAKE_CURRENT_SOURCE_DIR}/example/test_task")
 set(exampleapp_test_task_build "${CMAKE_CURRENT_BINARY_DIR}/example/bin")
 
 set(_deps "base")
-add_optional_deps(_deps "boost")
+add_optional_deps(_deps "boost" "launcher")
 
 ExternalProject_Add(exampleapp_test_task
    SOURCE_DIR ${exampleapp_test_task_source}

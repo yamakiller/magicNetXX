@@ -46,7 +46,6 @@ public:
     m_ctx = t.fctx;
   }
 
-  //需要修改
   inline void SwapTo(context &other)
   {
     transfer_t t = jump_fcontext(other.m_ctx, other.m_ud);

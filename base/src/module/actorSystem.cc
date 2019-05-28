@@ -14,7 +14,16 @@ actorSystem::actorSystem() : m_actorSer(1), m_actorCap(4)
 
 actorSystem::~actorSystem() { clear(); }
 
-int32_t actorSystem::doStart() { return m_workpid.doStart(); }
+int32_t actorSystem::doStart(const char *componentPath)
+{
+  if (componentPath == nullptr)
+  {
+    fprintf(stderr, " Please enter the component search path!");
+    exit(0);
+  }
+  m_cptGroup.doInit(componentPath);
+  return m_workpid.doStart();
+}
 
 void actorSystem::doShutdown() { m_workpid.doShutdown(); }
 
@@ -118,6 +127,11 @@ int32_t actorSystem::doSendMessage(uint32_t src, uint32_t dst, int msgId, int se
 {
   struct message msg = messageApi::getMessage(msgId, src, dst, session, data, sz);
   return doSendMessage(&msg);
+}
+
+struct component *actorSystem::getComponent(const char *name)
+{
+  return m_cptGroup.getComponent(name);
 }
 
 } // namespace module

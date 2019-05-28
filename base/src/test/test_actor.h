@@ -9,9 +9,6 @@ namespace test
 {
 class testActor : public module::actor
 {
-protected:
-    int32_t initialize();
-    void finalize();
 };
 } // namespace test
 } // namespace engine

@@ -1,7 +1,7 @@
 set(base_source "${CMAKE_CURRENT_SOURCE_DIR}/base")
 set(base_build "${CMAKE_CURRENT_BINARY_DIR}/base")
 
-add_optional_deps(_deps "boost" "jemalloc" "cppformat" "spdlog")
+add_optional_deps(_deps "boost" "jemalloc" "cppformat" "spdlog" "tinyxml2")
 
 
 ExternalProject_Add(base

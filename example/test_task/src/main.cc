@@ -1,13 +1,23 @@
 #include <framework.h>
+#include <commandLineOption.h>
+#include <string>
 
-namespace engine {
+namespace engine
+{
 
-namespace example {
+namespace example
+{
 
-class testFramework : public engine::framework {
+class testFramework : public engine::framework
+{
 private:
 protected:
-  virtual bool initialize(const icommandLine *opt) { return true; }
+  virtual bool initialize(const commandLineOption *opt)
+  {
+    std::string p = ((commandLineOption *)opt)->getOption("p");
+    fprintf(stderr, "aaaa %s\n", p.c_str());
+    return true;
+  }
 
   virtual bool loop() { return true; }
 
