@@ -23,3 +23,8 @@ target_link_libraries(${PROJ_NAME}
 set_target_properties(${PROJ_NAME} PROPERTIES FOLDER 
 									"components" 
 									PREFIX "")
+
+
+add_custom_command(TARGET ${PROJ_NAME} POST_BUILD
+                  COMMAND ${CMAKE_COMMAND} -E copy
+                   ${CMAKE_CURRENT_BINARY_DIR}/*.so ${LIBRARY_OUTPUT_PATH}/components/)
