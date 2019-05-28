@@ -3,7 +3,7 @@
 #include "util/stringUtil.h"
 #include <functional>
 
-namespace engine
+namespace wolf
 {
 namespace log
 {
@@ -97,4 +97,4 @@ void syslogFatal(const std::string &msg)
 }
 
 } // namespace log
-} // namespace engine
+} // namespace wolf

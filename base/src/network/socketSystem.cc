@@ -16,7 +16,7 @@
                                                        func(opaque, handle, ud, data, sz);            \
                                                      })
 
-namespace engine
+namespace wolf
 {
 namespace network
 {
@@ -949,4 +949,4 @@ void socketSystem::doPoll()
 }
 
 } // namespace network
-} // namespace engine
+} // namespace wolf

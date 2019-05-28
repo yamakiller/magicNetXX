@@ -5,7 +5,7 @@
 #include <assert.h>
 #include <map>
 
-namespace engine
+namespace wolf
 {
 namespace operation
 {
@@ -283,4 +283,4 @@ std::string scheduler::debug()
 }
 
 } // namespace operation
-} // namespace engine
+} // namespace wolf

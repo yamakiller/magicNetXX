@@ -7,7 +7,7 @@
 #include "util/queue.h"
 #include <functional>
 
-namespace engine
+namespace wolf
 {
 namespace module
 {
@@ -31,7 +31,7 @@ class actor
     int32_t _session;
   };
 
-  typedef std::function<int32_t(struct message *msg)> runFunc;
+  /*typedef std::function<int32_t(struct message *msg)> runFunc;*/
 
 public:
   actor();
@@ -45,7 +45,6 @@ public:
 
 protected:
   operation::clock::timeEntery doTimeOut(int time, int session);
-  //void setRunFunc(runFunc func) { m_func = func; }
 
 public:
   void dispatch();
@@ -56,10 +55,9 @@ protected:
   messageQueue m_mqs;
   component *m_dll;
   actorComponent *m_cpt;
-  runFunc m_func;
 };
 
 } // namespace module
-} // namespace engine
+} // namespace wolf
 
 #endif

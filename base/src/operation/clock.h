@@ -21,7 +21,7 @@
 #define CLOCK_LEVEL (1 << CLOCK_LEVEL_SHOFT)
 #define CLOCK_LEVEL_MASK (CLOCK_LEVEL - 1)
 
-namespace engine
+namespace wolf
 {
 
 namespace operation
@@ -184,6 +184,6 @@ private:
 };
 
 } // namespace operation
-} // namespace engine
+} // namespace wolf
 
 #endif

@@ -4,7 +4,7 @@
 #include <map>
 #include <string>
 
-namespace engine
+namespace wolf
 {
 
 class commandLineOption
@@ -23,6 +23,6 @@ private:
   std::map<std::string, std::string> m_options;
 };
 
-} // namespace engine
+} // namespace wolf
 
 #endif

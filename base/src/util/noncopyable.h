@@ -1,7 +1,7 @@
 #ifndef CIS_ENGINE_UTIL_NONCOPYABLE_H
 #define CIS_ENGINE_UTIL_NONCOPYABLE_H
 
-namespace engine {
+namespace wolf {
 namespace util {
 class noncopyable {
 protected:
@@ -13,6 +13,6 @@ private:
   noncopyable &operator=(const noncopyable &);
 };
 } // namespace util
-} // namespace engine
+} // namespace wolf
 
 #endif

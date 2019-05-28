@@ -4,7 +4,7 @@
 #include "noncopyable.h"
 #include <cstddef>
 
-namespace engine {
+namespace wolf {
 namespace util {
 class memory : public noncopyable {
 public:
@@ -21,6 +21,6 @@ public:
   static void free(void *ptr);
 };
 } // namespace util
-} // namespace engine
+} // namespace wolf
 
 #endif

@@ -4,7 +4,7 @@
 #include <condition_variable>
 #include <mutex>
 
-namespace engine {
+namespace wolf {
 namespace util {
 class wrMutex {
 public:
@@ -81,6 +81,6 @@ private:
 };
 
 } // namespace util
-} // namespace engine
+} // namespace wolf
 
 #endif

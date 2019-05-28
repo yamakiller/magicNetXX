@@ -6,15 +6,19 @@
 #include <condition_variable>
 #include <mutex>
 
-namespace engine {
-namespace module {
+namespace wolf
+{
+namespace module
+{
 
-class actorWorker {
+class actorWorker
+{
 public:
   actorWorker();
   ~actorWorker();
 
-  void doPost(uint32_t handle) {
+  void doPost(uint32_t handle)
+  {
     m_works.push(&handle);
     m_pid.doPost();
   }
@@ -24,13 +28,12 @@ public:
 
 private:
   void doDispatch();
-  void doTask(intptr_t param);
 
 private:
   util::queue<uint32_t> m_works;
   util::post m_pid;
 };
 } // namespace module
-} // namespace engine
+} // namespace wolf
 
 #endif

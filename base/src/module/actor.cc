@@ -3,7 +3,7 @@
 #include "actorComponent.h"
 #include "componentGroup.h"
 
-namespace engine
+namespace wolf
 {
 namespace module
 {
@@ -106,13 +106,13 @@ void actor::dispatch()
   {
     if (m_mqs.pop(&msg))
     {
-      if (m_func == nullptr)
+      if (m_cpt == nullptr)
       {
         util::memory::free(msg._data);
         continue;
       }
 
-      int ref = m_func(&msg);
+      int ref = m_cpt->doRun(&msg);
       if (ref)
       {
         util::memory::free(msg._data);
@@ -130,4 +130,4 @@ void actor::dispatch()
 }
 
 } // namespace module
-} // namespace engine
+} // namespace wolf

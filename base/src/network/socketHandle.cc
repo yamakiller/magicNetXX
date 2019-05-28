@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <string.h>
 
-namespace engine
+namespace wolf
 {
 namespace network
 {
@@ -242,4 +242,4 @@ util::spinlock *socketHandle::getMutexRef() { return &m_mutex; }
 socketHandle::socketInfo socketHandle::getInfo() const { return m_info; }
 
 } // namespace network
-} // namespace engine
+} // namespace wolf

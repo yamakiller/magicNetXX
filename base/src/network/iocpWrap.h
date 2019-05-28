@@ -6,7 +6,7 @@
 
 #define IOCP_EVENT_WAIT_MAX 1024
 
-namespace engine {
+namespace wolf {
 namespace network {
 
 struct iocpEvent {
@@ -37,6 +37,6 @@ protected:
   struct iocpEvent m_evts[IOCP_EVENT_WAIT_MAX];
 };
 } // namespace network
-} // namespace engine
+} // namespace wolf
 
 #endif

@@ -4,7 +4,7 @@
 #include "base.h"
 #include <string>
 
-namespace engine {
+namespace wolf {
 namespace util {
 struct object_ref;
 struct shared_ref;
@@ -316,6 +316,6 @@ template <typename T>
 typename std::enable_if<!std::is_base_of<object_ref, T>::value>::type
 decrementRef(T *ptr) {}
 } // namespace util
-} // namespace engine
+} // namespace wolf
 
 #endif

@@ -6,7 +6,7 @@
 #include <assert.h>
 #include <mutex>
 
-namespace engine
+namespace wolf
 {
 namespace util
 {
@@ -160,6 +160,6 @@ protected:
   spinlock m_arrayLock;
 };
 } // namespace util
-} // namespace engine
+} // namespace wolf
 
 #endif

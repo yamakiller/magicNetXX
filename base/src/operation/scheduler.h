@@ -12,7 +12,7 @@
 #include "util/singleton.h"
 #include "worker.h"
 
-namespace engine {
+namespace wolf {
 namespace operation {
 
 class scheduler : public util::singleton<scheduler>, public util::noncopyable {
@@ -67,6 +67,6 @@ private:
 };
 
 } // namespace operation
-} // namespace engine
+} // namespace wolf
 
 #endif

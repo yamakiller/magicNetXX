@@ -3,7 +3,7 @@
 
 #include "fcontext.h"
 
-namespace engine
+namespace wolf
 {
 namespace operation
 {
@@ -75,6 +75,6 @@ private:
 };
 
 } // namespace operation
-} // namespace engine
+} // namespace wolf
 
 #endif

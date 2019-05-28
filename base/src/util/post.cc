@@ -1,6 +1,6 @@
 #include "post.h"
 
-namespace engine {
+namespace wolf {
 namespace util {
 
 post::post() : m_sleep(0), m_shutdown(false) {}
@@ -51,4 +51,4 @@ void post::defaultExecute() {
 }
 
 } // namespace util
-} // namespace engine
+} // namespace wolf

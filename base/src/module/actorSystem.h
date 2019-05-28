@@ -11,7 +11,7 @@
 
 #define ACOTR_ID_MARK 0xffffff
 
-namespace engine
+namespace wolf
 {
 namespace module
 {
@@ -65,6 +65,6 @@ private:
   util::wrMutex m_rwmutex;
 };
 } // namespace module
-} // namespace engine
+} // namespace wolf
 
 #endif

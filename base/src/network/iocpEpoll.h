@@ -5,7 +5,7 @@
 
 #ifdef UT_PLATFORM_LINUX
 
-namespace engine {
+namespace wolf {
 namespace network {
 class iocpEpoll : public iocpWrap {
 public:
@@ -23,7 +23,7 @@ protected:
   int32_t m_handle;
 };
 } // namespace network
-} // namespace engine
+} // namespace wolf
 
 #endif
 

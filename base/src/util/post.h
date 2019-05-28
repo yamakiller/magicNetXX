@@ -6,7 +6,7 @@
 #include <mutex>
 #include <thread>
 
-namespace engine {
+namespace wolf {
 namespace util {
 class post final {
 public:
@@ -32,6 +32,6 @@ private:
   std::condition_variable m_cv;
 };
 } // namespace util
-} // namespace engine
+} // namespace wolf
 
 #endif

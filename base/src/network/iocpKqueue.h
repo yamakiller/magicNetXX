@@ -5,7 +5,7 @@
 
 #ifdef UT_PLATFORM_APPLE
 
-namespace engine {
+namespace wolf {
 namespace network {
 class iocpKqueue : public iocpWrap {
 public:
@@ -23,7 +23,7 @@ protected:
   int32_t m_handle;
 };
 } // namespace network
-} // namespace engine
+} // namespace wolf
 
 #endif
 

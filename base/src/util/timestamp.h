@@ -13,7 +13,7 @@
 #define TM_NANOSEC 1000000000
 #define TM_MICROSEC 1000000
 
-namespace engine {
+namespace wolf {
 namespace util {
 namespace timestamp {
 
@@ -81,6 +81,6 @@ inline uint64_t getThreadTime() {
 
 } // namespace timestamp
 } // namespace util
-} // namespace engine
+} // namespace wolf
 
 #endif

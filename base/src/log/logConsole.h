@@ -4,7 +4,7 @@
 #include "ilog.h"
 #include <spdlog/spdlog.h>
 
-namespace engine {
+namespace wolf {
 namespace log {
 
 class logConsole : public ilog {
@@ -18,6 +18,6 @@ private:
 };
 
 } // namespace log
-} // namespace engine
+} // namespace wolf
 
 #endif

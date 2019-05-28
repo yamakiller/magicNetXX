@@ -2,7 +2,7 @@
 
 #ifdef UT_PLATFORM_APPLE
 
-namespace engine {
+namespace wolf {
 namespace network {
 iocpKqueue::iocpKqueue() { m_handle = kqueue(); }
 iocpKqueue::~iocpKqueue() {
@@ -69,6 +69,6 @@ int iocpKqueue::onWait() {
 }
 
 } // namespace network
-} // namespace engine
+} // namespace wolf
 
 #endif

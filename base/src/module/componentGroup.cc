@@ -3,7 +3,7 @@
 
 #include <dlfcn.h>
 
-namespace engine
+namespace wolf
 {
 namespace module
 {
@@ -169,4 +169,4 @@ void *componentGroup::getApi(struct component *comp, const char *apiName)
 }
 
 } // namespace module
-} // namespace engine
+} // namespace wolf

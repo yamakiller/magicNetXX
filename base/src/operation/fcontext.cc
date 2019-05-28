@@ -4,7 +4,7 @@
 #include <sys/mman.h>
 #endif
 
-namespace engine {
+namespace wolf {
 namespace operation {
 int &StackTraits::getProtectStackPageSize() {
   static int size = 0;
@@ -52,4 +52,4 @@ void StackTraits::unprotectStack(void *stack, int pageSize) { return; }
 #endif
 
 } // namespace operation
-} // namespace engine
+} // namespace wolf

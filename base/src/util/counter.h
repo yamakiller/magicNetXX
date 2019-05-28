@@ -3,7 +3,7 @@
 
 #include "base.h"
 
-namespace engine {
+namespace wolf {
 namespace util {
 template <typename T> struct id_counter {
   id_counter() { _id = ++counter(); }
@@ -21,6 +21,6 @@ private:
   long _id;
 };
 } // namespace util
-} // namespace engine
+} // namespace wolf
 
 #endif

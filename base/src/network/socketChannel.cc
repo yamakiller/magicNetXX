@@ -8,7 +8,7 @@
 #include <string.h>
 #include <unistd.h>
 
-namespace engine
+namespace wolf
 {
 namespace network
 {
@@ -220,4 +220,4 @@ int socketChannel::doProccess(int32_t idx, int32_t n)
   return -1;
 }
 } // namespace network
-} // namespace engine
+} // namespace wolf

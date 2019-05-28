@@ -11,7 +11,7 @@
 #define MESSAGE_EXT_SZ_BYTES MESSAGE_EXT_MAX - sizeof(uint8_t)
 #define MESSAGE_EXT_SZ_MASK 0xFFFFF
 
-namespace engine
+namespace wolf
 {
 namespace module
 {
@@ -73,6 +73,6 @@ uint32_t messageApi::getMessageSize(struct message *msg)
 }
 
 } // namespace module
-} // namespace engine
+} // namespace wolf
 
 #endif

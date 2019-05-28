@@ -4,7 +4,7 @@
 
 #include <spdlog/sinks/stdout_color_sinks.h>
 
-namespace engine {
+namespace wolf {
 namespace log {
 logConsole::logConsole() {
   auto console = spdlog::stdout_color_mt("console");
@@ -69,4 +69,4 @@ bool logConsole::doLog(ilog::logLevel level, const std::string &msg) {
   return true;
 }
 } // namespace log
-} // namespace engine
+} // namespace wolf

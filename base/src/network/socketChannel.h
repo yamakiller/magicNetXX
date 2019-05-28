@@ -8,7 +8,7 @@
 
 #define CHANNEL_INVALID -1
 
-namespace engine
+namespace wolf
 {
 namespace network
 {
@@ -142,5 +142,5 @@ private:
   fd_set m_rsfds;
 };
 } // namespace network
-} // namespace engine
+} // namespace wolf
 #endif

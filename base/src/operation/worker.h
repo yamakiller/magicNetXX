@@ -11,7 +11,7 @@
 #include "task.h"
 #include "util/deque.h"
 
-namespace engine
+namespace wolf
 {
 namespace operation
 {
@@ -142,6 +142,6 @@ inline void worker::coYield()
   tk->SwapOut();
 }
 } // namespace operation
-} // namespace engine
+} // namespace wolf
 
 #endif

@@ -43,7 +43,7 @@
 
 #define WARNING_SIZE (1024 * 1024)
 
-namespace engine
+namespace wolf
 {
 namespace network
 {
@@ -135,6 +135,6 @@ public:
   static int32_t reuseaddr(wsocket_t sock);
 };
 } // namespace network
-} // namespace engine
+} // namespace wolf
 
 #endif

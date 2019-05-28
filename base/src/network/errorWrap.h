@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-namespace engine {
+namespace wolf {
 namespace network {
 class errorWrap {
 public:
@@ -11,5 +11,5 @@ public:
   static int32_t wsalasterror();
 };
 } // namespace network
-} // namespace engine
+} // namespace wolf
 #endif

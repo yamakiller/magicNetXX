@@ -3,7 +3,7 @@
 
 #include <string>
 
-namespace engine
+namespace wolf
 {
 namespace log
 {
@@ -48,6 +48,6 @@ protected:
 protected:
 };
 } // namespace log
-} // namespace engine
+} // namespace wolf
 
 #endif

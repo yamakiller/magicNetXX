@@ -6,7 +6,7 @@
 
 #define MAX_COMPONENT_TYPE 64
 
-namespace engine
+namespace wolf
 {
 namespace module
 {
@@ -48,6 +48,6 @@ private:
     util::spinlock m_mutex;
 };
 } // namespace module
-} // namespace engine
+} // namespace wolf
 
 #endif

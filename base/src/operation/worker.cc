@@ -3,7 +3,7 @@
 #include "config.h"
 #include "scheduler.h"
 
-namespace engine
+namespace wolf
 {
 namespace operation
 {
@@ -296,4 +296,4 @@ util::list<task> worker::steal(size_t n)
 }
 
 } // namespace operation
-} // namespace engine
+} // namespace wolf

@@ -2,13 +2,13 @@
 #include <commandLineOption.h>
 #include <string>
 
-namespace engine
+namespace wolf
 {
 
 namespace example
 {
 
-class testFramework : public engine::framework
+class testFramework : public wolf::framework
 {
 private:
 protected:
@@ -27,4 +27,4 @@ protected:
 static testFramework app;
 
 } // namespace example
-} // namespace engine
+} // namespace wolf

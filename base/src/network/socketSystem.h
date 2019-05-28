@@ -9,7 +9,7 @@
 #include "util/spinlock.h"
 #include <thread>
 
-namespace engine
+namespace wolf
 {
 namespace network
 {
@@ -105,6 +105,6 @@ private:
   std::thread m_pid;
 };
 } // namespace network
-} // namespace engine
+} // namespace wolf
 
 #endif

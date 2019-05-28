@@ -8,7 +8,7 @@
 #include "util/singleton.h"
 #include <thread>
 
-namespace engine {
+namespace wolf {
 namespace log {
 class logSystem : public util::singleton<logSystem> {
   struct logMessage {
@@ -45,6 +45,6 @@ void syslogError(const std::string &msg);
 void syslogFatal(const std::string &msg);
 
 } // namespace log
-} // namespace engine
+} // namespace wolf
 
 #endif

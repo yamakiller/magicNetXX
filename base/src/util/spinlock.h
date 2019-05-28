@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <atomic>
 
-namespace engine {
+namespace wolf {
 namespace util {
 struct spinlock {
   std::atomic_flag flag;
@@ -34,6 +34,6 @@ struct unslk_lock_guard {
   template <typename Mutex> explicit unslk_lock_guard(Mutex &) {}
 };
 } // namespace util
-} // namespace engine
+} // namespace wolf
 
 #endif

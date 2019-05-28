@@ -1,6 +1,6 @@
 #include "stringUtil.h"
 
-namespace engine {
+namespace wolf {
 namespace util {
 
 std::vector<std::string> stringUtil::split(const std::string &val,
@@ -45,4 +45,4 @@ std::string stringUtil::tolower(const std::string &str) {
 }
 
 } // namespace util
-} // namespace engine
+} // namespace wolf

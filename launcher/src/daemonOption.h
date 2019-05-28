@@ -1,8 +1,10 @@
 #ifndef LAUNCHER_ENGINE_DAEMONOPTION_H
 #define LAUNCHER_ENGINE_DAEMONOPTION_H
 
-namespace engine {
-class daemonOption {
+namespace wolf
+{
+class daemonOption
+{
 public:
   daemonOption();
   ~daemonOption();
@@ -18,6 +20,6 @@ private:
 private:
   char *m_pidFile;
 };
-} // namespace engine
+} // namespace wolf
 
 #endif

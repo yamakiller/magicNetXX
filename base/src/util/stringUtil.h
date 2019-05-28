@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-namespace engine {
+namespace wolf {
 namespace util {
 class stringUtil : public noncopyable {
 public:
@@ -67,6 +67,6 @@ public:
   }
 };
 } // namespace util
-} // namespace engine
+} // namespace wolf
 
 #endif

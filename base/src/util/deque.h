@@ -5,7 +5,7 @@
 #include "list.h"
 #include "spinlock.h"
 
-namespace engine {
+namespace wolf {
 
 namespace util {
 template <typename T, bool threadSafe> class deque final {
@@ -263,6 +263,6 @@ private:
   volatile size_t m_count;
 };
 } // namespace util
-} // namespace engine
+} // namespace wolf
 
 #endif

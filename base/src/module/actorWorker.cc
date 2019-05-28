@@ -5,7 +5,7 @@
 #include "operation/scheduler.h"
 #include <functional>
 
-namespace engine
+namespace wolf
 {
 namespace module
 {
@@ -29,7 +29,18 @@ void actorWorker::doDispatch()
     if (m_works.pop(&handle))
     {
       INST(operation::scheduler, createTask,
-           std::bind(&actorWorker::doTask, this, std::placeholders::_1), handle,
+           [](intptr_t param) {
+             uint32_t handle = param;
+             actorSystem::ptrActor ptr = INST(actorSystem, getGrab, handle);
+             if (ptr == nullptr)
+             {
+               SYSLOG_ERROR(handle, "Error do task fail");
+               return;
+             }
+
+             ptr->dispatch();
+           },
+           handle,
            INSTGET_VAR(coroutineOptions, _stackSize));
       if (m_pid.isShutdown())
       {
@@ -43,18 +54,5 @@ void actorWorker::doDispatch()
   }
 }
 
-void actorWorker::doTask(intptr_t param)
-{
-  uint32_t handle = param;
-  actorSystem::ptrActor ptr = INST(actorSystem, getGrab, handle);
-  if (ptr == nullptr)
-  {
-    fprintf(stderr, "error do task :%u\n", handle);
-    return;
-  }
-
-  ptr->dispatch();
-}
-
 } // namespace module
-} // namespace engine
+} // namespace wolf

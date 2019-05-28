@@ -47,44 +47,44 @@
 #define INSTGET(className) className::instance()
 #define INSTGET_VAR(className, var) INSTGET(className)->var
 
-#define SYSLOG0(SOURCE, LEVEL, FMT, ...)                                    \
-  do                                                                        \
-  {                                                                         \
-    std::string body;                                                       \
-    std::string header;                                                     \
-    try                                                                     \
-    {                                                                       \
-      header = fmt::format("[:{:08x}] ", SOURCE);                           \
-      body = fmt::format(FMT);                                              \
-    }                                                                       \
-    catch (...)                                                             \
-    {                                                                       \
-      header = "[:00000000] ";                                              \
-      body = "format error";                                                \
-    }                                                                       \
-    std::string tail =                                                      \
-        fmt::format("[{}][{}:{}]", __FUNCTION__, __FILE__, __LINE__);       \
-    INST(engine::log::logSystem, doLog, engine::log::ilog::logLevel::LEVEL, \
-         header + body + tail);                                             \
+#define SYSLOG0(SOURCE, LEVEL, FMT, ...)                                \
+  do                                                                    \
+  {                                                                     \
+    std::string body;                                                   \
+    std::string header;                                                 \
+    try                                                                 \
+    {                                                                   \
+      header = fmt::format("[:{:08x}] ", SOURCE);                       \
+      body = fmt::format(FMT);                                          \
+    }                                                                   \
+    catch (...)                                                         \
+    {                                                                   \
+      header = "[:00000000] ";                                          \
+      body = "format error";                                            \
+    }                                                                   \
+    std::string tail =                                                  \
+        fmt::format("[{}][{}:{}]", __FUNCTION__, __FILE__, __LINE__);   \
+    INST(wolf::log::logSystem, doLog, wolf::log::ilog::logLevel::LEVEL, \
+         header + body + tail);                                         \
   } while (false)
 
-#define SYSLOG(SOURCE, LEVEL, ...)                                          \
-  do                                                                        \
-  {                                                                         \
-    std::string body;                                                       \
-    std::string header;                                                     \
-    try                                                                     \
-    {                                                                       \
-      header = fmt::format("[:{:08x}] ", SOURCE);                           \
-      body = fmt::format(__VA_ARGS__);                                      \
-    }                                                                       \
-    catch (...)                                                             \
-    {                                                                       \
-      SYSLOG0(SOURCE, LEVEL, __VA_ARGS__);                                  \
-    }                                                                       \
-    std::string tail = "";                                                  \
-    INST(engine::log::logSystem, doLog, engine::log::ilog::logLevel::LEVEL, \
-         header + body + tail);                                             \
+#define SYSLOG(SOURCE, LEVEL, ...)                                      \
+  do                                                                    \
+  {                                                                     \
+    std::string body;                                                   \
+    std::string header;                                                 \
+    try                                                                 \
+    {                                                                   \
+      header = fmt::format("[:{:08x}] ", SOURCE);                       \
+      body = fmt::format(__VA_ARGS__);                                  \
+    }                                                                   \
+    catch (...)                                                         \
+    {                                                                   \
+      SYSLOG0(SOURCE, LEVEL, __VA_ARGS__);                              \
+    }                                                                   \
+    std::string tail = "";                                              \
+    INST(wolf::log::logSystem, doLog, wolf::log::ilog::logLevel::LEVEL, \
+         header + body + tail);                                         \
   } while (false)
 
 #define SYSLOG_TRACE(SOURCE, ...) SYSLOG(SOURCE, L_TRACE, __VA_ARGS__)
@@ -94,13 +94,13 @@
 #define SYSLOG_ERROR(SOURCE, ...) SYSLOG(SOURCE, L_ERROR, __VA_ARGS__)
 #define SYSLOG_FATAL(SOURCE, ...) SYSLOG(SOURCE, L_FATAL, __VA_ARGS__)
 
-namespace engine
+namespace wolf
 {
 template <typename T>
 using atomic_t = std::atomic<T>;
 
 extern std::mutex gDbgLock;
 //写入debug打印
-} // namespace engine
+} // namespace wolf
 
 #endif

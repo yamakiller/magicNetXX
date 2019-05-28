@@ -2,7 +2,7 @@
 #include "worker.h"
 #include <assert.h>
 
-namespace engine
+namespace wolf
 {
 namespace operation
 {
@@ -43,4 +43,4 @@ void task::defaultExecute(void *data)
 }
 
 } // namespace operation
-} // namespace engine
+} // namespace wolf

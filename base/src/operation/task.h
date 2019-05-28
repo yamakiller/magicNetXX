@@ -8,9 +8,12 @@
 #include "context.h"
 #include "util/deque.h"
 
-namespace engine {
-namespace operation {
-enum class taskState {
+namespace wolf
+{
+namespace operation
+{
+enum class taskState
+{
   runnable,
   block,
   done,
@@ -19,7 +22,8 @@ enum class taskState {
 class worker;
 typedef std::function<void(intptr_t)> taskFunc;
 
-struct task : public util::node, public util::shared_ref {
+struct task : public util::node, public util::shared_ref
+{
   uint64_t _id;
   uint64_t _yieldCount;
   atomic_t<long> _supperId;
@@ -51,6 +55,6 @@ private:
 };
 
 } // namespace operation
-} // namespace engine
+} // namespace wolf
 
 #endif

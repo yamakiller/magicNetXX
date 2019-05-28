@@ -10,7 +10,7 @@
 #include <Windows.h>
 #endif
 
-namespace engine {
+namespace wolf {
 namespace network {
 
 #ifdef UT_PLATFORM_WINDOWS
@@ -22,4 +22,4 @@ int32_t errorWrap::wsalasterror() { return errno; }
 #endif
 
 } // namespace network
-} // namespace engine
+} // namespace wolf

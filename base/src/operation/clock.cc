@@ -1,7 +1,7 @@
 #include "clock.h"
 #include "util/timestamp.h"
 
-namespace engine {
+namespace wolf {
 namespace operation {
 clockSlot::~clockSlot() {}
 
@@ -105,4 +105,4 @@ void clock::tick() {
 }
 
 } // namespace operation
-} // namespace engine
+} // namespace wolf

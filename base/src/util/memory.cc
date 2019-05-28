@@ -11,7 +11,7 @@
 #define rxaligned_alloc je_aligned_alloc
 #define rxposix_memalign je_posix_memalig
 
-namespace engine {
+namespace wolf {
 namespace util {
 
 class memory_hook : public noncopyable {
@@ -102,4 +102,4 @@ void *memory::lalloc(void *ptr, size_t osize, size_t nsize) {
 }
 
 } // namespace util
-} // namespace engine
+} // namespace wolf

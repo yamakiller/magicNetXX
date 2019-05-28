@@ -8,7 +8,7 @@
 #include "test/test_actor.h"
 // 临时测试用------------------- end
 
-namespace engine
+namespace wolf
 {
 
 static framework *gInstance = nullptr;
@@ -42,10 +42,28 @@ void framework::startLoop()
 
 bool framework::doInit(const commandLineOption *opt)
 {
+  if (!INST(coroutineOptions,
+            load,
+            ((commandLineOption *)opt)->getOption("p")))
+  {
+    return false;
+  }
+
+  /*基础配置信息-------------------------------------------------------------------------------------------------------------*/
+  INSTGET_VAR(coroutineOptions, _debug) = INST(coroutineOptions, getInt, "debug", 0);
+  INSTGET_VAR(coroutineOptions, _thread) = INST(coroutineOptions, getInt, "thread", 6);
+  INSTGET_VAR(coroutineOptions, _stackSize) = INST(coroutineOptions, getInt, "stack_size", 1 * 1024 * 1024);
+  INSTGET_VAR(coroutineOptions, _single_timeout_us) = INST(coroutineOptions, getInt, "single_timeout", 100 * 1000);
+  INSTGET_VAR(coroutineOptions, _dispatcher_thread_interval_us) = INST(coroutineOptions, getInt, "dispatcher_interval", 1000);
+  INSTGET_VAR(coroutineOptions, _componentPath) = INST(coroutineOptions, getString, "component_path", "./modules/?.so;./services/?.so");
+  INSTGET_VAR(coroutineOptions, _logSize) = INST(coroutineOptions, getInt, "log_size", 64);
+  INSTGET_VAR(coroutineOptions, _logLevel) = INST(coroutineOptions, getInt, "log_level", 0);
+  INSTGET_VAR(coroutineOptions, _logPath) = INST(coroutineOptions, getString, "log_path", nullptr);
+  /*-----------------------------------------------------------------------------------------------------------------------*/
 
   INST(log::logSystem, doStart);
   INST(operation::scheduler, doStart,
-       INSTGET_VAR(coroutineOptions, _threadNum));
+       INSTGET_VAR(coroutineOptions, _thread));
   INST(module::actorSystem, doStart,
        INSTGET_VAR(coroutineOptions, _componentPath));
   INST(network::socketSystem, doStart);
@@ -56,6 +74,7 @@ bool framework::doInit(const commandLineOption *opt)
     INST(module::actorSystem, doShutdown);
     INST(operation::scheduler, doShutdown);
     INST(log::logSystem, doShutdown);
+    INST(coroutineOptions, unload);
 
     return false;
   }
@@ -71,19 +90,7 @@ void framework::doUnInit()
   INST(module::actorSystem, doShutdown);
   INST(operation::scheduler, doShutdown);
   INST(log::logSystem, doShutdown);
+  INST(coroutineOptions, unload);
 }
 
-/*void framework::onSocketAccept(uintptr_t opaque, int32_t handle, int32_t ud,
-                               void *data, size_t sz) {}
-void framework::onSocketStart(uintptr_t opaque, int32_t handle, int32_t ud,
-                              void *data, size_t sz) {}
-void framework::onSocketData(uintptr_t opaque, int32_t handle, int32_t ud,
-                             void *data, size_t sz) {}
-void framework::onSocketClose(uintptr_t opaque, int32_t handle, int32_t ud,
-                              void *data, size_t sz) {}
-void framework::onSocketError(uintptr_t opaque, int32_t handle, int32_t ud,
-                              void *data, size_t sz) {}
-void framework::onSocketWarn(uintptr_t opaque, int32_t handle, int32_t ud,
-                             void *data, size_t sz) {}*/
-
-} // namespace engine
+} // namespace wolf

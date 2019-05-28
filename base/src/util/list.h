@@ -4,7 +4,7 @@
 #include "shared_ptr.h"
 #include <assert.h>
 
-namespace engine {
+namespace wolf {
 namespace util {
 struct node {
   struct node *_prev;
@@ -186,6 +186,6 @@ public:
   size_t m_count;
 };
 } // namespace util
-} // namespace engine
+} // namespace wolf
 
 #endif

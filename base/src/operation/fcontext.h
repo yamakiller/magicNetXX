@@ -6,11 +6,13 @@
 #include <boost/context/detail/fcontext.hpp>
 #include <functional>
 
-#define STACK_MALLOC(sz) engine::util::memory::malloc(sz)
-#define STACK_FREE(p) engine::util::memory::free(p)
+#define STACK_MALLOC(sz) wolf::util::memory::malloc(sz)
+#define STACK_FREE(p) wolf::util::memory::free(p)
 
-namespace engine {
-namespace operation {
+namespace wolf
+{
+namespace operation
+{
 
 using boost::context::detail::fcontext_t;
 using boost::context::detail::jump_fcontext;
@@ -22,7 +24,8 @@ using boost::context::detail::transfer_t;
 
 typedef void (*fn_t)(transfer_t);
 
-struct StackTraits {
+struct StackTraits
+{
   static int &getProtectStackPageSize();
 
   static bool protectStack(void *stack, size_t size, int pageSize);
@@ -31,6 +34,6 @@ struct StackTraits {
 };
 
 } // namespace operation
-} // namespace engine
+} // namespace wolf
 
 #endif

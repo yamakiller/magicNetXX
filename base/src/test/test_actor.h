@@ -3,7 +3,7 @@
 
 #include "module/actor.h"
 
-namespace engine
+namespace wolf
 {
 namespace test
 {
@@ -11,6 +11,6 @@ class testActor : public module::actor
 {
 };
 } // namespace test
-} // namespace engine
+} // namespace wolf
 
 #endif

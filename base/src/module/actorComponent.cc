@@ -1,6 +1,6 @@
 #include "actorComponent.h"
 
-namespace engine
+namespace wolf
 {
 namespace module
 {
@@ -12,11 +12,11 @@ actorComponent::~actorComponent()
 {
 }
 
-int actorComponent::doInit(actor *parent, void *parm)
+int32_t actorComponent::doInit(actor *parent, void *parm)
 {
     m_parent = parent;
     return 0;
 }
 
 } // namespace module
-} // namespace engine
+} // namespace wolf

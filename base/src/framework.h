@@ -13,7 +13,7 @@ static const int ENGINE_PATCH_VERSION = 0;
 #define ENGINE_MINOR_VERSION 0
 #define ENGINE_PATCH_VERSION 0
 
-namespace engine
+namespace wolf
 {
 
 class framework
@@ -40,6 +40,6 @@ protected:
   void onSocketError(uintptr_t opaque, int32_t handle, int32_t ud, void *data, size_t sz);
   void onSocketWarn(uintptr_t opaque, int32_t handle, int32_t ud, void *data, size_t sz);*/
 };
-} // namespace engine
+} // namespace wolf
 
 #endif

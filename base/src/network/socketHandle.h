@@ -8,7 +8,7 @@
 #define SOCKET_HANDLE_INVALID -1
 #define SOCKET_HANDLE_MINRECVBUFFER_MAX 128
 
-namespace engine
+namespace wolf
 {
 namespace network
 {
@@ -112,6 +112,6 @@ private:
 };
 
 } // namespace network
-} // namespace engine
+} // namespace wolf
 
 #endif

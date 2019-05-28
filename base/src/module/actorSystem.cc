@@ -2,7 +2,7 @@
 #include "actor.h"
 #include <assert.h>
 
-namespace engine
+namespace wolf
 {
 namespace module
 {
@@ -135,4 +135,4 @@ struct component *actorSystem::getComponent(const char *name)
 }
 
 } // namespace module
-} // namespace engine
+} // namespace wolf

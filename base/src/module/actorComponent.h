@@ -1,7 +1,9 @@
 #ifndef CIS_ENGINE_MODULE_ACTORCOMPONENT_H
 #define CIS_ENGINE_MODULE_ACTORCOMPONENT_H
 
-namespace engine
+#include <stdint.h>
+
+namespace wolf
 {
 namespace module
 {
@@ -13,11 +15,12 @@ public:
   virtual ~actorComponent();
 
 public:
-  virtual int doInit(actor *parent, void *parm);
+  virtual int32_t doInit(actor *parent, void *parm);
+  virtual int32_t doRun(struct message *msg) = 0;
 
 protected:
   actor *m_parent;
 };
 } // namespace module
-} // namespace engine
+} // namespace wolf
 #endif

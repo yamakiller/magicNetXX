@@ -20,11 +20,13 @@ find_package(spdlog)
 find_library(jemalloc ${Jemalloc_LIBRARIES})
 set(jemalloc ${Jemalloc_LIBRARIES}/libjemalloc.so)
 set(cppformat ${Cppformat_LIBRARIES}/libcppformat.so)
+set(tinyxml2 ${Tinyxml2_LIBRARIES}/libtinyxml2.so)
 
 
 
 include_directories(
 	./src
+	${Tinyxml2_INCLUDE_DIR}
 	${Spdlog_INCLUDE_DIR}
 	${Cppformat_INCLUDE_DIR}
 	${Boost_INCLUDE_DIRS}
@@ -37,6 +39,7 @@ target_link_libraries(${PROJ_NAME}
 	dl
 	pthread
 	spdlog::spdlog
+	${tinyxml2}
 	${cppformat}
 	${jemalloc}
 	${Boost_LIBRARIES})
