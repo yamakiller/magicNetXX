@@ -1,5 +1,5 @@
-#ifndef CIS_ENGINE_NETWORK_IOCPWRAP_H
-#define CIS_ENGINE_NETWORK_IOCPWRAP_H
+#ifndef WOLF_NETWORK_IOCPWRAP_H
+#define WOLF_NETWORK_IOCPWRAP_H
 
 #include "socketWrap.h"
 #include <assert.h>

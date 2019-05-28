@@ -1,5 +1,5 @@
-#ifndef CIS_ENGINE_FCONTEXT_H
-#define CIS_ENGINE_FCONTEXT_H
+#ifndef WOLF_FCONTEXT_H
+#define WOLF_FCONTEXT_H
 
 #include "base.h"
 #include "util/memory.h"

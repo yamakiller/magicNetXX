@@ -1,6 +1,7 @@
-#ifndef CIS_ENGINE_MODULE_ACTORCOMPONENT_H
-#define CIS_ENGINE_MODULE_ACTORCOMPONENT_H
+#ifndef WOLF_MODULE_ACTORCOMPONENT_H
+#define WOLF_MODULE_ACTORCOMPONENT_H
 
+#include "util/mobject.h"
 #include <stdint.h>
 
 namespace wolf
@@ -8,7 +9,7 @@ namespace wolf
 namespace module
 {
 class actor;
-class actorComponent
+class actorComponent : public util::mobject
 {
 public:
   actorComponent();

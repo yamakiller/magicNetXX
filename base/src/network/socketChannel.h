@@ -1,5 +1,5 @@
-#ifndef CIS_ENGINE_SOCKET_CHANNEL_H
-#define CIS_ENGINE_SOCKET_CHANNEL_H
+#ifndef WOLF_SOCKET_CHANNEL_H
+#define WOLF_SOCKET_CHANNEL_H
 
 #include "iocpWrap.h"
 #include <functional>

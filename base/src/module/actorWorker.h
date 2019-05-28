@@ -1,5 +1,5 @@
-#ifndef CIS_ENGINE_MODULE_ACTORWORKER_H
-#define CIS_ENGINE_MODULE_ACTORWORKER_H
+#ifndef WOLFE_ACTORWORKER_H
+#define WOLFE_ACTORWORKER_H
 
 #include "util/post.h"
 #include "util/queue.h"

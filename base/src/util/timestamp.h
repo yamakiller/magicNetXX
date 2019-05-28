@@ -1,5 +1,5 @@
-#ifndef CIS_ENGINE_UTIL_UTIMESTAMP_H
-#define CIS_ENGINE_UTIL_UTIMESTAMP_H
+#ifndef WOLF_UTIL_UTIMESTAMP_H
+#define WOLF_UTIL_UTIMESTAMP_H
 
 #include <stdint.h>
 #if !defined(__APPLE__) || defined(AVAILABLE_MAC_OS_X_VERSION_10_12_AND_LATER)
@@ -13,11 +13,15 @@
 #define TM_NANOSEC 1000000000
 #define TM_MICROSEC 1000000
 
-namespace wolf {
-namespace util {
-namespace timestamp {
+namespace wolf
+{
+namespace util
+{
+namespace timestamp
+{
 
-inline uint64_t getTimeSec() {
+inline uint64_t getTimeSec()
+{
 #if !defined(__APPLE__) || defined(AVAILABLE_MAC_OS_X_VERSION_10_12_AND_LATER)
   struct timespec ti;
   clock_gettime(CLOCK_MONOTONIC, &ti);
@@ -29,7 +33,8 @@ inline uint64_t getTimeSec() {
 #endif
 }
 
-inline uint64_t getTime() {
+inline uint64_t getTime()
+{
   uint64_t t;
 #if !defined(__APPLE__) || defined(AVAILABLE_MAC_OS_X_VERSION_10_12_AND_LATER)
   struct timespec ti;
@@ -45,7 +50,8 @@ inline uint64_t getTime() {
   return t;
 }
 
-inline void getSystemTime(uint32_t *sec, uint32_t *cs) {
+inline void getSystemTime(uint32_t *sec, uint32_t *cs)
+{
 #if !defined(__APPLE__) || defined(AVAILABLE_MAC_OS_X_VERSION_10_12_AND_LATER)
   struct timespec ti;
   clock_gettime(CLOCK_REALTIME, &ti);
@@ -59,7 +65,8 @@ inline void getSystemTime(uint32_t *sec, uint32_t *cs) {
 #endif
 }
 
-inline uint64_t getThreadTime() {
+inline uint64_t getThreadTime()
+{
 #if !defined(__APPLE__) || defined(AVAILABLE_MAC_OS_X_VERSION_10_12_AND_LATER)
   struct timespec ti;
   clock_gettime(CLOCK_THREAD_CPUTIME_ID, &ti);
@@ -70,7 +77,8 @@ inline uint64_t getThreadTime() {
   struct task_thread_times_info aTaskInfo;
   mach_msg_type_number_t aTaskInfoCount = TASK_THREAD_TIMES_INFO_COUNT;
   if (KERN_SUCCESS != task_info(mach_task_self(), TASK_THREAD_TIMES_INFO,
-                                (task_info_t)&aTaskInfo, &aTaskInfoCount)) {
+                                (task_info_t)&aTaskInfo, &aTaskInfoCount))
+  {
     return 0;
   }
 

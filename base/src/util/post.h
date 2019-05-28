@@ -1,5 +1,5 @@
-#ifndef CIS_ENGINE_POST_H
-#define CIS_ENGINE_POST_H
+#ifndef WOLF_POST_H
+#define WOLF_POST_H
 
 #include <condition_variable>
 #include <functional>

@@ -1,5 +1,5 @@
-#ifndef CIS_ENGINE_UTIL_SINGLETON_H
-#define CIS_ENGINE_UTIL_SINGLETON_H
+#ifndef WOLF_UTIL_SINGLETON_H
+#define WOLF_UTIL_SINGLETON_H
 
 #include <stdlib.h>
 

@@ -1,5 +1,5 @@
-#ifndef CIS_ENGINE_TASK_H
-#define CIS_ENGINE_TASK_H
+#ifndef WOLF_TASK_H
+#define WOLF_TASK_H
 
 #include <stdint.h>
 #include <stdio.h>
@@ -42,6 +42,27 @@ struct task : public util::node, public util::shared_ref
   inline void SwapIn() { _ctx.SwapIn(); }
 
   inline void SwapOut() { _ctx.SwapOut(); }
+
+public:
+  void *operator new(size_t size)
+  {
+    return util::memory::malloc(size);
+  }
+
+  void *operator new[](size_t size)
+  {
+    return util::memory::malloc(size);
+  }
+
+  void operator delete(void *p)
+  {
+    util::memory::free(p);
+  }
+
+  void operator delete[](void *p)
+  {
+    util::memory::free(p);
+  }
 
 private:
   void execute();

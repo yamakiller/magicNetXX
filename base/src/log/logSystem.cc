@@ -1,6 +1,8 @@
 #include "logSystem.h"
 #include "logConsole.h"
+#include "logFile.h"
 #include "util/stringUtil.h"
+#include "config.h"
 #include <functional>
 
 namespace wolf
@@ -16,8 +18,14 @@ int32_t logSystem::doStart()
   {
     return -1;
   }
-
-  m_log = new logConsole();
+  if (INSTGET_VAR(OPT, _logPath) == nullptr)
+  {
+    m_log = new logConsole();
+  }
+  else
+  {
+    m_log = new logFile();
+  }
   return m_pid.doStart(std::bind(&logSystem::doDispatch, this));
 }
 

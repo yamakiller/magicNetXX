@@ -7,6 +7,6 @@ include(${ROOT_DIR}/cmake/External_cppformat.cmake)
 include(${ROOT_DIR}/cmake/External_jemalloc.cmake)
 include(${ROOT_DIR}/cmake/External_boost.cmake)
 
-set(CisEngine_THIRDPARTYLIBS_ARGS "${CisEngine_THIRDPARTYLIBS_ARGS}"
+set(Wolf_THIRDPARTYLIBS_ARGS "${Wolf_THIRDPARTYLIBS_ARGS}"
   PARENT_SCOPE)
 

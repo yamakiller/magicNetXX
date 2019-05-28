@@ -41,7 +41,7 @@ void actorWorker::doDispatch()
              ptr->dispatch();
            },
            handle,
-           INSTGET_VAR(coroutineOptions, _stackSize));
+           INSTGET_VAR(OPT, _stackSize));
       if (m_pid.isShutdown())
       {
         break;

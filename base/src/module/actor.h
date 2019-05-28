@@ -1,10 +1,11 @@
-#ifndef CIS_ENGINE_MODULE_ACTOR_H
-#define CIS_ENGINE_MODULE_ACTOR_H
+#ifndef WOLF_MODULE_ACTOR_H
+#define WOLF_MODULE_ACTOR_H
 
 #include "base.h"
 #include "message.h"
 #include "operation/clock.h"
 #include "util/queue.h"
+#include "util/mobject.h"
 #include <functional>
 
 namespace wolf
@@ -14,7 +15,7 @@ namespace module
 class component;
 class actorSystem;
 class actorComponent;
-class actor
+class actor : public util::mobject
 {
   friend class actorWorker;
   friend class actorComponent;
@@ -30,8 +31,6 @@ class actor
     uint32_t _handle;
     int32_t _session;
   };
-
-  /*typedef std::function<int32_t(struct message *msg)> runFunc;*/
 
 public:
   actor();
@@ -49,6 +48,7 @@ protected:
 public:
   void dispatch();
 
+protected: //协程挂起唤醒库
 protected:
   uint32_t m_handle;
   bool m_inglobal;

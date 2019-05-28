@@ -8,14 +8,14 @@ ExternalProject_Add(launcher
   BINARY_DIR ${launcher_build}
   INSTALL_COMMAND ""
   CMAKE_CACHE_ARGS
-    ${CisEngine_DEFAULT_ARGS}
-    ${CisEngine_THIRDPARTYLIBS_ARGS}
+    ${Wolf_DEFAULT_ARGS}
+    ${Wolf_THIRDPARTYLIBS_ARGS}
     -DCMAKE_MODULE_PATH:PATH=${CMAKE_MODULE_PATH}
   DEPENDS
     ${_deps}
 )
 
-list(APPEND CisEngine_THIRDPARTYLIBS_ARGS
+list(APPEND Wolf_THIRDPARTYLIBS_ARGS
     # Add launcher engine properties so correct version of Boost is found.
       "-DLauncher_INCLUDE_DIR:PATH=${launcher_source}/src"
       "-DLauncher_LIBRARIES:PATH=${LIBRARY_OUTPUT_PATH}")

@@ -1,13 +1,14 @@
-#ifndef CIS_ENGINE_CONTEXT_H
-#define CIS_ENGINE_CONTEXT_H
+#ifndef WOLFXT_H
+#define WOLFXT_H
 
 #include "fcontext.h"
+#include "util/mobject.h"
 
 namespace wolf
 {
 namespace operation
 {
-class context
+class context : public util::mobject
 {
   typedef void (*fnc_t)(void *data);
 

@@ -1,17 +1,17 @@
-#ifndef CIS_ENGINE_FRAMEWORK_H
-#define CIS_ENGINE_FRAMEWORK_H
+#ifndef WOLF_FRAMEWORK_H
+#define WOLF_FRAMEWORK_H
 
 #include <stdint.h>
 #include <stddef.h>
 #include "commandLineOption.h"
 
-static const int ENGINE_MAJOR_VERSION = 1;
-static const int ENGINE_MINOR_VERSION = 0;
-static const int ENGINE_PATCH_VERSION = 0;
+static const int WOLF_MAJOR_VERSION = 1;
+static const int WOLF_MINOR_VERSION = 0;
+static const int WOLF_PATCH_VERSION = 0;
 
-#define ENGINE_MAJOR_VERSION 1
-#define ENGINE_MINOR_VERSION 0
-#define ENGINE_PATCH_VERSION 0
+#define WOLF_MAJOR_VERSION 1
+#define WOLF_MINOR_VERSION 0
+#define WOLF_PATCH_VERSION 0
 
 namespace wolf
 {

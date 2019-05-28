@@ -1,5 +1,5 @@
-#ifndef CIS_ENGINE_SCHEDULER_H
-#define CIS_ENGINE_SCHEDULER_H
+#ifndef WOLF_SCHEDULER_H
+#define WOLF_SCHEDULER_H
 
 #include <mutex>
 #include <stdint.h>
@@ -12,10 +12,13 @@
 #include "util/singleton.h"
 #include "worker.h"
 
-namespace wolf {
-namespace operation {
+namespace wolf
+{
+namespace operation
+{
 
-class scheduler : public util::singleton<scheduler>, public util::noncopyable {
+class scheduler : public util::singleton<scheduler>, public util::noncopyable
+{
   friend class worker;
 
 public:

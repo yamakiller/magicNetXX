@@ -6,7 +6,7 @@
 
 void doPrintVersion()
 {
-  fprintf(stderr, "cis engine %d.%d.%d\n", ENGINE_MAJOR_VERSION, ENGINE_MINOR_VERSION, ENGINE_PATCH_VERSION);
+  fprintf(stderr, "cis engine %d.%d.%d\n", WOLF_MAJOR_VERSION, WOLF_MINOR_VERSION, WOLF_PATCH_VERSION);
   fprintf(stderr, "Copyright (C) 2019 Free Software Foundation, Inc.\n");
   fprintf(stderr, "This is free software; see the source for copying conditions. There is NO\n");
   fprintf(stderr, "warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n");

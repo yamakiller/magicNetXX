@@ -15,15 +15,15 @@ ExternalProject_Add(jemalloc
     INSTALL_COMMAND ""
     BUILD_IN_SOURCE 1
     CMAKE_CACHE_ARGS
-    ${CisEngine_DEFAULT_ARGS}
-    ${CisEngine_THIRDPARTYLIBS_ARGS}
+    ${Wolf_DEFAULT_ARGS}
+    ${Wolf_THIRDPARTYLIBS_ARGS}
     )
 
 ExternalProject_Get_Property(jemalloc install_dir)
 set(JEMALLOC_ROOT "${CMAKE_CURRENT_BINARY_DIR}/jemalloc" CACHE INTERNAL "")
 set(JEMALLOC_LIB "${JEMALLOC_ROOT}/lib" CACHE INTERNAL "")
 
-list(APPEND CisEngine_THIRDPARTYLIBS_ARGS
+list(APPEND Wolf_THIRDPARTYLIBS_ARGS
     # Add Boost properties so correct version of Boost is found.
       "-DJEMALLOC_ROOT:PATH=${JEMALLOC_ROOT}"
       "-DJemalloc_INCLUDE_DIR:PATH=${JEMALLOC_ROOT}"

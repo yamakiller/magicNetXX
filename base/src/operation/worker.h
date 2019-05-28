@@ -1,7 +1,7 @@
 // WorkSteal
 
-#ifndef CIS_ENGINE_WORKER_H
-#define CIS_ENGINE_WORKER_H
+#ifndef WOLF_WORKER_H
+#define WOLF_WORKER_H
 
 #include <atomic>
 #include <condition_variable>

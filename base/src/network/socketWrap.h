@@ -1,5 +1,5 @@
-#ifndef CIS_ENGINE_NETWORK_SOCKET_H
-#define CIS_ENGINE_NETWORK_SOCKET_H
+#ifndef WOLF_NETWORK_SOCKET_H
+#define WOLF_NETWORK_SOCKET_H
 
 #include "platform.h"
 

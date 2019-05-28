@@ -9,8 +9,8 @@ ExternalProject_Add(exampleapp_test_task
    BINARY_DIR ${exampleapp_test_task_build}
    INSTALL_COMMAND ""
    CMAKE_CACHE_ARGS
-   ${CisEngine_DEFAULT_ARGS}
-   ${CisEngine_THIRDPARTYLIBS_ARGS}
+   ${Wolf_DEFAULT_ARGS}
+   ${Wolf_THIRDPARTYLIBS_ARGS}
    -DCMAKE_MODULE_PATH:PATH=${CMAKE_MODULE_PATH}
   DEPENDS
    ${_deps}

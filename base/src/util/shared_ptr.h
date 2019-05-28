@@ -1,5 +1,5 @@
-#ifndef CIS_ENGINE_UTIL_REFOBJECT_H
-#define CIS_ENGINE_UTIL_REFOBJECT_H
+#ifndef WOLFREFOBJECT_H
+#define WOLFREFOBJECT_H
 
 #include "base.h"
 #include <string>

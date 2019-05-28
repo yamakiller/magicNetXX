@@ -1,5 +1,5 @@
-#ifndef CIS_ENGINE_PLATFORM_H
-#define CIS_ENGINE_PLATFORM_H
+#ifndef WOLF_PLATFORM_H
+#define WOLF_PLATFORM_H
 
 #if defined(_WIN64)
 #define UT_PLATFORM_WINDOWS 0

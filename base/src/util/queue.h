@@ -1,5 +1,5 @@
-#ifndef CIS_ENGINE_UTIL_QUEUE_H
-#define CIS_ENGINE_UTIL_QUEUE_H
+#ifndef WOLF_UTIL_QUEUE_H
+#define WOLF_UTIL_QUEUE_H
 
 #include "memory.h"
 #include "spinlock.h"

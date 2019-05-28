@@ -1,5 +1,5 @@
-#ifndef CIS_ENGINE_BASE_H
-#define CIS_ENGINE_BASE_H
+#ifndef WOLF_BASE_H
+#define WOLF_BASE_H
 
 #include "format.h"
 #include "log/logSystem.h"

@@ -1,5 +1,5 @@
-#ifndef CIS_ENGINE_CONFIG_H
-#define CIS_ENGINE_CONFIG_H
+#ifndef WOLF_CONFIG_H
+#define WOLF_CONFIG_H
 
 #include "util/singleton.h"
 #include <unordered_map>
@@ -40,4 +40,7 @@ private:
 };
 
 } // namespace wolf
+
+#define OPT wolf::coroutineOptions
+
 #endif

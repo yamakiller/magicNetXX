@@ -37,8 +37,8 @@ ExternalProject_Add(boost
   INSTALL_COMMAND ""
   BUILD_IN_SOURCE 1
   CMAKE_CACHE_ARGS
-  ${CisEngine_DEFAULT_ARGS}
-  ${CisEngine_THIRDPARTYLIBS_ARGS}
+  ${Wolf_DEFAULT_ARGS}
+  ${Wolf_THIRDPARTYLIBS_ARGS}
 )
 
 
@@ -47,7 +47,7 @@ ExternalProject_Get_Property(boost install_dir)
 set(BOOST_ROOT "${CMAKE_CURRENT_BINARY_DIR}/boost" CACHE INTERNAL "")
 set(BOOST_LIB "${BOOST_ROOT}/stage/lib" CACHE INTERNAL "")
 
-list(APPEND CisEngine_THIRDPARTYLIBS_ARGS
+list(APPEND Wolf_THIRDPARTYLIBS_ARGS
 # Add Boost properties so correct version of Boost is found.
   "-DBOOST_ROOT:PATH=${BOOST_ROOT}"
   "-DBoost_INCLUDE_DIR:PATH=${BOOST_ROOT}"

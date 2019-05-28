@@ -8,15 +8,15 @@ ExternalProject_Add(tinyxml2
   BINARY_DIR ${tinyxml2_build}
   INSTALL_COMMAND ""
   CMAKE_CACHE_ARGS
-    ${CisEngine_DEFAULT_ARGS}
-    ${CisEngine_THIRDPARTYLIBS_ARGS}
+    ${Wolf_DEFAULT_ARGS}
+    ${Wolf_THIRDPARTYLIBS_ARGS}
     -DCMAKE_MODULE_PATH:PATH=${CMAKE_MODULE_PATH}
   DEPENDS
     ${_deps}
 )
 
 
-list(APPEND CisEngine_THIRDPARTYLIBS_ARGS
+list(APPEND Wolf_THIRDPARTYLIBS_ARGS
     # Add TinyXml2 engine properties so correct version of Boost is found.
       "-DTinyxml2_INCLUDE_DIR:PATH=${tinyxml2_source}"
       "-DTinyxml2_LIBRARIES:PATH=${LIBRARY_OUTPUT_PATH}")

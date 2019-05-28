@@ -1,5 +1,5 @@
-#ifndef CIS_ENGINE_MODULE_ACTORGROUP_H
-#define CIS_ENGINE_MODULE_ACTORGROUP_H
+#ifndef WOLF_MODULE_ACTORGROUP_H
+#define WOLF_MODULE_ACTORGROUP_H
 
 #include "actorWorker.h"
 #include "util/mutex.h"

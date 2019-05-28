@@ -1,5 +1,5 @@
-#ifndef CIS_ENGINE_CLOCK_H
-#define CIS_ENGINE_CLOCK_H
+#ifndef WOLF_CLOCK_H
+#define WOLF_CLOCK_H
 
 #include "base.h"
 #include "util/memory.h"

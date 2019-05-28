@@ -121,7 +121,7 @@ void scheduler::dispatcherWork()
   while (!m_shutdown)
   {
     std::this_thread::sleep_for(std::chrono::microseconds(
-        INSTGET_VAR(coroutineOptions, _dispatcher_thread_interval_us)));
+        INSTGET_VAR(OPT, _dispatcher_thread_interval_us)));
 
     size_t workCount = m_works.size();
     size_t totalLoadaverage = 0;

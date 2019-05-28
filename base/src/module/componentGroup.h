@@ -1,5 +1,5 @@
-#ifndef CIS_ENGINE_COMPONENT_GROUP_H
-#define CIS_ENGINE_COMPONENT_GROUP_H
+#ifndef WOLF_COMPONENT_GROUP_H
+#define WOLF_COMPONENT_GROUP_H
 
 #include "util/spinlock.h"
 #include <string>

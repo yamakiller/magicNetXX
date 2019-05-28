@@ -1,5 +1,5 @@
-#ifndef CIS_ENGINE_UTIL_NONCOPYABLE_H
-#define CIS_ENGINE_UTIL_NONCOPYABLE_H
+#ifndef WOLF_UTIL_NONCOPYABLE_H
+#define WOLF_UTIL_NONCOPYABLE_H
 
 namespace wolf {
 namespace util {

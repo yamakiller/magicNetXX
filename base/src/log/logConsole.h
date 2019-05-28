@@ -1,5 +1,5 @@
-#ifndef CIS_ENGINE_LOGCONSOLE_H
-#define CIS_ENGINE_LOGCONSOLE_H
+#ifndef WOLF_LOGCONSOLE_H
+#define WOLF_LOGCONSOLE_H
 
 #include "ilog.h"
 #include <spdlog/spdlog.h>

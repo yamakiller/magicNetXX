@@ -1,5 +1,5 @@
-#ifndef CIS_ENGINE_SYSLOG_H
-#define CIS_ENGINE_SYSLOG_H
+#ifndef WOLF_SYSLOG_H
+#define WOLF_SYSLOG_H
 
 #include "ilog.h"
 #include "util/memory.h"

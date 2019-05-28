@@ -57,7 +57,7 @@ int32_t worker::isBusy()
   }
 
   return INST(clock, now) >
-         m_ntsTick + INSTGET_VAR(coroutineOptions, _single_timeout_us);
+         m_ntsTick + INSTGET_VAR(OPT, _single_timeout_us);
 }
 
 void worker::restBusy()
@@ -192,10 +192,10 @@ bool worker::wakeupBySelf(task *tk, uint64_t id,
     functor();
   bool ret = m_waitQueue.eraseUnLock(tk);
   assert(ret);
-  lock.unlock();
-  size_t sizeAfterPush = m_runnableQueue.pushOut(tk);
+  size_t sizeAfterPush = m_runnableQueue.pushOutUnlock(tk);
   if (sizeAfterPush == 1 && getCurrentWorker() != this)
   {
+    lock.unlock();
     notifyCondition();
   }
   return true;

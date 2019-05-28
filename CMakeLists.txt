@@ -37,7 +37,7 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 set(THIRDLIB_DIR ${PROJECT_SOURCE_DIR}/3rd)
 
 set(CisEngine_INSTALL_PREFIX "${CisEngine_BINARY_DIR}/prefix")
-set(CisEngine_DEFAULT_ARGS
+set(Wolf_DEFAULT_ARGS
   "-DCMAKE_PREFIX_PATH:PATH=${CisEngine_INSTALL_PREFIX};${CMAKE_PREFIX_PATH}"
   "-DCMAKE_INSTALL_PREFIX:PATH=${CisEngine_INSTALL_PREFIX}"
   "-DCMAKE_CXX_COMPILER:PATH=${CMAKE_CXX_COMPILER}"
@@ -84,15 +84,12 @@ set(base
 
 set_property(GLOBAL PROPERTY USE_FOLDERS On)
 
-#add_subdirectory(launcher)
 add_subdirectory(3rd)
 
 include(${ROOT_DIR}/cmake/External_base.cmake)
 include(${ROOT_DIR}/cmake/External_launcher.cmake)
 include(${ROOT_DIR}/cmake/External_example.cmake)
-#add_subdirectory(base)
-#add_subdirectory(module)
-#add_subdirectory(example)
+include(${ROOT_DIR}/cmake/External_component.cmake)
 
 
 

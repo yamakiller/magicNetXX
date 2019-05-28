@@ -1,5 +1,5 @@
-#ifndef CIS_ENGINE_MODULE_MESSAGE_H
-#define CIS_ENGINE_MODULE_MESSAGE_H
+#ifndef WOLF_MODULE_MESSAGE_H
+#define WOLF_MODULE_MESSAGE_H
 
 #include <boost/any.hpp>
 #include <cstddef>

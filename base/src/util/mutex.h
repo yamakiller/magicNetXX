@@ -1,39 +1,50 @@
-#ifndef CIS_ENGINE_UTIL_MUTEXS_H
-#define CIS_ENGINE_UTIL_MUTEXS_H
+#ifndef WOLF_UTIL_MUTEXS_H
+#define WOLF_UTIL_MUTEXS_H
 
 #include <condition_variable>
 #include <mutex>
 
-namespace wolf {
-namespace util {
-class wrMutex {
+namespace wolf
+{
+namespace util
+{
+class wrMutex
+{
 public:
   wrMutex() = default;
   ~wrMutex() = default;
 
-  void lock_read() {
+  void lock_read()
+  {
     std::unique_lock<std::mutex> ulk(m_counterMutex);
     m_condRead.wait(ulk, [=]() -> bool { return m_writeCount == 0; });
     ++m_readCount;
   }
-  void lock_write() {
+  void lock_write()
+  {
     std::unique_lock<std::mutex> ulk(m_counterMutex);
     ++m_writeCount;
     m_condWrite.wait(
         ulk, [=]() -> bool { return m_readCount == 0 && !m_inWriteFlag; });
     m_inWriteFlag = true;
   }
-  void release_read() {
+  void release_read()
+  {
     std::unique_lock<std::mutex> ulk(m_counterMutex);
-    if (--m_readCount == 0 && m_writeCount > 0) {
+    if (--m_readCount == 0 && m_writeCount > 0)
+    {
       m_condWrite.notify_one();
     }
   }
-  void release_write() {
+  void release_write()
+  {
     std::unique_lock<std::mutex> ulk(m_counterMutex);
-    if (--m_writeCount == 0) {
+    if (--m_writeCount == 0)
+    {
       m_condRead.notify_all();
-    } else {
+    }
+    else
+    {
       m_condWrite.notify_one();
     }
     m_inWriteFlag = false;
@@ -48,9 +59,12 @@ private:
   std::condition_variable m_condRead;
 };
 
-template <typename _RWMutex> class unique_writeguard {
+template <typename _RWMutex>
+class unique_writeguard
+{
 public:
-  explicit unique_writeguard(_RWMutex &rwlockable) : m_rwlockable(rwlockable) {
+  explicit unique_writeguard(_RWMutex &rwlockable) : m_rwlockable(rwlockable)
+  {
     m_rwlockable.lock_write();
   }
   ~unique_writeguard() { m_rwlockable.release_write(); }
@@ -64,9 +78,12 @@ private:
   _RWMutex &m_rwlockable;
 };
 
-template <typename _RWMutex> class unique_readguard {
+template <typename _RWMutex>
+class unique_readguard
+{
 public:
-  explicit unique_readguard(_RWMutex &rwlockable) : m_rwlockable(rwlockable) {
+  explicit unique_readguard(_RWMutex &rwlockable) : m_rwlockable(rwlockable)
+  {
     m_rwlockable.lock_read();
   }
   ~unique_readguard() { m_rwlockable.release_read(); }

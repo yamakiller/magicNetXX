@@ -1,12 +1,15 @@
-#ifndef CIS_ENGINE_MODULE_MEMORY_H
-#define CIS_ENGINE_MODULE_MEMORY_H
+#ifndef WOLF_MODULE_MEMORY_H
+#define WOLF_MODULE_MEMORY_H
 
 #include "noncopyable.h"
 #include <cstddef>
 
-namespace wolf {
-namespace util {
-class memory : public noncopyable {
+namespace wolf
+{
+namespace util
+{
+class memory : public noncopyable
+{
 public:
   static void *malloc(size_t size);
   static void *calloc(size_t nmemb, size_t size);

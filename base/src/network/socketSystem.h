@@ -1,5 +1,5 @@
-#ifndef CIS_ENGINE_NETWORK_SOCKET_SYSTEM_H
-#define CIS_ENGINE_NETWORK_SOCKET_SYSTEM_H
+#ifndef WOLF_NETWORK_SOCKET_SYSTEM_H
+#define WOLF_NETWORK_SOCKET_SYSTEM_H
 
 #include "base.h"
 #include "iocpWrap.h"

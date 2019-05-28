@@ -1,5 +1,5 @@
-#ifndef CIS_ENGINE_ILOG_H
-#define CIS_ENGINE_ILOG_H
+#ifndef WOLF_ILOG_H
+#define WOLF_ILOG_H
 
 #include <string>
 

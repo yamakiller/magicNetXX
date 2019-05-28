@@ -1,5 +1,5 @@
-#ifndef CIS_ENGINE_UTIL_TWOWAYDEQUE_H
-#define CIS_ENGINE_UTIL_TWOWAYDEQUE_H
+#ifndef WOLF_UTIL_TWOWAYDEQUE_H
+#define WOLF_UTIL_TWOWAYDEQUE_H
 
 #include "base.h"
 #include "list.h"

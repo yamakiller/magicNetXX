@@ -1,5 +1,5 @@
-#ifndef CIS_ENGINE_NETWORK_SOCKET_HANDLE_H
-#define CIS_ENGINE_NETWORK_SOCKET_HANDLE_H
+#ifndef WOLF_NETWORK_SOCKET_HANDLE_H
+#define WOLF_NETWORK_SOCKET_HANDLE_H
 
 #include "socketWrap.h"
 #include "util/spinlock.h"
