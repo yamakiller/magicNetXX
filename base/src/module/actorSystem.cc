@@ -1,5 +1,6 @@
 #include "actorSystem.h"
 #include "actor.h"
+#include "util/stringUtil.h"
 #include <assert.h>
 
 namespace wolf
@@ -138,7 +139,7 @@ int32_t actorSystem::doSendMessage(uint32_t src, uint32_t dst, int msgId, int se
     else
     {
       tmpsz = strlen((char *)data);
-      data = util::stringUtil::strdup(data);
+      data = util::stringUtil::strdup((const char *)data);
     }
   }
 

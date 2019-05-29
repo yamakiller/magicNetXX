@@ -12,6 +12,7 @@ find_package(Boost COMPONENTS system coroutine context REQUIRED)
 include_directories(
 	./src/
 	${Base_INCLUDE_DIR}
+	${Cppformat_INCLUDE_DIR}
 	${Launcher_INCLUDE_DIR}
     ${Boost_INCLUDE_DIRS})
     

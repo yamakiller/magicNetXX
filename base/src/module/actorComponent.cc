@@ -1,3 +1,4 @@
+#include "actor.h"
 #include "actorComponent.h"
 
 namespace wolf
@@ -51,7 +52,7 @@ void actorComponent::removeSusped(int32_t session)
     auto it = m_susped.find(session);
     if (it == m_susped.end())
     {
-        return nullptr;
+        return;
     }
 
     m_susped.erase(it);
@@ -76,8 +77,8 @@ void actorComponent::registerProtocol(messageProtocol proto)
     {
         ptrProt->_msgId = proto._msgId;
         ptrProt->_dispatch = proto._dispatch;
-        //ptrProt->_pack = proto._pack;
-        ptrProt->unpack = proto._unpack;
+        ptrProt->_pack = proto._pack;
+        ptrProt->_unpack = proto._unpack;
         return;
     }
 
@@ -119,9 +120,9 @@ int32_t actorComponent::dispatchMessage(struct message *msg)
             }
 
             if (ptrCo->_func == nullptr)
-                worker::wakeup(ptrCo->_entry);
+                operation::worker::wakeup(ptrCo->_entry);
             else
-                worker::wakeup(ptrCo->_entry, ptrCo->_func);
+                operation::worker::wakeup(ptrCo->_entry, ptrCo->_func);
             removeSusped(msgSession);
             return 0;
         }
@@ -133,11 +134,11 @@ int32_t actorComponent::dispatchMessage(struct message *msg)
         {
             if (msgSession != 0)
             {
-                INST(actorSystem, doSendMessage, msgSrc, msgSrc, messageId::M_ID_ERROR, msgSession, "");
+                INST(actorSystem, doSendMessage, msgSrc, msgSrc, messageId::M_ID_ERROR, msgSession, (void *)"");
             }
             else
             {
-                unknownRequest(msgID, msgSession, msgSrc, msgData, msgSz);
+                unknownRequest(msgId, msgSession, msgSrc, msgData, msgSz);
             }
             return 0;
         }
@@ -145,17 +146,17 @@ int32_t actorComponent::dispatchMessage(struct message *msg)
         auto f = p->_dispatch;
         if (f)
         {
-            f(msgSession, msgSrc, p->_unpack(msgData， msgSz));
+            f(msgSession, msgSrc, p->_unpack(msgData, msgSz));
         }
         else
         {
             if (msgSession != 0)
             {
-                INST(actorSystem, doSendMessage, msgSrc, msgSrc, messageId::M_ID_ERROR, msgSession, "");
+                INST(actorSystem, doSendMessage, msgSrc, msgSrc, messageId::M_ID_ERROR, msgSession, (void *)"");
             }
             else
             {
-                unknownRequest(msgID, msgSession, msgSrc, msgData, msgSz);
+                unknownRequest(msgId, msgSession, msgSrc, msgData, msgSz);
             }
         }
     }
@@ -163,14 +164,14 @@ int32_t actorComponent::dispatchMessage(struct message *msg)
 
 void actorComponent::unknownResponse(int32_t session, uint32_t source, void *msg, uint32_t sz)
 {
-    SYSLOG_ERROR(m_parent->m_handle, "Response message : {}", std::string(msg, sz));
-    SYSLOG_ERROR(m_parent->m_handle, "Unknown session : {} from {:08x}", session, source);
+    SYSLOG_ERROR(m_parent->handle(), "Response message : {}", std::string((const char *)msg, sz).c_str());
+    SYSLOG_ERROR(m_parent->handle(), "Unknown session : {} from {:08x}", session, source);
 }
 
 void actorComponent::unknownRequest(int32_t msgId, int32_t session, uint32_t source, void *msg, uint32_t sz)
 {
-    SYSLOG_ERROR(m_parent->m_handle, "Unknown request ({}): {}", msgId, c.tostring(msg, sz));
-    SYSLOG_ERROR(m_parent->m_handle, "Unknown session : {} from {:08x}", session, source);
+    SYSLOG_ERROR(m_parent->handle(), "Unknown request ({}): {}", msgId, std::string((const char *)msg, sz).c_str());
+    SYSLOG_ERROR(m_parent->handle(), "Unknown session : {} from {:08x}", session, source);
 }
 
 } // namespace module
