@@ -1,7 +1,6 @@
 #ifndef WOLF_MODULE_MESSAGE_H
 #define WOLF_MODULE_MESSAGE_H
 
-#include <boost/any.hpp>
 #include <cstddef>
 #include <iostream>
 #include <vector>

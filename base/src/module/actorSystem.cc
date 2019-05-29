@@ -125,7 +125,24 @@ int32_t actorSystem::doSendMessage(struct message *msg)
 
 int32_t actorSystem::doSendMessage(uint32_t src, uint32_t dst, int msgId, int session, void *data, size_t sz)
 {
-  struct message msg = messageApi::getMessage(msgId, src, dst, session, data, sz);
+  size_t tmpsz = sz;
+  if (data != nullptr && sz == 0)
+  {
+
+    if (strcmp((char *)data, "") == 0)
+    {
+      tmpsz = 4;
+      data = util::memory::malloc(tmpsz);
+      memset(data, 0, tmpsz);
+    }
+    else
+    {
+      tmpsz = strlen((char *)data);
+      data = util::stringUtil::strdup(data);
+    }
+  }
+
+  struct message msg = messageApi::getMessage(msgId, src, dst, session, data, tmpsz);
   return doSendMessage(&msg);
 }
 

@@ -6,7 +6,6 @@
 #include "operation/clock.h"
 #include "util/queue.h"
 #include "util/mobject.h"
-#include <functional>
 
 namespace wolf
 {
