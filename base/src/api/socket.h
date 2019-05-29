@@ -1,5 +1,5 @@
 #ifndef WOLF_API_SOCKET_H
-#define WOLF_API_SOCKET_H
+#define WOLF_APIAPI_SOCKET_H
 
 #include <module/actorComponent.h>
 
