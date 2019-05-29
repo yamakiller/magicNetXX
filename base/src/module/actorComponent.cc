@@ -27,6 +27,10 @@ int32_t actorComponent::doRun(struct message *msg)
     return 1;
 }
 
+void actorComponent::doTimeout(int time, std::function<void(void)> func)
+{
+}
+
 void actorComponent::doWait(struct co)
 {
     int32_t session = genSession();
@@ -194,8 +198,7 @@ int32_t actorComponent::dispatchMessage(struct message *msg)
     uint32_t msgSrc = msg->_src;
     uint32_t msgDst = msg->_dst;
 
-    if (msgId == messageId::M_ID_RESOUE ||
-        msgId == messageId::M_ID_TIMEOUT)
+    if (msgId == messageId::M_ID_RESOUE)
     {
         co *ptrCo = getSusped(msgSession);
         if (ptrCo == nullptr)
@@ -219,13 +222,23 @@ int32_t actorComponent::dispatchMessage(struct message *msg)
                 return 0;
             }
 
-            if (ptrCo->_func == nullptr)
-                operation::worker::wakeup(ptrCo->_entry);
-            else
-                operation::worker::wakeup(ptrCo->_entry, ptrCo->_func);
+            operation::worker::wakeup(ptrCo->_entry);
             removeSusped(msgSession);
             return 0;
         }
+    }
+    else if (msgId == messageId::M_ID_TIMEOUT)
+    {
+        co *ptrCo = getSusped(msgSession);
+        if (ptrCo == nullptr || ptrCo->_func == nullptr)
+        {
+            unknownResponse(msgSession, msgSrc, msgData, msgSz);
+            return 0;
+        }
+
+        ptrCo->_func();
+        removeSusped(msgSession);
+        return 0；
     }
     else
     {

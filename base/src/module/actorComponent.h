@@ -63,7 +63,10 @@ protected:
   template <typename... Args>
   void doSend(int32_t msgId, uint32_t dst, int32_t session, Args... parm);
 
+  void doTimeout(int time, std::function<void(void)> func);
+
   void doWait(struct co);
+
   bool doWakeup(struct co);
 
 private:
