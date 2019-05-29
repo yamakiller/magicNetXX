@@ -5,7 +5,8 @@ namespace wolf
 {
 namespace module
 {
-actorComponent::actorComponent() : m_parent(nullptr)
+actorComponent::actorComponent() : m_session(0),
+                                   m_parent(nullptr)
 {
 }
 
@@ -26,15 +27,61 @@ int32_t actorComponent::doRun(struct message *msg)
     return 1;
 }
 
+void actorComponent::doWait(struct co)
+{
+    int32_t session = genSession();
+    if (!suspendSleep(session, co))
+    {
+        return;
+    }
+    removeSusped(session);
+    removeSusped(co._entry._id);
+}
+
+bool actorComponent::doWakeup(struct co)
+{
+    int32_t session = getSleepSusped(co);
+    if (session == -1)
+    {
+        return false;
+    }
+
+    operation::worker::wakeup(co._entery);
+    return true;
+}
+
+int32_t actorComponent::genSession()
+{
+    int32_t session = ++m_session;
+    if (session <= 0)
+    {
+        m_session = 1;
+        return 1;
+    }
+
+    return session;
+}
+
+bool actorComponent::suspendSleep(int32_t session, struct co)
+{
+    if (!insertSusped(session, co))
+    {
+        return false;
+    }
+    insertSleepSusped(session, co);
+    operation::worker::operCoYield();
+    return true;
+}
+
 co *actorComponent::getSusped(int32_t session)
 {
-    if (m_susped.empty())
+    if (m_suspedSession.empty())
     {
         return nullptr;
     }
 
-    auto it = m_susped.find(session);
-    if (it == m_susped.end())
+    auto it = m_suspedSession.find(session);
+    if (it == m_suspedSession.end())
     {
         return nullptr;
     }
@@ -42,20 +89,73 @@ co *actorComponent::getSusped(int32_t session)
     return &it->second;
 }
 
+bool actorComponent::insertSusped(int32_t session struct co)
+{
+    if (!m_suspedSession.empty())
+    {
+        auto it = m_suspedSession.find(session);
+        if (it != m_suspedSession.end())
+        {
+            SYSLOG_ERROR(m_parent->handle(), "Suspend failed Session repeat error({})", session)
+            return false;
+        }
+    }
+
+    m_suspedSession[session] = co;
+    return true;
+}
+
 void actorComponent::removeSusped(int32_t session)
 {
-    if (m_susped.empty())
+    if (m_suspedSession.empty())
     {
         return;
     }
 
-    auto it = m_susped.find(session);
-    if (it == m_susped.end())
+    auto it = m_suspedSession.find(session);
+    if (it == m_suspedSession.end())
     {
         return;
     }
 
-    m_susped.erase(it);
+    m_suspedSession.erase(it);
+}
+
+int32_t actorComponent::getSleepSusped(struct co)
+{
+    if (m_suspedSleep.empty())
+    {
+        return -1;
+    }
+
+    auto it = m_suspedSleep.find(co._entry._id);
+    if (it == m_suspedSleep.end())
+    {
+        return -1;
+    }
+
+    return m_suspedSleep[co._entry._id];
+}
+
+void actorComponent::insertSleepSusped(int32_t session, struct co)
+{
+    m_suspedSleep[co._entry._id] = session;
+}
+
+void actorComponent::removeSleepSusped(struct co)
+{
+    if (m_suspedSleep.empty())
+    {
+        return;
+    }
+
+    auto it = m_suspedSleep.find(co._entry._id);
+    if (it == m_suspedSleep.end())
+    {
+        return;
+    }
+
+    m_suspedSleep.erase(co._entry._id);
 }
 
 messageProtocol *actorComponent::getProtocol(int32_t msgId)

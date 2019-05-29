@@ -47,6 +47,7 @@ struct co
 typedef std::vector<messageProtocol> msgProtoTable;
 typedef operation::worker::suspendEntry suspendEntery;
 typedef std::unordered_map<int32_t, co> suspedTable;
+typedef std::unordered_map<uint64_t, int32_t> sleepTable;
 
 class actorComponent : public util::mobject
 {
@@ -62,9 +63,21 @@ protected:
   template <typename... Args>
   void doSend(int32_t msgId, uint32_t dst, int32_t session, Args... parm);
 
+  void doWait(struct co);
+  bool doWakeup(struct co);
+
 private:
+  int32_t genSession();
+
+  bool suspendSleep(int32_t session, struct co);
+
   co *getSusped(int32_t session);
+  bool insertSusped(int32_t session struct co);
   void removeSusped(int32_t session);
+
+  int32_t getSleepSusped(struct co);
+  void insertSleepSusped(int32_t session, struct co);
+  void removeSleepSusped(struct co);
 
   messageProtocol *getProtocol(int32_t msgId);
   void registerProtocol(messageProtocol proto);
@@ -75,8 +88,10 @@ private:
 
 protected:
   actor *m_parent;
+  int32_t m_session;
   msgProtoTable m_proto;
-  suspedTable m_susped;
+  suspedTable m_suspedSession;
+  sleepTable m_suspedSleep;
 };
 
 template <typename... Args>
