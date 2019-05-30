@@ -13,6 +13,13 @@ namespace wolf
 {
 namespace network
 {
+struct socketMessage
+{
+  int32_t _id;
+  int32_t _type;
+  int _ext;
+  char *_buffer;
+};
 
 class socketSystem : public util::singleton<socketSystem>
 {

@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <iostream>
 #include <vector>
+#include <string.h>
 
 #define MESSAGE_EXT_MAX 32
 #define MESSAGE_EXT_ID_BYTES sizeof(uint8_t)
@@ -21,6 +22,7 @@ enum messageId
   M_ID_RESOUE,
   M_ID_TEXT,
   M_ID_SOCKET,
+  M_ID_QUIT,
   M_ID_MAX,
 };
 

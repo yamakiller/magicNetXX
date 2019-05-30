@@ -19,7 +19,7 @@ int32_t actorSystem::doStart(const char *componentPath)
 {
   if (componentPath == nullptr)
   {
-    fprintf(stderr, " Please enter the component search path!");
+    fprintf(stderr, "Please enter the component search path!");
     exit(0);
   }
   m_cptGroup.doInit(componentPath);

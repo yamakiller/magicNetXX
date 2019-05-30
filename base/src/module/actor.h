@@ -47,7 +47,6 @@ protected:
 public:
   void dispatch();
 
-protected: //协程挂起唤醒库
 protected:
   uint32_t m_handle;
   bool m_inglobal;

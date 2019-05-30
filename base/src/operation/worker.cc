@@ -153,12 +153,14 @@ worker::suspendEntry worker::suspendBySelf(task *tk)
   assert(tk->_state == taskState::runnable);
   tk->_state = taskState::block;
   uint64_t id = ++(tk->_supperId);
-  m_waitQueue.push(tk);
 
+  std::unique_lock<tkdeque::lock_handle> lock(m_runnableQueue.lockRef());
+  m_waitQueue.pushUnlock(tk);
   return suspendEntry{util::weakPtr<task>(tk), id};
 }
 
 bool worker::wakeup(struct suspendEntry const &entry,
+                    bool iswakeup,
                     std::function<void()> const &functor)
 {
   util::incursivePtr<task> tkPtr = entry._tk.lock();
@@ -169,10 +171,12 @@ bool worker::wakeup(struct suspendEntry const &entry,
 
   auto wrk = tkPtr->_lpWorker;
 
-  return wrk ? wrk->wakeupBySelf(tkPtr.get(), entry._id, functor) : false;
+  return wrk ? wrk->wakeupBySelf(tkPtr.get(), entry._id, iswakeup, functor) : false;
 }
 
-bool worker::wakeupBySelf(task *tk, uint64_t id,
+bool worker::wakeupBySelf(task *tk,
+                          uint64_t id,
+                          bool iswakeup,
                           std::function<void()> const &functor)
 {
   if (id != tk->_supperId)
@@ -180,13 +184,17 @@ bool worker::wakeupBySelf(task *tk, uint64_t id,
     return false;
   }
 
-  std::unique_lock<tkdeque::lock_handle> lock(m_waitQueue.lockRef());
+  std::unique_lock<tkdeque::lock_handle> lock(m_runnableQueue.lockRef());
   if (id != tk->_supperId)
   {
     return false;
   }
 
   ++(tk->_supperId);
+  if (!iswakeup)
+  {
+    tk->_state = taskState::death;
+  }
 
   if (functor)
     functor();
@@ -225,10 +233,13 @@ void worker::process()
 
       ++m_nts;
 
-      m_runnable->_state = taskState::runnable;
-      m_runnable->_lpWorker = this;
+      if (m_runnable->_state != taskState::death)
+      {
+        m_runnable->_state = taskState::runnable;
+        m_runnable->_lpWorker = this;
 
-      m_runnable->SwapIn();
+        m_runnable->SwapIn();
+      }
 
       switch (m_runnable->_state)
       {

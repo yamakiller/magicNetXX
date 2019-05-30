@@ -16,6 +16,7 @@ enum class taskState
 {
   runnable,
   block,
+  death,
   done,
 };
 

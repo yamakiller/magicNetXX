@@ -9,6 +9,9 @@
 #endif
 #include "errorWrap.h"
 #include "operation/clock.h"
+#include "util/stringUtil.h"
+#include "module/actorSystem.h"
+#include "module/message.h"
 
 #define REG_SOCK_MESSAGE(type, func) doRegisterEvent(type,                                            \
                                                      [](uintptr_t opaque, int32_t handle, int32_t ud, \
@@ -21,28 +24,101 @@ namespace wolf
 namespace network
 {
 
+socketMessage *doMessageGen((int type, int32_t handle, void *data, size_t sz)
+{
+  socketMessage *msg = util::memory::malloc(sizeof(*msg));
+  assert(msg);
+
+  if (data && sz == 0)
+  {
+    if (strcmp(data, "") == 0)
+    {
+      data = (char *)util::memory::malloc(4);
+      assert(data);
+      memset(data, 0, 4);
+    }
+    else
+    {
+      data = (void *)util::stringUtil::strdup(data);
+    }
+  }
+
+  msg->_id = handle;
+  msg->_type = type;
+  msg->_buffer = dataGen(data, sz);
+
+  return msg;
+}
+
+bool forwardMessage(uintptr_t opaque,  socketMessage *msg)
+{
+  if (INST(actorSystem, doSendMessage(0, opaque, module::messageId::M_ID_SOCKET, 0, (void *)msg, sizeof(socketMessage))) != 0)
+  {
+    util::memory::free(msg->_buffer);
+    util::memory::free((void *)msg);
+    return false;
+  }
+  return true;
+}
+
 void onSocketAccept(uintptr_t opaque, int32_t handle, int32_t ud, void *data, size_t sz)
 {
+  socketMessage *msg = doMessageGen(socketMessageType::M_SOCKET_ACCEPT, handle, data, sz);
+  msg->_ext = ud;
+  if (!forwardMessage(opaque, msg))
+  {
+    SYSLOG_ERROR(opaque, "Push accept message failed Listen:{} Client:{}", handle, ud);
+  }
 }
 
 void onSocketStart(uintptr_t opaque, int32_t handle, int32_t ud, void *data, size_t sz)
 {
+  socketMessage *msg = doMessageGen(socketMessageType::M_SOCKET_START, handle, data, sz);
+  msg->ud = 0;
+  if (!forwardMessage(opaque, msg))
+  {
+    SYSLOG_ERROR(opaque, "Push start message failed Socket:{},{}", handle, data);
+  }
 }
 
 void onSocketData(uintptr_t opaque, int32_t handle, int32_t ud, void *data, size_t sz)
 {
+  socketMessage *msg = doMessageGen(socketMessageType::M_SOCKET_DATA, handle, data, sz);
+  msg->_ext = sz;
+  if (!forwardMessage(opaque, msg))
+  {
+    SYSLOG_ERROR(opaque, "Push data message failed Socket:{},{}", handle, sz);
+  }
 }
 
 void onSocketClose(uintptr_t opaque, int32_t handle, int32_t ud, void *data, size_t sz)
 {
+  socketMessage *msg = doMessageGen(socketMessageType::M_SOCKET_CLOSE, handle, data, sz);
+  msg->_ext = ud;
+  if (!forwardMessage(opaque, msg))
+  {
+    SYSLOG_ERROR(opaque, "Push close message failed Socket:{}", handle);
+  }
 }
 
 void onSocketError(uintptr_t opaque, int32_t handle, int32_t ud, void *data, size_t sz)
 {
+  socketMessage *msg = doMessageGen(socketMessageType::M_SOCKET_ERROR, handle, data, sz);
+  msg->_ext = ud;
+  if (!forwardMessage(opaque, msg))
+  {
+    SYSLOG_ERROR(opaque, "Push error message failed Socket:{}{}", handle, data);
+  }
 }
 
 void onSocketWarn(uintptr_t opaque, int32_t handle, int32_t ud, void *data, size_t sz)
 {
+  socketMessage *msg = doMessageGen(socketMessageType::M_SOCKET_WARNING, handle, data, sz);
+  msg->_ext = ud;
+  if (!forwardMessage(opaque, msg))
+  {
+    SYSLOG_ERROR(opaque, "Push warning message failed Socket:{}{}", handle, ud);
+  }
 }
 
 socketSystem::socketSystem()
@@ -116,7 +192,6 @@ void socketSystem::doRegisterEvent(socketMessageType type, socketEventFunc Func)
 int32_t socketSystem::doSocketListen(uintptr_t opaque, const char *addr,
                                      int32_t port, int32_t block)
 {
-
   int32_t handle;
   socketHandle *s = nullptr;
   wsocket_t sock = doSocketBind(addr, port, IPPROTO_TCP);
@@ -265,7 +340,6 @@ int32_t socketSystem::doSocketNodelay(int32_t handle)
 
 void socketSystem::doSocketClose(uintptr_t opaque, int32_t handle)
 {
-
   socketChannel::requestPacket request;
   request.u.close._handle = handle;
   request.u.close._shutdown = 0;
@@ -276,7 +350,6 @@ void socketSystem::doSocketClose(uintptr_t opaque, int32_t handle)
 
 void socketSystem::doSocketShutdown(uintptr_t opaque, int32_t handle)
 {
-
   socketChannel::requestPacket request;
   request.u.close._handle = handle;
   request.u.close._shutdown = 1;
@@ -287,7 +360,6 @@ void socketSystem::doSocketShutdown(uintptr_t opaque, int32_t handle)
 
 wsocket_t socketSystem::doSocketBind(const char *addr, int port, int protocol)
 {
-
   char strPort[16];
   struct addrinfo aiHints;
   struct addrinfo *aiList = nullptr;
@@ -605,7 +677,6 @@ int32_t socketSystem::doRequestClose(socketChannel::requestClose *request)
 void socketSystem::doRequestClearClosedEvent(int32_t handle, int32_t idx,
                                              int32_t n)
 {
-
   for (int i = idx; i < n; i++)
   {
     struct iocpEvent *e = m_iocp->getEvent(i);

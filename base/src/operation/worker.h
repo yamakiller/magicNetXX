@@ -64,6 +64,7 @@ public:
   static struct suspendEntry suspend();
 
   static bool wakeup(struct suspendEntry const &entry,
+                     bool iswakeup,
                      std::function<void()> const &functor = NULL);
 
   static bool isExpire(struct suspendEntry const &entry);
@@ -98,7 +99,9 @@ private:
 
   struct suspendEntry suspendBySelf(task *tk);
 
-  bool wakeupBySelf(task *tk, uint64_t id,
+  bool wakeupBySelf(task *tk,
+                    uint64_t id,
+                    bool iswakeup,
                     std::function<void()> const &functor);
 
 private:
