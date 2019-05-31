@@ -81,6 +81,11 @@ int32_t actorComponent::genSession()
   return session;
 }
 
+std::shared_ptr<actor> actorComponent::getActorPtr()
+{
+  return INST(actorSystem, getGrab, m_param->handle());
+}
+
 bool actorComponent::suspendSleep(int32_t session, struct coEntry co)
 {
   if (!insertSusped(session, co))

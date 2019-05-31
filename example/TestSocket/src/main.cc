@@ -14,8 +14,6 @@ private:
 protected:
   virtual bool initialize(const commandLineOption *opt)
   {
-    std::string p = ((commandLineOption *)opt)->getOption("p");
-    fprintf(stderr, "aaaa %s\n", p.c_str());
     return true;
   }
 

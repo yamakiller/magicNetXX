@@ -49,6 +49,8 @@ bool framework::doInit(const commandLineOption *opt)
   INSTGET_VAR(OPT, _debug) = INST(OPT, getInt, "debug", 0);
   INSTGET_VAR(OPT, _thread) = INST(OPT, getInt, "thread", 6);
   INSTGET_VAR(OPT, _stackSize) = INST(OPT, getInt, "stack_size", 1 * 1024 * 1024);
+  INSTGET_VAR(OPT, _actor_gcc_timeout_us) = INST(OPT, getInt, "actor_gcc_timeout", 100 * 1000);
+  INSTGET_VAR(OPT, _actor_gcc_sleep_us) = INST(OPT, getInt, "actor_gcc_sleep", 1000);
   INSTGET_VAR(OPT, _single_timeout_us) = INST(OPT, getInt, "single_timeout", 100 * 1000);
   INSTGET_VAR(OPT, _dispatcher_thread_interval_us) = INST(OPT, getInt, "dispatcher_interval", 1000);
   INSTGET_VAR(OPT, _componentPath) = INST(OPT, getString, "component_path", "./modules/?.so;./services/?.so");

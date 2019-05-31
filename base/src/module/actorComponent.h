@@ -82,6 +82,8 @@ private:
 
   int32_t genSession();
 
+  std::shared_ptr<actor> getActorPtr();
+
   bool suspendSleep(int32_t session, struct coEntry co);
 
   struct coEntry *getSusped(int32_t session);

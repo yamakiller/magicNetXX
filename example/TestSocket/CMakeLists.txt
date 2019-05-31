@@ -1,7 +1,7 @@
 
 cmake_minimum_required(VERSION 2.8)
 
-set(PROJ_NAME test_task)
+set(PROJ_NAME TestSocket)
 file(GLOB SRCLIST ./src/*.*)
 
 add_executable(${PROJ_NAME} ${SRCLIST})

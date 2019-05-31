@@ -3,6 +3,8 @@
   <debug>0</debug>
   <thread>6</thread>
   <stack_size>1048576</stack_size>
+  <actor_gcc_sleep>1000</actor_gcc_sleep>
+  <actor_gcc_timeout>100000</actor_gcc_timeout>
   <single_timeout>100000</single_timeout>
   <dispatcher_interval>1000</dispatcher_interval>
   <log_size>64</log_size>
