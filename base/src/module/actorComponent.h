@@ -34,7 +34,7 @@ struct messageProtocol {
   unpackFunc _unpack;
 };
 
-struct coEntery {
+struct coEntry {
   uint64_t _id;
   operation::worker::suspendEntry _entry;
   std::function<void(void)> _func;
@@ -60,15 +60,16 @@ public:
 
   uintptr_t getHandle() { return m_parent->handle(); }
 
+public:
+  void doWait(struct coEntry co);
+
+  bool doWakeup(struct coEntry co);
+
 protected:
   template <typename... Args>
   void doSend(int32_t msgId, uint32_t dst, int32_t session, Args... parm);
 
   void doTimeout(int tm, std::function<void(void)> func);
-
-  void doWait(struct coEntery co);
-
-  bool doWakeup(struct coEntery co);
 
   void doExit();
 
@@ -81,15 +82,15 @@ private:
 
   int32_t genSession();
 
-  bool suspendSleep(int32_t session, struct coEntery co);
+  bool suspendSleep(int32_t session, struct coEntry co);
 
-  struct coEntery *getSusped(int32_t session);
-  bool insertSusped(int32_t session, struct coEntery co);
+  struct coEntry *getSusped(int32_t session);
+  bool insertSusped(int32_t session, struct coEntry co);
   void removeSusped(int32_t session);
 
-  int32_t getSleepSusped(struct coEntery co);
-  void insertSleepSusped(int32_t session, struct coEntery co);
-  void removeSleepSusped(uint64_t enteryId);
+  int32_t getSleepSusped(struct coEntry co);
+  void insertSleepSusped(int32_t session, struct coEntry co);
+  void removeSleepSusped(uint64_t entryId);
 
   messageProtocol *getProtocol(int32_t msgId);
 
@@ -140,6 +141,8 @@ void actorComponent::doSend(int32_t msgId, uint32_t dst, int32_t session,
     return;
   }
 }
+
+static struct coEntry coCreate();
 
 } // namespace module
 } // namespace wolf

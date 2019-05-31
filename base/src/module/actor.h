@@ -39,6 +39,8 @@ public:
 
   bool isSuspedEmpty();
 
+  actorComponent *getComponent() { return m_cpt; }
+
 protected:
   operation::clock::timeEntery doTimeOut(int time, int session);
   void doExit();

@@ -26,7 +26,7 @@ int32_t actorComponent::doRun(struct message *msg) {
 
 void actorComponent::doTimeout(int tm, std::function<void(void)> func) {
   int32_t session = genSession();
-  coEntery co;
+  coEntry co;
   co._id = INST(actorSystem, doGenEntryId);
   co._func = func;
   if (!insertSusped(session, co)) {
@@ -36,9 +36,8 @@ void actorComponent::doTimeout(int tm, std::function<void(void)> func) {
   m_parent->doTimeOut(tm, session);
 }
 
-void actorComponent::doWait(struct coEntery co) {
+void actorComponent::doWait(struct coEntry co) {
   int32_t session = genSession();
-  co._id = INST(actorSystem, doGenEntryId);
   if (!suspendSleep(session, co)) {
     return;
   }
@@ -47,7 +46,7 @@ void actorComponent::doWait(struct coEntery co) {
   removeSusped(session);
 }
 
-bool actorComponent::doWakeup(struct coEntery co) {
+bool actorComponent::doWakeup(struct coEntry co) {
   int32_t session = getSleepSusped(co);
   if (session == -1) {
     return false;
@@ -69,7 +68,7 @@ int32_t actorComponent::genSession() {
   return session;
 }
 
-bool actorComponent::suspendSleep(int32_t session, struct coEntery co) {
+bool actorComponent::suspendSleep(int32_t session, struct coEntry co) {
   if (!insertSusped(session, co)) {
     return false;
   }
@@ -78,7 +77,7 @@ bool actorComponent::suspendSleep(int32_t session, struct coEntery co) {
   return true;
 }
 
-coEntery *actorComponent::getSusped(int32_t session) {
+coEntry *actorComponent::getSusped(int32_t session) {
   if (m_suspedSession.empty()) {
     return nullptr;
   }
@@ -91,7 +90,7 @@ coEntery *actorComponent::getSusped(int32_t session) {
   return &it->second;
 }
 
-bool actorComponent::insertSusped(int32_t session, struct coEntery co) {
+bool actorComponent::insertSusped(int32_t session, struct coEntry co) {
   if (!m_suspedSession.empty()) {
     auto it = m_suspedSession.find(session);
     if (it != m_suspedSession.end()) {
@@ -118,7 +117,7 @@ void actorComponent::removeSusped(int32_t session) {
   m_suspedSession.erase(it);
 }
 
-int32_t actorComponent::getSleepSusped(struct coEntery co) {
+int32_t actorComponent::getSleepSusped(struct coEntry co) {
   if (m_suspedSleep.empty()) {
     return -1;
   }
@@ -131,7 +130,7 @@ int32_t actorComponent::getSleepSusped(struct coEntery co) {
   return m_suspedSleep[co._id];
 }
 
-void actorComponent::insertSleepSusped(int32_t session, struct coEntery co) {
+void actorComponent::insertSleepSusped(int32_t session, struct coEntry co) {
   m_suspedSleep[co._id] = session;
 }
 
@@ -179,7 +178,7 @@ int32_t actorComponent::dispatchMessage(struct message *msg) {
   uint32_t msgDst = msg->_dst;
 
   if (msgId == messageId::M_ID_RESOUE) {
-    coEntery *ptrCo = getSusped(msgSession);
+    coEntry *ptrCo = getSusped(msgSession);
     if (ptrCo == nullptr) {
       unknownResponse(msgSession, msgSrc, msgData, msgSz);
       return 0;
@@ -203,7 +202,7 @@ int32_t actorComponent::dispatchMessage(struct message *msg) {
       return 0;
     }
   } else if (msgId == messageId::M_ID_TIMEOUT) {
-    coEntery *ptrCo = getSusped(msgSession);
+    coEntry *ptrCo = getSusped(msgSession);
     if (ptrCo == nullptr || ptrCo->_func == nullptr) {
       unknownResponse(msgSession, msgSrc, msgData, msgSz);
       return 0;
@@ -270,7 +269,7 @@ struct errorResult {
 
 void actorComponent::errorDispatch(int32_t errorSession, uint32_t errorSrc,
                                    boost::any &data) {
-  struct coEntery *ptrCo = getSusped(errorSession);
+  struct coEntry *ptrCo = getSusped(errorSession);
   if (ptrCo == nullptr) {
     errorResult er = boost::any_cast<errorResult>(data);
     if (strcmp(er._message, "") != 0) {
@@ -279,7 +278,7 @@ void actorComponent::errorDispatch(int32_t errorSession, uint32_t errorSrc,
       return;
     }
   } else {
-    uint64_t tmpId = ptrCo->_entry._id;
+    uint64_t tmpId = ptrCo->_id;
     operation::worker::suspendEntry tmpEnter = std::move(ptrCo->_entry);
     removeSleepSusped(tmpId);
     removeSusped(errorSession);
@@ -292,6 +291,14 @@ boost::any actorComponent::staticErrorUnPack(void *param, void *data,
   errorResult er{(const char *)data, size};
   boost::any result(er);
   return result;
+}
+
+struct coEntry coCreate() {
+  coEntry co;
+  co._entry = operation::worker::suspend();
+  co._func = nullptr;
+  co._id = INST(actorSystem, doGenEntryId);
+  return co;
 }
 
 } // namespace module
