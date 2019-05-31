@@ -2,18 +2,19 @@
 #define WOLF_CONFIG_H
 
 #include "util/singleton.h"
-#include <unordered_map>
 #include <stdint.h>
 #include <string>
+#include <unordered_map>
 
-namespace wolf
-{
 
-struct coroutineOptions : public util::singleton<coroutineOptions>
-{
+namespace wolf {
+
+struct coroutineOptions : public util::singleton<coroutineOptions> {
 
   uint64_t _debug = 0;
   uint32_t _thread = 6;
+  uint32_t _actor_gcc_sleep_us = 1000;
+  uint32_t _actor_gcc_timeout_us = 100 * 1000;
   uint32_t _stackSize = 1 * 1024 * 1024;
   uint32_t _single_timeout_us = 100 * 1000;
   uint32_t _dispatcher_thread_interval_us = 1000;

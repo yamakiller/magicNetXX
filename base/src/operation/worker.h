@@ -11,14 +11,11 @@
 #include "task.h"
 #include "util/deque.h"
 
-namespace wolf
-{
-namespace operation
-{
+namespace wolf {
+namespace operation {
 class scheduler;
 
-class worker
-{
+class worker {
   friend class scheduler;
 
 public:
@@ -39,20 +36,17 @@ public:
 
   inline scheduler *getScheduler() { return m_lpsch; }
 
-  struct suspendEntry
-  {
+  struct suspendEntry {
     util::weakPtr<task> _tk;
     uint64_t _id;
 
     explicit operator bool() const { return !!_tk; }
 
-    friend bool operator==(suspendEntry const &lhs, suspendEntry const &rhs)
-    {
+    friend bool operator==(suspendEntry const &lhs, suspendEntry const &rhs) {
       return lhs._tk == rhs._tk && lhs._id == rhs._id;
     }
 
-    friend bool operator<(suspendEntry const &lhs, suspendEntry const &rhs)
-    {
+    friend bool operator<(suspendEntry const &lhs, suspendEntry const &rhs) {
       if (lhs._id == rhs._id)
         return lhs._tk < rhs._tk;
       return lhs._id < rhs._id;
@@ -64,7 +58,6 @@ public:
   static struct suspendEntry suspend();
 
   static bool wakeup(struct suspendEntry const &entry,
-                     bool iswakeup,
                      std::function<void()> const &functor = NULL);
 
   static bool isExpire(struct suspendEntry const &entry);
@@ -99,9 +92,7 @@ private:
 
   struct suspendEntry suspendBySelf(task *tk);
 
-  bool wakeupBySelf(task *tk,
-                    uint64_t id,
-                    bool iswakeup,
+  bool wakeupBySelf(task *tk, uint64_t id,
                     std::function<void()> const &functor);
 
 private:
@@ -124,20 +115,17 @@ private:
   tkdeque m_waitQueue;
 
   typedef util::deque<task, false> untkdeque;
-  untkdeque m_gccQueue; //TODO 资源的回复
+  untkdeque m_gccQueue; // TODO 资源的回复
 };
 
-inline void worker::operCoYield()
-{
+inline void worker::operCoYield() {
   auto work = getCurrentWorker();
-  if (work)
-  {
+  if (work) {
     work->coYield();
   }
 }
 
-inline void worker::coYield()
-{
+inline void worker::coYield() {
   task *tk = getCurrentTask();
   assert(tk);
 

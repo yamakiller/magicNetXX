@@ -8,23 +8,18 @@
 #include "context.h"
 #include "util/deque.h"
 
-namespace wolf
-{
-namespace operation
-{
-enum class taskState
-{
+namespace wolf {
+namespace operation {
+enum class taskState {
   runnable,
   block,
-  death,
   done,
 };
 
 class worker;
 typedef std::function<void(intptr_t)> taskFunc;
 
-struct task : public util::node, public util::shared_ref
-{
+struct task : public util::node, public util::shared_ref {
   uint64_t _id;
   uint64_t _yieldCount;
   atomic_t<long> _supperId;
@@ -45,25 +40,13 @@ struct task : public util::node, public util::shared_ref
   inline void SwapOut() { _ctx.SwapOut(); }
 
 public:
-  void *operator new(size_t size)
-  {
-    return util::memory::malloc(size);
-  }
+  void *operator new(size_t size) { return util::memory::malloc(size); }
 
-  void *operator new[](size_t size)
-  {
-    return util::memory::malloc(size);
-  }
+  void *operator new[](size_t size) { return util::memory::malloc(size); }
 
-  void operator delete(void *p)
-  {
-    util::memory::free(p);
-  }
+  void operator delete(void *p) { util::memory::free(p); }
 
-  void operator delete[](void *p)
-  {
-    util::memory::free(p);
-  }
+  void operator delete[](void *p) { util::memory::free(p); }
 
 private:
   void execute();
