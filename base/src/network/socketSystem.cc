@@ -24,14 +24,14 @@ namespace wolf
 namespace network
 {
 
-socketMessage *doMessageGen((int type, int32_t handle, void *data, size_t sz)
+socketMessage *doMessageGen(int type, int32_t handle, void *data, size_t sz)
 {
-  socketMessage *msg = util::memory::malloc(sizeof(*msg));
+  socketMessage *msg = (socketMessage *)util::memory::malloc(sizeof(*msg));
   assert(msg);
 
   if (data && sz == 0)
   {
-    if (strcmp(data, "") == 0)
+    if (strcmp((const char *)data, "") == 0)
     {
       data = (char *)util::memory::malloc(4);
       assert(data);
@@ -39,20 +39,20 @@ socketMessage *doMessageGen((int type, int32_t handle, void *data, size_t sz)
     }
     else
     {
-      data = (void *)util::stringUtil::strdup(data);
+      data = (void *)util::stringUtil::strdup((const char *)data);
     }
   }
 
   msg->_id = handle;
   msg->_type = type;
-  msg->_buffer = dataGen(data, sz);
+  msg->_buffer = (char *)data;
 
   return msg;
 }
 
-bool forwardMessage(uintptr_t opaque,  socketMessage *msg)
+bool forwardMessage(uintptr_t opaque, socketMessage *msg)
 {
-  if (INST(actorSystem, doSendMessage(0, opaque, module::messageId::M_ID_SOCKET, 0, (void *)msg, sizeof(socketMessage))) != 0)
+  if (INST(module::actorSystem, doSendMessage, 0, opaque, module::messageId::M_ID_SOCKET, 0, (void *)msg, sizeof(socketMessage)) != 0)
   {
     util::memory::free(msg->_buffer);
     util::memory::free((void *)msg);
@@ -74,7 +74,7 @@ void onSocketAccept(uintptr_t opaque, int32_t handle, int32_t ud, void *data, si
 void onSocketStart(uintptr_t opaque, int32_t handle, int32_t ud, void *data, size_t sz)
 {
   socketMessage *msg = doMessageGen(socketMessageType::M_SOCKET_START, handle, data, sz);
-  msg->ud = 0;
+  msg->_ext = 0;
   if (!forwardMessage(opaque, msg))
   {
     SYSLOG_ERROR(opaque, "Push start message failed Socket:{},{}", handle, data);

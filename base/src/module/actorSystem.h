@@ -1,23 +1,34 @@
 #ifndef WOLF_MODULE_ACTORGROUP_H
 #define WOLF_MODULE_ACTORGROUP_H
 
+#include "base.h"
 #include "actorGcc.h"
 #include "actorWorker.h"
 #include "componentGroup.h"
 #include "util/mutex.h"
 #include "util/singleton.h"
+#include "operation/worker.h"
 #include <memory>
 #include <thread>
 #include <vector>
 
 #define ACOTR_ID_MARK 0xffffff
 
-namespace wolf {
-namespace module {
+namespace wolf
+{
+namespace module
+{
+struct coEntry
+{
+  uint64_t _id;
+  operation::worker::suspendEntry _entry;
+  std::function<void(void)> _func;
+};
 
 class actor;
 class actorComponent;
-class actorSystem : public util::singleton<actorSystem> {
+class actorSystem : public util::singleton<actorSystem>
+{
   friend class actorGcc;
   friend class actorWorker;
   typedef std::shared_ptr<actor> ptrActor;
@@ -35,6 +46,8 @@ public:
 
   inline void doRegiserWork(uint32_t handle) { m_workPid.doPost(handle); }
 
+  struct coEntry doCreateCo();
+
   ptrActor getGrab(uint32_t handle);
 
   void clear();
@@ -50,7 +63,8 @@ public:
   void doEnterGcc(uint32_t actorId);
 
 private:
-  inline uint32_t local_addr(uint32_t handle) {
+  inline uint32_t local_addr(uint32_t handle)
+  {
     return handle & (m_actorCap - 1);
   }
 

@@ -3,23 +3,29 @@
 #include "util/stringUtil.h"
 #include <assert.h>
 
-namespace wolf {
-namespace module {
+namespace wolf
+{
+namespace module
+{
 
-actorSystem::actorSystem() : m_actorSer(1), m_actorCap(4), m_entryId({0}) {
+actorSystem::actorSystem() : m_actorSer(1), m_actorCap(4), m_entryId({0})
+{
   m_actors.resize(m_actorCap, nullptr);
 }
 
 actorSystem::~actorSystem() { clear(); }
 
-int32_t actorSystem::doStart(const char *componentPath) {
-  if (componentPath == nullptr) {
+int32_t actorSystem::doStart(const char *componentPath)
+{
+  if (componentPath == nullptr)
+  {
     fprintf(stderr, "Please enter the component search path!");
     exit(0);
   }
   m_cptGroup.doInit(componentPath);
 
-  if (m_workPid.doStart() != 0) {
+  if (m_workPid.doStart() != 0)
+  {
     fprintf(stderr, "Actor System Worker Start Fail");
     exit(0);
   }
@@ -28,19 +34,24 @@ int32_t actorSystem::doStart(const char *componentPath) {
   return 0;
 }
 
-void actorSystem::doShutdown() {
+void actorSystem::doShutdown()
+{
   m_workPid.doShutdown();
   m_gccPid.doShutdown();
 }
 
-uint32_t actorSystem::doRegister(actor *obj) {
+uint32_t actorSystem::doRegister(actor *obj)
+{
   m_rwmutex.lock_write();
-  for (;;) {
+  for (;;)
+  {
     int i;
-    for (i = 0; i < m_actorCap; i++) {
+    for (i = 0; i < m_actorCap; i++)
+    {
       uint32_t handle = (i + m_actorSer) & ACOTR_ID_MARK;
       int hash = handle & (m_actorCap - 1);
-      if (m_actors[hash] == nullptr) {
+      if (m_actors[hash] == nullptr)
+      {
         m_actors[hash] = ptrActor(obj);
         m_actorSer = handle + 1;
         m_rwmutex.release_write();
@@ -52,7 +63,8 @@ uint32_t actorSystem::doRegister(actor *obj) {
     assert((m_actorCap * 2 - 1) <= ACOTR_ID_MARK);
     m_actors.resize(m_actorCap * 2, nullptr);
     int nwcap = m_actorCap * 2;
-    for (i = 0; i < nwcap; i++) {
+    for (i = 0; i < nwcap; i++)
+    {
       if (m_actors[i] == nullptr)
         continue;
       int nwpos = m_actors[i]->handle() & (nwcap - 1);
@@ -64,12 +76,14 @@ uint32_t actorSystem::doRegister(actor *obj) {
   }
 }
 
-bool actorSystem::doUnRegister(uint32_t handle) {
+bool actorSystem::doUnRegister(uint32_t handle)
+{
 
   bool bret = false;
   m_rwmutex.lock_write();
   uint32_t hash = local_addr(handle);
-  if (m_actors[hash] != nullptr && m_actors[hash]->handle() == handle) {
+  if (m_actors[hash] != nullptr && m_actors[hash]->handle() == handle)
+  {
     bret = true;
     m_actors[hash] = nullptr;
   }
@@ -77,24 +91,38 @@ bool actorSystem::doUnRegister(uint32_t handle) {
   return bret;
 }
 
-actorSystem::ptrActor actorSystem::getGrab(uint32_t handle) {
+struct coEntry actorSystem::doCreateCo()
+{
+  coEntry co;
+  co._entry = operation::worker::suspend();
+  co._func = nullptr;
+  co._id = doGenEntryId();
+  return co;
+}
+
+actorSystem::ptrActor actorSystem::getGrab(uint32_t handle)
+{
   ptrActor result = nullptr;
   m_rwmutex.lock_read();
   uint32_t hash = local_addr(handle);
-  if (m_actors[hash] && m_actors[hash]->handle() == handle) {
+  if (m_actors[hash] && m_actors[hash]->handle() == handle)
+  {
     result = m_actors[hash];
   }
   m_rwmutex.release_read();
   return result;
 }
 
-void actorSystem::clear() {
+void actorSystem::clear()
+{
   int i;
-  for (i = 0; i < m_actorCap; i++) {
+  for (i = 0; i < m_actorCap; i++)
+  {
     m_rwmutex.lock_write();
     ptrActor ptr = m_actors[i];
     uint32_t handle = 0;
-    if (ptr != nullptr) {
+    if (ptr != nullptr)
+    {
       handle = ptr->handle();
     }
     m_rwmutex.release_write();
@@ -104,10 +132,12 @@ void actorSystem::clear() {
   }
 }
 
-int32_t actorSystem::doSendMessage(struct message *msg) {
+int32_t actorSystem::doSendMessage(struct message *msg)
+{
   assert(msg->_dst);
   ptrActor ptr = getGrab(msg->_dst);
-  if (ptr == nullptr) {
+  if (ptr == nullptr)
+  {
     return -1;
   }
 
@@ -116,15 +146,20 @@ int32_t actorSystem::doSendMessage(struct message *msg) {
 }
 
 int32_t actorSystem::doSendMessage(uint32_t src, uint32_t dst, int msgId,
-                                   int session, void *data, size_t sz) {
+                                   int session, void *data, size_t sz)
+{
   size_t tmpsz = sz;
-  if (data != nullptr && sz == 0) {
+  if (data != nullptr && sz == 0)
+  {
 
-    if (strcmp((char *)data, "") == 0) {
+    if (strcmp((char *)data, "") == 0)
+    {
       tmpsz = 4;
       data = util::memory::malloc(tmpsz);
       memset(data, 0, tmpsz);
-    } else {
+    }
+    else
+    {
       tmpsz = strlen((char *)data);
       data = util::stringUtil::strdup((const char *)data);
     }
@@ -135,11 +170,13 @@ int32_t actorSystem::doSendMessage(uint32_t src, uint32_t dst, int msgId,
   return doSendMessage(&msg);
 }
 
-struct component *actorSystem::getComponent(const char *name) {
+struct component *actorSystem::getComponent(const char *name)
+{
   return m_cptGroup.getComponent(name);
 }
 
-uint64_t actorSystem::doGenEntryId() {
+uint64_t actorSystem::doGenEntryId()
+{
   uint64_t id = ++m_entryId;
   return id;
 }
