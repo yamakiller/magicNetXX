@@ -10,29 +10,28 @@
 #include <unordered_map>
 #include <vector>
 
-namespace wolf
-{
-namespace api
-{
+namespace wolf {
+namespace api {
 
 typedef std::weak_ptr<module::actor> aWeakPtr;
 typedef std::shared_ptr<module::actor> aSharedPtr;
 typedef std::function<void(int32_t, const char *)> socketfunc;
 
-struct stringResult
-{
+struct stringResult {
   bool _ok;
   std::string _str;
 };
 
-class socketApi : public util::noncopyable
-{
+class socketApi : public util::noncopyable {
 public:
   static void doRequire(module::actorComponent *cpt);
 
-  static int32_t doListen(aSharedPtr ptr, const char *addr, int port, int backlog);
+  static int32_t doListen(aSharedPtr ptr, const char *addr, int port,
+                          int backlog);
   static boost::any doConnection(aSharedPtr ptr, const char *addr, int port);
-  static boost::any doStart(aSharedPtr ptr, int32_t id, socketfunc func);
+  static boost::any doStart(aSharedPtr ptr, int32_t id,
+                            socketfunc func = nullptr);
+  static void doSetNodelay(int32_t id);
   static void doClose(aSharedPtr ptr, int32_t id);
   static void doSetLimit(int32_t id, int limit);
   static bool doBlock(int32_t id);
