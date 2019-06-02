@@ -30,4 +30,5 @@ if(FORCE_STEP)
   ExternalProject_Add_Step(python forcebuild
     COMMAND ${CMAKE_COMMAND} -E echo "Force build of python 3rd"
     ${FORCE_STEP_ARGS}
-    
+    ALWAYS 1)
+endif()
