@@ -20,8 +20,7 @@ int32_t actorComponent::doInit(actor *parent, void *parm)
   doRegisterProtocol({messageId::M_ID_ERROR,
                       &actorComponent::staticErrorDispatch, nullptr,
                       &actorComponent::staticErrorUnPack});
-  this->doTimeout(0, std::bind(&actorComponent::onLaunch, this));
-  return 0;
+  return onLaunch(parm);
 }
 
 int32_t actorComponent::doRun(struct message *msg)

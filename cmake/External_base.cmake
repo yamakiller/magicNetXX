@@ -20,7 +20,7 @@ list(APPEND Wolf_THIRDPARTYLIBS_ARGS
     # Add base engine properties so correct version of Boost is found.
       "-DBase_INCLUDE_DIR:PATH=${base_source}/src"
       "-DBase_LIBRARIES:PATH=${LIBRARY_OUTPUT_PATH}"
-      "-DTMP_LIBRARY_OUT_PATH:PATH=${LIBRARY_OUTPUT_PATH}")
+      "-DCOMP_LIBRARY_OUT_PATH:PATH=${EXECUTABLE_OUTPUT_PATH}")
 
 
 add_custom_command(TARGET base POST_BUILD

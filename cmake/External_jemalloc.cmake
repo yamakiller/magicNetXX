@@ -2,7 +2,6 @@ if("${CMAKE_CURRENT_BINARY_DIR}" MATCHES " ")
   message(FATAL_ERROR "cannot use jemalloc configure with a space in the name of the build dir")
 endif()
 
-#set (JEMALLOC_LIB_PATH "/usr/local/lib/libjemalloc.so")
 
 ExternalProject_Add(jemalloc
     DOWNLOAD_DIR ${download_dir}
