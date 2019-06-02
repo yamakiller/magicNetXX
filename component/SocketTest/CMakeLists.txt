@@ -1,7 +1,7 @@
 
 cmake_minimum_required(VERSION 3.14)
 
-set(PROJ_NAME cSocketTest)
+set(PROJ_NAME SocketTest)
 file(GLOB SRCLIST ./src/*.*)
 
 add_library(${PROJ_NAME}  SHARED ${SRCLIST})
