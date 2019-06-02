@@ -18,7 +18,7 @@ ExternalProject_Add(python
     )
 
 list(APPEND Wolf_THIRDPARTYLIBS_ARGS
-    # Add cppformat engine properties so correct version .
+    # Add cppformat pythons properties so correct version .
       "-DPython_INCLUDE_DIR:PATH=${python_source}"
       "-DPython_LIBRARIES:PATH=${LIBRARY_OUTPUT_PATH}")
 

@@ -16,6 +16,10 @@ ExternalProject_Add(exampleapp_TestSocket
    ${_deps}
 )
 
+add_custom_command(TARGET exampleapp_TestSocket POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy
+            ${exampleapp_TestSocket_build}/* ${LIBRARY_OUTPUT_PATH})
+
 if(FORCE_STEP)
   ExternalProject_Add_Step(exampleapp_TestSocket forcebuild
     COMMAND ${CMAKE_COMMAND} -E echo "Force build of exampleapp_TestSocket"
