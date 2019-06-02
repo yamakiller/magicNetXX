@@ -33,3 +33,7 @@ target_link_libraries(${PROJ_NAME}
 	${pthread})
 
 set_target_properties(${PROJ_NAME} PROPERTIES FOLDER "advanced.demo") 
+
+add_custom_command(TARGET ${PROJ_NAME} POST_BUILD
+                  COMMAND ${CMAKE_COMMAND} -E copy
+                   ${CMAKE_CURRENT_BINARY_DIR}/${PROJ_NAME} ${COMP_LIBRARY_OUT_PATH}/)
