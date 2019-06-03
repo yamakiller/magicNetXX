@@ -16,7 +16,6 @@ ExternalProject_Add(base
     ${_deps}
 )
 
-message("ggggg:${EXECUTABLE_OUTPUT_PATH}")
 
 list(APPEND Wolf_THIRDPARTYLIBS_ARGS
     # Add base engine properties so correct version of Boost is found.
