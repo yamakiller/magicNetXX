@@ -8,7 +8,7 @@ set(python_build "${CMAKE_CURRENT_BINARY_DIR}/python")
 ExternalProject_Add(python
     SOURCE_DIR ${python_source}
     BINARY_DIR ${python_build}
-    CONFIGURE_COMMAND COMMAND ${CMAKE_COMMAND} -E copy_directory ${python_source} ${python_build}
+    CONFIGURE_COMMAND <SOURCE_DIR>/configure --enable-shared
     BUILD_COMMAND ${MAKE}
     INSTALL_DIR "${CisEngine_INSTALL_PREFIX}"
     INSTALL_COMMAND ""

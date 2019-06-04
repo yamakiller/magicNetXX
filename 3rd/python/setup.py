@@ -775,15 +775,15 @@ class PyBuildExt(build_ext):
                                       '/usr/contrib/ssl/lib/'
                                      ] )
 
-        if (ssl_incs is not None and
-            ssl_libs is not None):
-            exts.append( Extension('_ssl', ['_ssl.c'],
-                                   include_dirs = ssl_incs,
-                                   library_dirs = ssl_libs,
-                                   libraries = ['ssl', 'crypto'],
-                                   depends = ['socketmodule.h']), )
-        else:
-            missing.append('_ssl')
+        #if (ssl_incs is not None and
+        #    ssl_libs is not None):
+        #    exts.append( Extension('_ssl', ['_ssl.c'],
+        #                           include_dirs = ssl_incs,
+        #                           library_dirs = ssl_libs,
+        #                           libraries = ['ssl', 'crypto'],
+        #                           depends = ['socketmodule.h']), )
+        #else:
+        #    missing.append('_ssl')
 
         # find out which version of OpenSSL we have
         openssl_ver = 0
@@ -813,19 +813,19 @@ class PyBuildExt(build_ext):
         have_usable_openssl = (have_any_openssl and
                                openssl_ver >= min_openssl_ver)
 
-        if have_any_openssl:
-            if have_usable_openssl:
+        #if have_any_openssl:
+        #    if have_usable_openssl:
                 # The _hashlib module wraps optimized implementations
                 # of hash functions from the OpenSSL library.
-                exts.append( Extension('_hashlib', ['_hashopenssl.c'],
-                                       depends = ['hashlib.h'],
-                                       include_dirs = ssl_incs,
-                                       library_dirs = ssl_libs,
-                                       libraries = ['ssl', 'crypto']) )
-            else:
-                print("warning: openssl 0x%08x is too old for _hashlib" %
-                      openssl_ver)
-                missing.append('_hashlib')
+        #        exts.append( Extension('_hashlib', ['_hashopenssl.c'],
+        #                               depends = ['hashlib.h'],
+        #                               include_dirs = ssl_incs,
+        #                               library_dirs = ssl_libs,
+        #                               libraries = ['ssl', 'crypto']) )
+        #    else:
+        #        print("warning: openssl 0x%08x is too old for _hashlib" %
+        #              openssl_ver)
+        #        missing.append('_hashlib')
 
         # We always compile these even when OpenSSL is available (issue #14693).
         # It's harmless and the object code is tiny (40-50 KB per module,
