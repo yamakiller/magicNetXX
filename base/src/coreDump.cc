@@ -7,7 +7,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-#define MAX_NAME_LEN 64
+#define MAX_NAME_LEN 256
 #define MAX_CORE_SIZE 512
 #define MAX_CORE_BUFFER_SIZE 4096
 
@@ -73,7 +73,7 @@ void coreDump::outStack(const char *sig)
     time_t tSetTime;
     time(&tSetTime);
     struct tm *ptm = localtime(&tSetTime);
-    char fname[256] = {0};
+    char fname[MAX_NAME_LEN] = {0};
     sprintf(fname, "core.%d-%d-%d_%d_%d_%d",
             ptm->tm_year + 1900, ptm->tm_mon + 1, ptm->tm_mday,
             ptm->tm_hour, ptm->tm_min, ptm->tm_sec);
@@ -94,7 +94,7 @@ void coreDump::outStack(const char *sig)
     fcntl(fd, F_SETLKW, &fl);
 
     //输出程序的绝对路径
-    char buffer[4096];
+    char buffer[MAX_CORE_BUFFER_SIZE];
     memset(buffer, 0, sizeof(buffer));
     int count = readlink("/proc/self/exe", buffer, sizeof(buffer));
     if (count > 0)
@@ -117,12 +117,17 @@ void coreDump::outStack(const char *sig)
     fwrite(buffer, 1, strlen(buffer), f);
 
     //堆栈
-    void *DumpArray[256];
-    int nSize = backtrace(DumpArray, 256);
+    void *DumpArray[MAX_CORE_SIZE];
+    int nSize = backtrace(DumpArray, MAX_CORE_SIZE);
     sprintf(buffer, "backtrace rank = %d\n", nSize);
     fwrite(buffer, 1, strlen(buffer), f);
     if (nSize > 0)
     {
+        if (nSize > MAX_CORE_SIZE)
+        {
+            nSize = MAX_CORE_SIZE;
+        }
+
         char **symbols = backtrace_symbols(DumpArray, nSize);
         if (symbols != NULL)
         {
