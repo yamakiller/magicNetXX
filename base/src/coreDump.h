@@ -1,25 +1,24 @@
 #ifndef WOLF_COREDUMP_H
 #define WOLF_COREDUMP_H
 
+#include "base.h"
 #include "util/singleton.h"
-#include <base.h>
 
-namespace wolf
-{
-class coreDump : public util::singleton<coreDump>
-{
+
+namespace wolf {
+class coreDump : public util::singleton<coreDump> {
 public:
-    coreDump() = default;
-    virtual ~coreDump() = default;
+  coreDump() = default;
+  virtual ~coreDump() = default;
 
 public:
-    void doListen();
+  void doListen();
 
 private:
-    void outStack(const char *sig);
+  void outStack(int sig);
 
 private:
-    static void coreSignal(int signal);
+  static void coreSignal(int signal);
 };
 } // namespace wolf
 #endif
