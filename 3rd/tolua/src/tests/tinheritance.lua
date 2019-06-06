@@ -1,5 +1,3 @@
-dofile("myassert.lua")
-
 -- type convertion tests
 local a = A:new()
 local b = B:new()

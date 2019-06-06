@@ -43,6 +43,7 @@ class Tst_C@luaC : public Tst_B
 
 class D // private destructor
 {
+  TOLUA_PROTECTED_DESTRUCTOR
   D () {}
 };
 

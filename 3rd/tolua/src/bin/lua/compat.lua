@@ -13,6 +13,7 @@
 -- tonumber
 -- tostring
 -- type
+-- unpack
 
 -------------------------------------------------------------------
 -- collectgarbage
@@ -21,6 +22,8 @@
 -- globals
 
 -- call   -> protect(f, err)
+-- loadfile
+-- loadstring
 
 -- rawget
 -- rawset
@@ -38,6 +41,7 @@ function do_ (f, err)
 end
 
 function dostring(s) return do_(load(s)) end
+-- function dofile(s) return do_(loadfile(s)) end
 
 -------------------------------------------------------------------
 -- Table library

@@ -1,3 +1,4 @@
+$lfile "lua/compat-5.1.lua"
 $lfile "lua/compat.lua"
 $lfile "lua/basic.lua"
 $lfile "lua/feature.lua"
@@ -15,6 +16,7 @@ $lfile "lua/variable.lua"
 $lfile "lua/array.lua"
 $lfile "lua/function.lua"
 $lfile "lua/operator.lua"
+$lfile "lua/template_class.lua"
 $lfile "lua/class.lua"
 $lfile "lua/clean.lua"
 $lfile "lua/doit.lua"
@@ -24,5 +26,6 @@ local err,msg = pcall(doit)
 if not err then
  local _,_,label,msg = strfind(msg,"(.-:.-:%s*)(.*)")
  tolua_error(msg,label)
+ print(debug.traceback())
 end
 $]

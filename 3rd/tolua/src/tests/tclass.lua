@@ -1,5 +1,3 @@
-dofile("myassert.lua")
-
 -- type convertion tests
 assert(tolua.type(A.last) == 'Tst_A') -- first time the object is mapped
 assert(tolua.type(B.last) == 'Tst_B') -- type convertion to specialized type

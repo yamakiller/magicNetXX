@@ -26,6 +26,7 @@ B* mb;
 
 int main (void)
 {
+	int retcode = 0;
 	int  tolua_tvariable_open (lua_State*);
 	lua_State* L = luaL_newstate();
 
@@ -38,9 +39,12 @@ int main (void)
 	luaL_openlibs(L);
 	tolua_tvariable_open(L);
 
-	luaL_dofile(L,"tvariable.lua");
+	if (luaL_dofile(L,"tvariable.lua") != 0) {
+		fprintf(stderr, "%s\n", lua_tostring(L, 1));
+		retcode = 1;
+	}
 
 	lua_close(L);
-	return 0;
+	return retcode;
 }
 

@@ -9,14 +9,18 @@ extern "C"
 
 int main (void)
 {
+	int errcode = 0;
 	int  tolua_tconstant_open (lua_State*);
 	lua_State* L = luaL_newstate();
 	luaL_openlibs(L);
 	tolua_tconstant_open(L);
 
-	luaL_dofile(L,"tconstant.lua");
+	if (luaL_dofile(L,"tconstant.lua") != 0) {
+		fprintf(stderr, "%s", lua_tostring(L,-1));
+		errcode = 1;
+	}
 
 	lua_close(L);
-	return 0;
+	return errcode;
 }
 

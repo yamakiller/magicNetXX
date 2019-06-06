@@ -1,5 +1,3 @@
-dofile("myassert.lua")
-
 local p = Point:new(1,2)
 local q = Point:new()
 
