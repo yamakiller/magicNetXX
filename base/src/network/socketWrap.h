@@ -10,7 +10,7 @@
 
 #endif
 
-#ifdef UT_PLATFORM_LINUX
+#if defined(UT_PLATFORM_LINUX) || defined(UT_PLATFORM_APPLE)
 #include <arpa/inet.h>
 #include <fcntl.h>
 #include <netdb.h>
@@ -59,7 +59,7 @@ enum class socketProtocol {
   UNKNOWN = 255,
 };
 
-enum class socketState {
+enum socketState {
   INVALID = 0,    //未被分配
   RESERVE = 1,    //已被分配
   PLISTEN = 2,    // 已监听未准备好

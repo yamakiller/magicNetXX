@@ -2,6 +2,13 @@
 
 #ifdef UT_PLATFORM_APPLE
 
+#include <errno.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/event.h>
+#include <unistd.h>
+
 NS_CC_N_BEGIN
 
 iocpKqueue::iocpKqueue() { m_handle = kqueue(); }
@@ -24,7 +31,7 @@ bool iocpKqueue::doRegister(wsocket_t sock, void *ud) {
   }
   EV_SET(&ke, sock, EVFILT_WRITE, EV_DISABLE, 0, 0, ud);
   if (kevent(m_handle, &ke, 1, NULL, 0, NULL) == -1 || ke.flags & EV_ERROR) {
-    UnRegister(sock);
+    doUnRegister(sock);
     return false;
   }
   return true;
@@ -47,7 +54,7 @@ void iocpKqueue::doToWrite(wsocket_t sock, void *ud, bool enable) {
 
 int iocpKqueue::onWait() {
   struct kevent ev[IOCP_EVENT_WAIT_MAX];
-  int n = kevent(m_handle, NULL, 0, ev, max, NULL);
+  int n = kevent(m_handle, NULL, 0, ev, IOCP_EVENT_WAIT_MAX, NULL);
   if (n <= 0) {
     if (errno == EINTR)
       return -2;
