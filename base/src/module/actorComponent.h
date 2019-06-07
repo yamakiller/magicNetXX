@@ -65,7 +65,7 @@ public:
   bool doWakeup(struct coEntry co);
 
 protected:
-  virtual int32_t onLaunch(void *parm){ return 0;};
+  virtual int32_t onLaunch(void *parm) { return 0; };
 
 protected:
   template <typename... Args>
@@ -104,6 +104,9 @@ protected:
                        uint32_t sz);
   void unknownRequest(int32_t msgId, int32_t session, uint32_t source,
                       void *msg, uint32_t sz);
+
+  virtual void unknownDispatch(int32_t msgId, int32_t session, uint32_t source,
+                               void *msg, uint32_t sz);
 
   static void staticErrorDispatch(void *param, int32_t session, uint32_t src,
                                   boost::any data);

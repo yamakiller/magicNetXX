@@ -96,8 +96,7 @@ bool actor::isSuspedEmpty()
 
 operation::clock::timeEntery actor::doTimeOut(int time, int session)
 {
-  struct timeSingle *tm =
-      (struct timeSingle *)util::memory::malloc(sizeof(*tm));
+  struct timeSingle *tm = (struct timeSingle *)util::memory::malloc(sizeof(*tm));
   assert(tm);
   tm->_handle = m_handle;
   tm->_session = session;

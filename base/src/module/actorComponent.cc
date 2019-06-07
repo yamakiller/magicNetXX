@@ -292,15 +292,7 @@ int32_t actorComponent::dispatchMessage(struct message *msg)
     }
     else
     {
-      if (msgSession != 0)
-      {
-        INST(actorSystem, doSendMessage, msgSrc, msgSrc, messageId::M_ID_ERROR,
-             msgSession, (void *)"");
-      }
-      else
-      {
-        unknownRequest(msgId, msgSession, msgSrc, msgData, msgSz);
-      }
+      unknownDispatch(msgId, msgSession, msgSrc, msgData, msgSz);
     }
   }
 }
@@ -321,6 +313,20 @@ void actorComponent::unknownRequest(int32_t msgId, int32_t session,
                std::string((const char *)msg, sz).c_str());
   SYSLOG_ERROR(m_parent->handle(), "Unknown session : {} from {:08x}", session,
                source);
+}
+
+void actorComponent::unknownDispatch(int32_t msgId, int32_t session, uint32_t source,
+                                     void *msg, uint32_t sz)
+{
+  if (session != 0)
+  {
+    INST(actorSystem, doSendMessage, source, source, messageId::M_ID_ERROR,
+         session, (void *)"");
+  }
+  else
+  {
+    unknownRequest(msgId, session, source, msg, sz);
+  }
 }
 
 void actorComponent::staticErrorDispatch(void *param, int32_t session,

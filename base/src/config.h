@@ -6,10 +6,10 @@
 #include <string>
 #include <unordered_map>
 
+NS_CC_BEGIN
 
-namespace wolf {
-
-struct coroutineOptions : public util::singleton<coroutineOptions> {
+struct coroutineOptions : public util::singleton<coroutineOptions>
+{
 
   uint64_t _debug = 0;
   uint32_t _thread = 6;
@@ -40,7 +40,7 @@ private:
   std::unordered_map<std::string, std::string> m_env;
 };
 
-} // namespace wolf
+NS_CC_END
 
 #define OPT wolf::coroutineOptions
 

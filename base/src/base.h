@@ -102,13 +102,14 @@
 #define LOCAL_LOG_ERROR(...) SYSLOG_ERROR(getHandle(), __VA_ARGS__)
 #define LOCAL_LOG_FATAL(...) SYSLOG_FATAL(getHandle(), __VA_ARGS__)
 
-namespace wolf
-{
+
+NS_CC_BEGIN
+
 template <typename T>
 using atomic_t = std::atomic<T>;
 
 extern std::mutex gDbgLock;
 //写入debug打印
-} // namespace wolf
+NS_CC_END
 
 #endif

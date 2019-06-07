@@ -1,6 +1,7 @@
 #include "framework.h"
 #include "api.h"
 #include "util/timestamp.h"
+#include "coreDump.h"
 #include <string>
 #include <assert.h>
 
@@ -60,6 +61,7 @@ bool framework::doInit(const commandLineOption *opt)
   /*-----------------------------------------------------------------------------------------------------------------------*/
 
   INST(log::logSystem, doStart);
+  INST(coreDump, doListen);
   INST(operation::scheduler, doStart,
        INSTGET_VAR(OPT, _thread));
   INST(module::actorSystem, doStart,
