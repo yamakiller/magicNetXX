@@ -1,10 +1,21 @@
-#include "luaFile.h"
+#include "ofile.h"
+#include <fcntl.h>
 #include <sys/stat.h>
+#include <unistd.h>
 
 NS_CC_BEGIN
 
-fileData *luaFile::getDataFromFile(const std::string &filename) {
-  fileData *ret = getData(filename);
+NS_UTIL_BEGIN
+
+bool ofile::isExist(const std::string &filename) {
+  if (access(filename.c_str(), F_OK) != -1) {
+    return true;
+  }
+  return false;
+}
+
+Data *ofile::getDataFromFile(const std::string &filename) {
+  Data *ret = getData(filename);
   if (ret) {
     return ret;
   }
@@ -35,7 +46,7 @@ fileData *luaFile::getDataFromFile(const std::string &filename) {
     return nullptr;
   }
 
-  fileData inData = {fileBuffer, size};
+  Data inData = {fileBuffer, size};
   m_data[filename] = inData;
   ret = &m_data[filename];
 
@@ -43,16 +54,16 @@ fileData *luaFile::getDataFromFile(const std::string &filename) {
   return ret;
 }
 
-fileData *luaFile::getData(const std::string &filename) {
-  fileData *ret = nullptr;
+Data *ofile::getData(const std::string &filename) {
+  Data *ret = nullptr;
   m_lock.lock();
   ret = getUnData(filename);
   m_lock.unlock();
   ret;
 }
 
-fileData *luaFile::getUnData(const std::string &filename) {
-  fileData *ret = nullptr;
+Data *ofile::getUnData(const std::string &filename) {
+  Data *ret = nullptr;
   if (m_data.empty()) {
     return ret;
   }
@@ -66,11 +77,17 @@ fileData *luaFile::getUnData(const std::string &filename) {
   return ret;
 }
 
-void luaFile::clear() {
+void ofile::clear() {
   m_lock.lock();
-  if (!m_data.empty()) {
+  while (!m_data.empty()) {
+    auto it = m_data.begin();
+    Data fre = it->second;
+    m_data.erase(it);
+    util::memory::free(fre.bytes);
   }
   m_lock.unlock();
 }
+
+NS_UTIL_END
 
 NS_CC_END

@@ -30,17 +30,19 @@
 #elif defined(__GNUC__)
 #define COMPILER_GNU 1
 #define UT_COMPILER COMPILER_GNU
-#define UT_GCC_VERSION \
+#define UT_GCC_VERSION                                                         \
   (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
 #else
 #error "FATAL ERROR: Unknown compiler."
 #endif
 
-#define NS_CC_BEGIN \
-  namespace wolf    \
-  {
+#define NS_CC_BEGIN namespace wolf {
 
 #define NS_CC_END }
+
+#define NS_UTIL_BEGIN namespace util {
+
+#define NS_UTIL_END }
 
 #if defined(__cplusplus) || defined(c_plusplus)
 #define WOLF_C_API extern "C"
