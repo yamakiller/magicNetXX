@@ -7,30 +7,28 @@
 
 NS_CC_BEGIN
 
-struct fileData
-{
-    char *bytes;
-    ssize_t len;
+struct fileData {
+  char *bytes;
+  ssize_t len;
 };
 
-class luaFile : public util::singleton<luaFile>
-{
+class luaFile : public util::singleton<luaFile> {
 public:
-    luaFile() = default;
-    ~luaFile() = default;
+  luaFile() = default;
+  ~luaFile() = default;
 
 public:
-    void clear();
-    bool isExist(const std::string &filename);
-    fileData *getDataFromFile(const std::string &filename);
+  void clear();
+  bool isExist(const std::string &filename);
+  fileData *getDataFromFile(const std::string &filename);
 
 protected:
-    fileData *getData(const std::string &filename);
-    fileData *getUnData(const std::string &filename);
+  fileData *getData(const std::string &filename);
+  fileData *getUnData(const std::string &filename);
 
 protected:
-    std::unordered_map<std::string, fileData *> m_data;
-    util::spinlock m_lock;
+  std::unordered_map<std::string, fileData> m_data;
+  util::spinlock m_lock;
 };
 
 NS_CC_END
