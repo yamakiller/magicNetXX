@@ -3,9 +3,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-NS_CC_BEGIN
-
-NS_UTIL_BEGIN
+NS_CC_U_BEGIN
 
 bool ofile::isExist(const std::string &filename) {
   if (access(filename.c_str(), F_OK) != -1) {
@@ -83,11 +81,9 @@ void ofile::clear() {
     auto it = m_data.begin();
     Data fre = it->second;
     m_data.erase(it);
-    util::memory::free(fre.bytes);
+    util::memory::free(fre._bytes);
   }
   m_lock.unlock();
 }
 
-NS_UTIL_END
-
-NS_CC_END
+NS_CC_U_END

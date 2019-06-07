@@ -40,9 +40,29 @@
 
 #define NS_CC_END }
 
-#define NS_UTIL_BEGIN namespace util {
+#define NS_CC_U_BEGIN NS_CC_BEGIN namespace util {
 
-#define NS_UTIL_END }
+#define NS_CC_U_END                                                            \
+  NS_CC_END                                                                    \
+  }
+
+#define NS_CC_O_BEGIN NS_CC_BEGIN namespace operation {
+
+#define NS_CC_O_END                                                            \
+  NS_CC_END                                                                    \
+  }
+
+#define NS_CC_M_BEGIN NS_CC_BEGIN namespace module {
+
+#define NS_CC_M_END                                                            \
+  NS_CC_END                                                                    \
+  }
+
+#define NS_CC_A_BEGIN NS_CC_BEGIN namespace api {
+
+#define NS_CC_A_END                                                            \
+  NS_CC_END                                                                    \
+  }
 
 #if defined(__cplusplus) || defined(c_plusplus)
 #define WOLF_C_API extern "C"

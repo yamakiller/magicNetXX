@@ -8,8 +8,8 @@
 #include "context.h"
 #include "util/deque.h"
 
-namespace wolf {
-namespace operation {
+NS_CC_O_BEGIN
+
 enum class taskState {
   runnable,
   block,
@@ -59,7 +59,6 @@ private:
   task &operator=(task &&) = delete;
 };
 
-} // namespace operation
-} // namespace wolf
+NS_CC_O_END
 
 #endif

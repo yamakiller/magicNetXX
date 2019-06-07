@@ -3,38 +3,23 @@
 
 #include "memory.h"
 
-namespace wolf
-{
-namespace util
-{
-class mobject
-{
+NS_CC_U_BEGIN
+
+class mobject {
 public:
-    mobject() = default;
-    virtual ~mobject() = default;
+  mobject() = default;
+  virtual ~mobject() = default;
 
 public:
-    void *operator new(size_t size)
-    {
-        return util::memory::malloc(size);
-    }
+  void *operator new(size_t size) { return memory::malloc(size); }
 
-    void *operator new[](size_t size)
-    {
-        return util::memory::malloc(size);
-    }
+  void *operator new[](size_t size) { return memory::malloc(size); }
 
-    void operator delete(void *p)
-    {
-        util::memory::free(p);
-    }
+  void operator delete(void *p) { memory::free(p); }
 
-    void operator delete[](void *p)
-    {
-        util::memory::free(p);
-    }
+  void operator delete[](void *p) { memory::free(p); }
 };
-} // namespace util
-} // namespace wolf
+
+NS_CC_U_END
 
 #endif

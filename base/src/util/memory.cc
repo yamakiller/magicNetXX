@@ -11,8 +11,7 @@
 #define rxaligned_alloc je_aligned_alloc
 #define rxposix_memalign je_posix_memalig
 
-namespace wolf {
-namespace util {
+NS_CC_U_BEGIN
 
 class memory_hook : public noncopyable {
   friend class memory;
@@ -101,5 +100,4 @@ void *memory::lalloc(void *ptr, size_t osize, size_t nsize) {
   }
 }
 
-} // namespace util
-} // namespace wolf
+NS_CC_U_END

@@ -1,8 +1,8 @@
 #include "clock.h"
 #include "util/timestamp.h"
 
-namespace wolf {
-namespace operation {
+NS_CC_O_BEGIN
+
 clockSlot::~clockSlot() {}
 
 void clockSlot::local_push(std::shared_ptr<struct clockHandle> node_ptr) {
@@ -104,5 +104,4 @@ void clock::tick() {
   }
 }
 
-} // namespace operation
-} // namespace wolf
+NS_CC_O_END

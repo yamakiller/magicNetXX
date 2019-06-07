@@ -7,8 +7,8 @@
 #include "util/mobject.h"
 #include "util/queue.h"
 
-namespace wolf {
-namespace module {
+NS_CC_M_BEGIN
+
 class component;
 class actorSystem;
 class actorComponent;
@@ -58,7 +58,6 @@ protected:
   actorComponent *m_cpt;
 };
 
-} // namespace module
-} // namespace wolf
+NS_CC_M_END
 
 #endif

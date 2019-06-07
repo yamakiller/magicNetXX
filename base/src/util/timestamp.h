@@ -10,12 +10,13 @@
 #include <sys/sysctl.h>
 #include <sys/time.h>
 #endif
+#include "platform.h"
 
 #define TM_NANOSEC 1000000000
 #define TM_MICROSEC 1000000
 
-namespace wolf {
-namespace util {
+NS_CC_U_BEGIN
+
 namespace timestamp {
 
 inline uint64_t getTimeSec() {
@@ -92,7 +93,7 @@ inline std::string getTimeLocal() {
 }
 
 } // namespace timestamp
-} // namespace util
-} // namespace wolf
+
+NS_CC_U_END
 
 #endif

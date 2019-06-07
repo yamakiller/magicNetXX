@@ -3,13 +3,9 @@
 #include "actorSystem.h"
 #include "componentGroup.h"
 
-namespace wolf
-{
-namespace module
-{
+NS_CC_M_BEGIN
 
-void actor::messageQueue::local_dropevent(struct message *val)
-{
+void actor::messageQueue::local_dropevent(struct message *val) {
   util::memory::free(val->_data);
   uint32_t source = val->_dst;
   assert(source);
@@ -21,33 +17,27 @@ actor::actor()
     : m_inglobal(false), m_indeath(false), m_death_us(0), m_dll(nullptr),
       m_cpt(nullptr) {}
 
-actor::~actor()
-{
-  if (m_cpt && m_dll)
-  {
+actor::~actor() {
+  if (m_cpt && m_dll) {
     m_dll->_release((void *)m_cpt);
     m_cpt = nullptr;
   }
   m_dll = nullptr;
 }
 
-uint32_t actor::doInit(const char *name, void *parm)
-{
+uint32_t actor::doInit(const char *name, void *parm) {
   struct component *ptrDLL = actorSystem::instance()->getComponent(name);
-  if (!ptrDLL)
-  {
+  if (!ptrDLL) {
     return 0;
   }
 
   actorComponent *ptrCPT = (actorComponent *)ptrDLL->_create();
-  if (!ptrCPT)
-  {
+  if (!ptrCPT) {
     return 0;
   }
 
   m_handle = INST(actorSystem, doRegister, this);
-  if (m_handle == 0)
-  {
+  if (m_handle == 0) {
     ptrDLL->_release(ptrCPT);
     return 0;
   }
@@ -55,48 +45,40 @@ uint32_t actor::doInit(const char *name, void *parm)
   m_dll = ptrDLL;
   m_cpt = ptrCPT;
 
-  if (ptrCPT->doInit(this, parm) == 0)
-  {
+  if (ptrCPT->doInit(this, parm) == 0) {
     SYSLOG_INFO(m_handle, "LAUNCH {} SUCCESS", name);
     return m_handle;
-  }
-  else
-  {
+  } else {
     SYSLOG_INFO(m_handle, "LAUNCH {} FAIL", name);
     INST(actorSystem, doUnRegister, m_handle);
     return 0;
   }
 }
 
-void actor::push(struct message *msg)
-{
+void actor::push(struct message *msg) {
   m_mqs.push(msg);
   m_mqs.getMutexRef()->lock();
-  if (!m_inglobal)
-  {
+  if (!m_inglobal) {
     INST(actorSystem, doRegiserWork, m_handle);
     m_inglobal = true;
   }
   m_mqs.getMutexRef()->unlock();
 }
 
-bool actor::isSuspedEmpty()
-{
-  if (m_cpt == nullptr)
-  {
+bool actor::isSuspedEmpty() {
+  if (m_cpt == nullptr) {
     return true;
   }
 
-  if (m_cpt->getSuspedSize() == 0)
-  {
+  if (m_cpt->getSuspedSize() == 0) {
     return true;
   }
   return false;
 }
 
-operation::clock::timeEntery actor::doTimeOut(int time, int session)
-{
-  struct timeSingle *tm = (struct timeSingle *)util::memory::malloc(sizeof(*tm));
+operation::clock::timeEntery actor::doTimeOut(int time, int session) {
+  struct timeSingle *tm =
+      (struct timeSingle *)util::memory::malloc(sizeof(*tm));
   assert(tm);
   tm->_handle = m_handle;
   tm->_session = session;
@@ -112,45 +94,35 @@ operation::clock::timeEntery actor::doTimeOut(int time, int session)
   return INST(operation::clock, timeOut, time, func, (const void *)tm);
 }
 
-void actor::doExit()
-{
-  if (m_indeath)
-  {
+void actor::doExit() {
+  if (m_indeath) {
     return;
   }
   m_indeath = true;
   INST(actorSystem, doEnterGcc, m_handle);
 }
 
-void actor::dispatch()
-{
+void actor::dispatch() {
   struct message msg;
-  for (;;)
-  {
-    if (m_mqs.pop(&msg))
-    {
-      if (m_cpt == nullptr)
-      {
+  for (;;) {
+    if (m_mqs.pop(&msg)) {
+      if (m_cpt == nullptr) {
         util::memory::free(msg._data);
         continue;
       }
 
       int ref = m_cpt->doRun(&msg);
-      if (ref)
-      {
+      if (ref) {
         util::memory::free(msg._data);
       }
 
       INST(actorSystem, doRegiserWork, m_handle);
 
       break;
-    }
-    else
-    {
+    } else {
       break;
     }
   }
 }
 
-} // namespace module
-} // namespace wolf
+NS_CC_M_END

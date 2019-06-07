@@ -9,10 +9,7 @@
 #define STACK_MALLOC(sz) wolf::util::memory::malloc(sz)
 #define STACK_FREE(p) wolf::util::memory::free(p)
 
-namespace wolf
-{
-namespace operation
-{
+NS_CC_O_BEGIN
 
 using boost::context::detail::fcontext_t;
 using boost::context::detail::jump_fcontext;
@@ -24,8 +21,7 @@ using boost::context::detail::transfer_t;
 
 typedef void (*fn_t)(transfer_t);
 
-struct StackTraits
-{
+struct StackTraits {
   static int &getProtectStackPageSize();
 
   static bool protectStack(void *stack, size_t size, int pageSize);
@@ -33,7 +29,6 @@ struct StackTraits
   static void unprotectStack(void *stack, int pageSize);
 };
 
-} // namespace operation
-} // namespace wolf
+NS_CC_O_END
 
 #endif

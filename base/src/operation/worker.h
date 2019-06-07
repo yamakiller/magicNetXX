@@ -11,8 +11,8 @@
 #include "task.h"
 #include "util/deque.h"
 
-namespace wolf {
-namespace operation {
+NS_CC_O_BEGIN
+
 class scheduler;
 
 class worker {
@@ -132,7 +132,7 @@ inline void worker::coYield() {
   ++tk->_yieldCount;
   tk->SwapOut();
 }
-} // namespace operation
-} // namespace wolf
+
+NS_CC_O_END
 
 #endif

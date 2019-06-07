@@ -12,23 +12,18 @@
 #include <unordered_map>
 #include <vector>
 
-namespace wolf
-{
-namespace module
-{
+NS_CC_M_BEGIN
 
 typedef void (*dispatchFunc)(void *, int32_t, uint32_t, boost::any);
 typedef boost::any (*packFunc)(void *, ...);
 typedef boost::any (*unpackFunc)(void *, void *, uint32_t);
 
-struct packData
-{
+struct packData {
   void *_data;
   size_t _size;
 };
 
-struct messageProtocol
-{
+struct messageProtocol {
   int8_t _msgId;
 
   dispatchFunc _dispatch;
@@ -43,8 +38,7 @@ typedef operation::worker::suspendEntry suspendEntery;
 typedef std::unordered_map<int32_t, coEntry> suspedTable;
 typedef std::unordered_map<uint64_t, int32_t> sleepTable;
 
-class actorComponent : public util::mobject
-{
+class actorComponent : public util::mobject {
   friend class actor;
 
 public:
@@ -78,8 +72,7 @@ protected:
 protected:
   void quit();
 
-  int32_t getSuspedSize()
-  {
+  int32_t getSuspedSize() {
     return m_suspedSession.size() + m_suspedSleep.size();
   }
 
@@ -124,18 +117,15 @@ protected:
 
 template <typename... Args>
 void actorComponent::doSend(int32_t msgId, uint32_t dst, int32_t session,
-                            Args... parm)
-{
+                            Args... parm) {
   messageProtocol *proto = getProtocol(msgId);
-  if (proto == nullptr)
-  {
+  if (proto == nullptr) {
     SYSLOG_ERROR(m_parent->handle(),
                  "Failed to send data, protocol is not defined({})", msgId);
     return;
   }
 
-  if (proto->_pack == nullptr)
-  {
+  if (proto->_pack == nullptr) {
     SYSLOG_ERROR(m_parent->handle(),
                  "Failed to send data, protocol binding function is not "
                  "defined(pack:{})",
@@ -146,14 +136,13 @@ void actorComponent::doSend(int32_t msgId, uint32_t dst, int32_t session,
   packData pk = boost::any_cast<packData>(proto->_pack(this, parm...));
 
   if (INST(actorSystem, doSendMessage, m_parent->handle(), dst, msgId, session,
-           pk._data, pk._size) != 0)
-  {
+           pk._data, pk._size) != 0) {
     util::memory::free(pk._data); // TODO: 是否是必须
     SYSLOG_ERROR(m_parent->handle(), "Data transmission failed({})", msgId);
     return;
   }
 }
 
-} // namespace module
-} // namespace wolf
+NS_CC_M_END
+
 #endif

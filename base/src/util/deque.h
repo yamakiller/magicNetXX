@@ -5,9 +5,8 @@
 #include "list.h"
 #include "spinlock.h"
 
-namespace wolf {
+NS_CC_U_BEGIN
 
-namespace util {
 template <typename T, bool threadSafe> class deque final {
 public:
   typedef typename std::conditional<threadSafe, spinlock, unspinlock>::type
@@ -262,7 +261,7 @@ private:
 
   volatile size_t m_count;
 };
-} // namespace util
-} // namespace wolf
+
+NS_CC_U_END
 
 #endif

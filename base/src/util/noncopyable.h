@@ -1,8 +1,9 @@
 #ifndef WOLF_UTIL_NONCOPYABLE_H
 #define WOLF_UTIL_NONCOPYABLE_H
+#include "platform.h"
 
-namespace wolf {
-namespace util {
+NS_CC_U_BEGIN
+
 class noncopyable {
 protected:
   noncopyable() {}
@@ -12,7 +13,7 @@ private:
   noncopyable(const noncopyable &);
   noncopyable &operator=(const noncopyable &);
 };
-} // namespace util
-} // namespace wolf
+
+NS_CC_U_END
 
 #endif

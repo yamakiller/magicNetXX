@@ -1,27 +1,21 @@
 #ifndef WOLF_UTIL_SINGLETON_H
 #define WOLF_UTIL_SINGLETON_H
 
+#include "platform.h"
 #include <stdlib.h>
 
-namespace wolf
-{
-namespace util
-{
-template <class T>
-class singleton
-{
+NS_CC_U_BEGIN
+
+template <class T> class singleton {
 public:
-  virtual ~singleton()
-  {
-    if (m_inst)
-    {
+  virtual ~singleton() {
+    if (m_inst) {
       delete m_inst;
       m_inst = NULL;
     }
   }
 
-  static T *instance()
-  {
+  static T *instance() {
     if (m_inst)
       return m_inst;
     m_inst = new T();
@@ -35,10 +29,8 @@ private:
   static T *m_inst;
 };
 
-template <class T>
-T *singleton<T>::m_inst = NULL;
+template <class T> T *singleton<T>::m_inst = NULL;
 
-} // namespace util
-} // namespace wolf
+NS_CC_U_END
 
 #endif

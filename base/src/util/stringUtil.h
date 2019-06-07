@@ -9,15 +9,11 @@
 #include <string>
 #include <vector>
 
-namespace wolf
-{
-namespace util
-{
-class stringUtil : public noncopyable
-{
+NS_CC_U_BEGIN
+
+class stringUtil : public noncopyable {
 public:
-  inline static char *strdup(const char *str)
-  {
+  inline static char *strdup(const char *str) {
     size_t strsz = strlen(str);
     char *dstr = (char *)memory::malloc(strsz + 1);
     memcpy(dstr, str, strsz);
@@ -38,10 +34,8 @@ public:
   static std::string tolower(const std::string &str);
 
   template <typename Container>
-  static std::string connect(Container value, const std::string &delim)
-  {
-    if (value.begin() == value.end())
-    {
+  static std::string connect(Container value, const std::string &delim) {
+    if (value.begin() == value.end()) {
       return std::string();
     }
 
@@ -49,8 +43,7 @@ public:
     typename Container::iterator iter = value.begin();
     ss << *iter;
     ++iter;
-    for (; iter != value.end(); ++iter)
-    {
+    for (; iter != value.end(); ++iter) {
       ss << delim << *iter;
     }
     return ss.str();
@@ -58,10 +51,8 @@ public:
   template <typename Container>
   static std::string connect(Container value, const std::string &delim,
                              const std::string &before,
-                             const std::string &after)
-  {
-    if (value.begin() == value.end())
-    {
+                             const std::string &after) {
+    if (value.begin() == value.end()) {
       return std::string();
     }
 
@@ -69,14 +60,13 @@ public:
     typename Container::iterator iter = value.begin();
     ss << before << *iter << after;
     ++iter;
-    for (; iter != value.end(); ++iter)
-    {
+    for (; iter != value.end(); ++iter) {
       ss << delim << before << *iter << after;
     }
     return ss.str();
   }
 };
-} // namespace util
-} // namespace wolf
+
+NS_CC_U_END
 
 #endif

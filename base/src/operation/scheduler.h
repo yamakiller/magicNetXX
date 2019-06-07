@@ -12,13 +12,9 @@
 #include "util/singleton.h"
 #include "worker.h"
 
-namespace wolf
-{
-namespace operation
-{
+NS_CC_O_BEGIN
 
-class scheduler : public util::singleton<scheduler>, public util::noncopyable
-{
+class scheduler : public util::singleton<scheduler>, public util::noncopyable {
   friend class worker;
 
 public:
@@ -69,7 +65,6 @@ private:
   int32_t m_shutdown;
 };
 
-} // namespace operation
-} // namespace wolf
+NS_CC_O_END
 
 #endif

@@ -4,12 +4,9 @@
 #include "noncopyable.h"
 #include <cstddef>
 
-namespace wolf
-{
-namespace util
-{
-class memory : public noncopyable
-{
+NS_CC_U_BEGIN
+
+class memory : public noncopyable {
 public:
   static void *malloc(size_t size);
   static void *calloc(size_t nmemb, size_t size);
@@ -23,7 +20,7 @@ public:
 #endif
   static void free(void *ptr);
 };
-} // namespace util
-} // namespace wolf
+
+NS_CC_U_END
 
 #endif

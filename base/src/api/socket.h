@@ -10,8 +10,7 @@
 #include <unordered_map>
 #include <vector>
 
-namespace wolf {
-namespace api {
+NS_CC_A_BEGIN
 
 typedef std::weak_ptr<module::actor> aWeakPtr;
 typedef std::shared_ptr<module::actor> aSharedPtr;
@@ -44,6 +43,6 @@ public:
   static void doShutdown(int32_t id);
 };
 
-} // namespace api
-} // namespace wolf
+NS_CC_A_END
+
 #endif

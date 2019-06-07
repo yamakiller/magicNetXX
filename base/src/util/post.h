@@ -1,13 +1,14 @@
 #ifndef WOLF_POST_H
 #define WOLF_POST_H
 
+#include "platform.h"
 #include <condition_variable>
 #include <functional>
 #include <mutex>
 #include <thread>
 
-namespace wolf {
-namespace util {
+NS_CC_U_BEGIN
+
 class post final {
 public:
   post();
@@ -31,7 +32,7 @@ private:
   std::mutex m_mtx;
   std::condition_variable m_cv;
 };
-} // namespace util
-} // namespace wolf
+
+NS_CC_U_END
 
 #endif

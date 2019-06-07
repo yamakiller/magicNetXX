@@ -7,9 +7,9 @@
 #include "util/spinlock.h"
 #include <chrono>
 #include <functional>
-#include <memory>
 #include <limits>
 #include <list>
+#include <memory>
 #include <stdint.h>
 #include <thread>
 #include <time.h>
@@ -21,16 +21,11 @@
 #define CLOCK_LEVEL (1 << CLOCK_LEVEL_SHOFT)
 #define CLOCK_LEVEL_MASK (CLOCK_LEVEL - 1)
 
-namespace wolf
-{
-
-namespace operation
-{
+NS_CC_O_BEGIN
 
 typedef std::function<void(void *)> clockFun;
 
-struct clockHandle
-{
+struct clockHandle {
   uint64_t _id;
   uint32_t _expire;
   uint32_t _cancel;
@@ -41,8 +36,7 @@ struct clockHandle
   void operator delete(void *p) { util::memory::free(p); }
 };
 
-class clockSlot
-{
+class clockSlot {
   friend class clock;
 
 public:
@@ -55,10 +49,8 @@ private:
 
   void local_dispatch(std::shared_ptr<struct clockHandle> current_ptr);
 
-  inline void local_process(util::spinlock *plock)
-  {
-    while (!m_lst.empty())
-    {
+  inline void local_process(util::spinlock *plock) {
+    while (!m_lst.empty()) {
       std::shared_ptr<struct clockHandle> curPtr = m_lst.front();
       m_lst.pop_front();
       plock->unlock();
@@ -73,11 +65,9 @@ private:
   std::list<std::shared_ptr<struct clockHandle>> m_lst;
 };
 
-class clock : public util::singleton<clock>
-{
+class clock : public util::singleton<clock> {
 public:
-  struct timeEntery
-  {
+  struct timeEntery {
     std::weak_ptr<clockHandle> _tm;
     uint64_t _id;
   };
@@ -97,21 +87,17 @@ public:
   void timeCancel(timeEntery &entery);
 
 private:
-  inline void local_shift()
-  {
+  inline void local_shift() {
     int mask = CLOCK_SLOT;
     uint32_t ct = ++m_time;
     if (ct == 0)
       local_move(3, 0);
-    else
-    {
+    else {
       uint32_t time = ct >> CLOCK_SLOT_SHOFT;
       int i = 0;
-      while ((ct & (mask - 1)) == 0)
-      {
+      while ((ct & (mask - 1)) == 0) {
         int idx = time & CLOCK_LEVEL_MASK;
-        if (idx != 0)
-        {
+        if (idx != 0) {
           local_move(i, idx);
           break;
         }
@@ -122,14 +108,12 @@ private:
     }
   }
 
-  inline void local_execute()
-  {
+  inline void local_execute() {
     int idx = m_time & CLOCK_SLOT_MASK;
     m_slots[idx].local_process(&m_cLock);
   }
 
-  inline void update()
-  {
+  inline void update() {
     m_cLock.lock();
     local_execute();
     local_shift();
@@ -137,29 +121,24 @@ private:
     m_cLock.unlock();
   }
 
-  inline void local_move(int level, int idx)
-  {
+  inline void local_move(int level, int idx) {
     std::shared_ptr<struct clockHandle> curr_ptr = nullptr;
 
-    while ((curr_ptr = m_ts[level][idx].local_pop()) != NULL)
-    {
+    while ((curr_ptr = m_ts[level][idx].local_pop()) != NULL) {
       local_append(curr_ptr);
     }
   }
 
-  inline void local_append(std::shared_ptr<struct clockHandle> lnde)
-  {
+  inline void local_append(std::shared_ptr<struct clockHandle> lnde) {
     uint32_t time = lnde->_expire;
     uint32_t current_time = m_time;
     if ((time | (CLOCK_SLOT)) == (current_time | CLOCK_SLOT_MASK))
 
       m_slots[time & CLOCK_LEVEL_MASK].local_push(lnde);
-    else
-    {
+    else {
       int i;
       uint32_t mask = CLOCK_SLOT << CLOCK_LEVEL_SHOFT;
-      for (i = 0; i < 3; i++)
-      {
+      for (i = 0; i < 3; i++) {
         if ((time | (mask - 1)) == (current_time | (mask - 1)))
           break;
         mask <<= CLOCK_LEVEL_SHOFT;
@@ -183,7 +162,6 @@ private:
   atomic_t<long> m_timeId;
 };
 
-} // namespace operation
-} // namespace wolf
+NS_CC_O_END
 
 #endif

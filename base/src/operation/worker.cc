@@ -3,8 +3,8 @@
 #include "config.h"
 #include "scheduler.h"
 
-namespace wolf {
-namespace operation {
+NS_CC_O_BEGIN
+
 worker::worker(scheduler *sch, int id)
     : m_id(id), m_lpsch(sch), m_waiting({false}), m_ntsTick(0), m_ntsMark(0),
       m_nts(0), m_notified(false), m_runnable(nullptr) {
@@ -246,5 +246,4 @@ util::list<task> worker::steal(size_t n) {
   }
 }
 
-} // namespace operation
-} // namespace wolf
+NS_CC_O_END

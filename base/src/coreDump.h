@@ -4,8 +4,8 @@
 #include "base.h"
 #include "util/singleton.h"
 
+NS_CC_BEGIN
 
-namespace wolf {
 class coreDump : public util::singleton<coreDump> {
 public:
   coreDump() = default;
@@ -20,5 +20,7 @@ private:
 private:
   static void coreSignal(int signal);
 };
-} // namespace wolf
+
+NS_CC_END
+
 #endif

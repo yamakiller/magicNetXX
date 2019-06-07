@@ -5,8 +5,7 @@
 #include <assert.h>
 #include <string>
 
-
-namespace wolf {
+NS_CC_BEGIN
 
 static framework *gInstance = nullptr;
 
@@ -88,4 +87,4 @@ void framework::doUnInit() {
   INST(OPT, unload);
 }
 
-} // namespace wolf
+NS_CC_END

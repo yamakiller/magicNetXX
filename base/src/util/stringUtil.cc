@@ -1,7 +1,6 @@
 #include "stringUtil.h"
 
-namespace wolf {
-namespace util {
+NS_CC_U_BEGIN
 
 std::vector<std::string> stringUtil::split(const std::string &val,
                                            const std::string &spl) {
@@ -44,5 +43,4 @@ std::string stringUtil::tolower(const std::string &str) {
   return res;
 }
 
-} // namespace util
-} // namespace wolf
+NS_CC_U_END

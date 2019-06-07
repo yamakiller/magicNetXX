@@ -1,14 +1,13 @@
 #ifndef LAUNCHER_ENGINE_COMMANDLINEOPTION_H
 #define LAUNCHER_ENGINE_COMMANDLINEOPTION_H
 
+#include "platform.h"
 #include <map>
 #include <string>
 
-namespace wolf
-{
+NS_CC_BEGIN
 
-class commandLineOption
-{
+class commandLineOption {
 public:
   void setOption(const std::string &name, bool required);
   bool parse(int32_t num, char *args[]);
@@ -23,6 +22,6 @@ private:
   std::map<std::string, std::string> m_options;
 };
 
-} // namespace wolf
+NS_CC_END
 
 #endif

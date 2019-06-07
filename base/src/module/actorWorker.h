@@ -6,19 +6,14 @@
 #include <condition_variable>
 #include <mutex>
 
-namespace wolf
-{
-namespace module
-{
+NS_CC_M_BEGIN
 
-class actorWorker
-{
+class actorWorker {
 public:
   actorWorker();
   ~actorWorker();
 
-  void doPost(uint32_t handle)
-  {
+  void doPost(uint32_t handle) {
     m_works.push(&handle);
     m_pid.doPost();
   }
@@ -33,7 +28,7 @@ private:
   util::queue<uint32_t> m_works;
   util::post m_pid;
 };
-} // namespace module
-} // namespace wolf
+
+NS_CC_M_END
 
 #endif

@@ -1,7 +1,6 @@
 #include "post.h"
 
-namespace wolf {
-namespace util {
+NS_CC_U_BEGIN
 
 post::post() : m_sleep(0), m_shutdown(false) {}
 
@@ -50,5 +49,4 @@ void post::defaultExecute() {
   }
 }
 
-} // namespace util
-} // namespace wolf
+NS_CC_U_END

@@ -2,17 +2,14 @@
 #define WOLF_UTIL_QUEUE_H
 
 #include "memory.h"
+#include "platform.h"
 #include "spinlock.h"
 #include <assert.h>
 #include <mutex>
 
-namespace wolf
-{
-namespace util
-{
-template <typename T>
-class queue
-{
+NS_CC_U_BEGIN
+
+template <typename T> class queue {
 
   static constexpr auto DEFAULT_SIZE = 64;
   static constexpr auto EQ_OVERLOAD = 1024;
@@ -20,17 +17,14 @@ class queue
 public:
   queue()
       : m_cap(DEFAULT_SIZE), m_head(0), m_tail(0), m_overload(0),
-        m_overload_threshold(EQ_OVERLOAD)
-  {
+        m_overload_threshold(EQ_OVERLOAD) {
     m_arrays = (T *)memory::malloc(sizeof(T) * m_cap);
   }
 
-  ~queue()
-  {
+  ~queue() {
 
     T val;
-    while (pop(&val))
-    {
+    while (pop(&val)) {
       local_dropevent(&val);
     }
 
@@ -38,26 +32,20 @@ public:
     m_arrays = nullptr;
   }
 
-  void push(T *val)
-  {
+  void push(T *val) {
     m_arrayLock.lock();
     local_push(val);
     m_arrayLock.unlock();
   }
 
-  bool pop(T *val)
-  {
+  bool pop(T *val) {
     std::unique_lock<spinlock> lock(m_arrayLock);
     return local_pop(val);
   }
 
-  spinlock *getMutexRef()
-  {
-    return &m_arrayLock;
-  }
+  spinlock *getMutexRef() { return &m_arrayLock; }
 
-  int length()
-  {
+  int length() {
     int head, tail, cap;
     m_arrayLock.lock();
     head = m_head;
@@ -65,17 +53,14 @@ public:
     cap = m_cap;
     m_arrayLock.unlock();
 
-    if (head <= tail)
-    {
+    if (head <= tail) {
       return tail - head;
     }
     return tail + cap - head;
   }
 
-  int overload()
-  {
-    if (m_overload)
-    {
+  int overload() {
+    if (m_overload) {
       int overload = m_overload;
       m_overload = 0;
       return overload;
@@ -84,58 +69,46 @@ public:
   }
 
 protected:
-  virtual void local_push(T *val)
-  {
+  virtual void local_push(T *val) {
     assert(val);
     m_arrays[m_tail] = *val;
-    if (++m_tail >= m_cap)
-    {
+    if (++m_tail >= m_cap) {
       m_tail = 0;
     }
 
-    if (m_head == m_tail)
-    {
+    if (m_head == m_tail) {
       local_expand();
     }
   }
 
-  virtual bool local_pop(T *val)
-  {
+  virtual bool local_pop(T *val) {
     bool ret = false;
-    if (m_head != m_tail)
-    {
+    if (m_head != m_tail) {
       ret = true;
       *val = m_arrays[m_head++];
-      if (m_head >= m_cap)
-      {
+      if (m_head >= m_cap) {
         m_head = 0;
       }
 
       int length = m_tail - m_head;
-      if (length < 0)
-      {
+      if (length < 0) {
         length += m_cap;
       }
 
-      while (length > m_overload_threshold)
-      {
+      while (length > m_overload_threshold) {
         m_overload = length;
         m_overload_threshold *= 2;
       }
-    }
-    else
-    {
+    } else {
       m_overload_threshold = EQ_OVERLOAD;
     }
 
     return ret;
   }
 
-  void local_expand()
-  {
+  void local_expand() {
     T *newArrays = (T *)memory::malloc(sizeof(T) * m_cap * 2);
-    for (int i = 0; i < m_cap; i++)
-    {
+    for (int i = 0; i < m_cap; i++) {
       newArrays[i] = m_arrays[(m_head + i) % m_cap];
     }
 
@@ -159,7 +132,7 @@ protected:
   T *m_arrays;
   spinlock m_arrayLock;
 };
-} // namespace util
-} // namespace wolf
+
+NS_CC_U_END
 
 #endif

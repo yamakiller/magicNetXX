@@ -5,8 +5,8 @@
 #include "config.h"
 #include "message.h"
 
-namespace wolf {
-namespace module {
+NS_CC_M_BEGIN
+
 actorGcc::actorGcc() { m_shutdown = false; }
 
 int32_t actorGcc::doStart() {
@@ -57,5 +57,4 @@ void actorGcc::doLoop() {
   }
 }
 
-} // namespace module
-} // namespace wolf
+NS_CC_M_END

@@ -4,8 +4,8 @@
 #include "util/queue.h"
 #include <thread>
 
-namespace wolf {
-namespace module {
+NS_CC_M_BEGIN
+
 class actorGcc {
 public:
   actorGcc();
@@ -21,6 +21,7 @@ private:
   util::queue<uint32_t> m_qGcc;
   std::thread m_pid;
 };
-} // namespace module
-} // namespace wolf
+
+NS_CC_M_END
+
 #endif

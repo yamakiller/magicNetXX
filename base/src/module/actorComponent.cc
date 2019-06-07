@@ -1,20 +1,15 @@
 #include "actorComponent.h"
 
-namespace wolf
-{
-namespace module
-{
+NS_CC_M_BEGIN
 
 actorComponent::actorComponent() : m_session(0), m_parent(nullptr) {}
 
-actorComponent::~actorComponent()
-{
+actorComponent::~actorComponent() {
   assert(m_suspedSession.size() == 0);
   m_proto.clear();
 }
 
-int32_t actorComponent::doInit(actor *parent, void *parm)
-{
+int32_t actorComponent::doInit(actor *parent, void *parm) {
   m_parent = parent;
   doRegisterProtocol({messageId::M_ID_RESOUE, nullptr, nullptr, nullptr});
   doRegisterProtocol({messageId::M_ID_ERROR,
@@ -23,31 +18,26 @@ int32_t actorComponent::doInit(actor *parent, void *parm)
   return onLaunch(parm);
 }
 
-int32_t actorComponent::doRun(struct message *msg)
-{
+int32_t actorComponent::doRun(struct message *msg) {
   dispatchMessage(msg);
   return 1;
 }
 
-void actorComponent::doTimeout(int tm, std::function<void(void)> func)
-{
+void actorComponent::doTimeout(int tm, std::function<void(void)> func) {
   int32_t session = genSession();
   coEntry co;
   co._id = INST(actorSystem, doGenEntryId);
   co._func = func;
-  if (!insertSusped(session, co))
-  {
+  if (!insertSusped(session, co)) {
     SYSLOG_ERROR(m_parent->handle(), "Registration timer failed.");
     return;
   }
   m_parent->doTimeOut(tm, session);
 }
 
-void actorComponent::doWait(struct coEntry co)
-{
+void actorComponent::doWait(struct coEntry co) {
   int32_t session = genSession();
-  if (!suspendSleep(session, co))
-  {
+  if (!suspendSleep(session, co)) {
     return;
   }
 
@@ -55,11 +45,9 @@ void actorComponent::doWait(struct coEntry co)
   removeSusped(session);
 }
 
-bool actorComponent::doWakeup(struct coEntry co)
-{
+bool actorComponent::doWakeup(struct coEntry co) {
   int32_t session = getSleepSusped(co);
-  if (session == -1)
-  {
+  if (session == -1) {
     return false;
   }
 
@@ -69,11 +57,9 @@ bool actorComponent::doWakeup(struct coEntry co)
 
 void actorComponent::quit() { m_parent->doExit(); }
 
-int32_t actorComponent::genSession()
-{
+int32_t actorComponent::genSession() {
   int32_t session = ++m_session;
-  if (session <= 0)
-  {
+  if (session <= 0) {
     m_session = 1;
     return 1;
   }
@@ -81,15 +67,12 @@ int32_t actorComponent::genSession()
   return session;
 }
 
-std::shared_ptr<actor> actorComponent::getActorPtr()
-{
+std::shared_ptr<actor> actorComponent::getActorPtr() {
   return INST(actorSystem, getGrab, m_parent->handle());
 }
 
-bool actorComponent::suspendSleep(int32_t session, struct coEntry co)
-{
-  if (!insertSusped(session, co))
-  {
+bool actorComponent::suspendSleep(int32_t session, struct coEntry co) {
+  if (!insertSusped(session, co)) {
     return false;
   }
   insertSleepSusped(session, co);
@@ -97,29 +80,23 @@ bool actorComponent::suspendSleep(int32_t session, struct coEntry co)
   return true;
 }
 
-coEntry *actorComponent::getSusped(int32_t session)
-{
-  if (m_suspedSession.empty())
-  {
+coEntry *actorComponent::getSusped(int32_t session) {
+  if (m_suspedSession.empty()) {
     return nullptr;
   }
 
   auto it = m_suspedSession.find(session);
-  if (it == m_suspedSession.end())
-  {
+  if (it == m_suspedSession.end()) {
     return nullptr;
   }
 
   return &it->second;
 }
 
-bool actorComponent::insertSusped(int32_t session, struct coEntry co)
-{
-  if (!m_suspedSession.empty())
-  {
+bool actorComponent::insertSusped(int32_t session, struct coEntry co) {
+  if (!m_suspedSession.empty()) {
     auto it = m_suspedSession.find(session);
-    if (it != m_suspedSession.end())
-    {
+    if (it != m_suspedSession.end()) {
       SYSLOG_ERROR(m_parent->handle(),
                    "Suspend failed Session repeat error({})", session);
       return false;
@@ -130,76 +107,61 @@ bool actorComponent::insertSusped(int32_t session, struct coEntry co)
   return true;
 }
 
-void actorComponent::removeSusped(int32_t session)
-{
-  if (m_suspedSession.empty())
-  {
+void actorComponent::removeSusped(int32_t session) {
+  if (m_suspedSession.empty()) {
     return;
   }
 
   auto it = m_suspedSession.find(session);
-  if (it == m_suspedSession.end())
-  {
+  if (it == m_suspedSession.end()) {
     return;
   }
 
   m_suspedSession.erase(it);
 }
 
-int32_t actorComponent::getSleepSusped(struct coEntry co)
-{
-  if (m_suspedSleep.empty())
-  {
+int32_t actorComponent::getSleepSusped(struct coEntry co) {
+  if (m_suspedSleep.empty()) {
     return -1;
   }
 
   auto it = m_suspedSleep.find(co._id);
-  if (it == m_suspedSleep.end())
-  {
+  if (it == m_suspedSleep.end()) {
     return -1;
   }
 
   return m_suspedSleep[co._id];
 }
 
-void actorComponent::insertSleepSusped(int32_t session, struct coEntry co)
-{
+void actorComponent::insertSleepSusped(int32_t session, struct coEntry co) {
   m_suspedSleep[co._id] = session;
 }
 
-void actorComponent::removeSleepSusped(uint64_t enteryId)
-{
-  if (m_suspedSleep.empty())
-  {
+void actorComponent::removeSleepSusped(uint64_t enteryId) {
+  if (m_suspedSleep.empty()) {
     return;
   }
 
   auto it = m_suspedSleep.find(enteryId);
-  if (it == m_suspedSleep.end())
-  {
+  if (it == m_suspedSleep.end()) {
     return;
   }
 
   m_suspedSleep.erase(enteryId);
 }
 
-messageProtocol *actorComponent::getProtocol(int32_t msgId)
-{
-  for (size_t i = 0; i < m_proto.size(); i++)
-  {
-    if (m_proto[i]._msgId == msgId)
-    {
+messageProtocol *actorComponent::getProtocol(int32_t msgId) {
+  for (size_t i = 0; i < m_proto.size(); i++) {
+    if (m_proto[i]._msgId == msgId) {
       return &m_proto[i];
     }
   }
   return nullptr;
 }
 
-void actorComponent::doRegisterProtocol(messageProtocol proto)
-{
+void actorComponent::doRegisterProtocol(messageProtocol proto) {
   messageProtocol *ptrProt = getProtocol(proto._msgId);
-  if (ptrProt)
-  {
+  if (ptrProt) {
     ptrProt->_msgId = proto._msgId;
     ptrProt->_dispatch = proto._dispatch;
     ptrProt->_pack = proto._pack;
@@ -210,8 +172,7 @@ void actorComponent::doRegisterProtocol(messageProtocol proto)
   m_proto.push_back(proto);
 }
 
-int32_t actorComponent::dispatchMessage(struct message *msg)
-{
+int32_t actorComponent::dispatchMessage(struct message *msg) {
   int msgId = messageApi::getMessageId(msg);
   uint32_t msgSz = messageApi::getMessageSize(msg);
   void *msgData = msg->_data;
@@ -219,27 +180,21 @@ int32_t actorComponent::dispatchMessage(struct message *msg)
   uint32_t msgSrc = msg->_src;
   uint32_t msgDst = msg->_dst;
 
-  if (msgId == messageId::M_ID_RESOUE)
-  {
+  if (msgId == messageId::M_ID_RESOUE) {
     coEntry *ptrCo = getSusped(msgSession);
-    if (ptrCo == nullptr)
-    {
+    if (ptrCo == nullptr) {
       unknownResponse(msgSession, msgSrc, msgData, msgSz);
       return 0;
-    }
-    else
-    {
+    } else {
       util::incursivePtr<operation::task> tkPtr = ptrCo->_entry._tk.lock();
-      if (!tkPtr)
-      {
+      if (!tkPtr) {
         unknownResponse(msgSession, msgSrc, msgData, msgSz);
         removeSusped(msgSession);
         return 0;
       }
 
       if (tkPtr->_state == operation::taskState::runnable ||
-          tkPtr->_state == operation::taskState::done)
-      {
+          tkPtr->_state == operation::taskState::done) {
         removeSusped(msgSession);
         return 0;
       }
@@ -249,12 +204,9 @@ int32_t actorComponent::dispatchMessage(struct message *msg)
       operation::worker::wakeup(tmpEntry);
       return 0;
     }
-  }
-  else if (msgId == messageId::M_ID_TIMEOUT)
-  {
+  } else if (msgId == messageId::M_ID_TIMEOUT) {
     coEntry *ptrCo = getSusped(msgSession);
-    if (ptrCo == nullptr || ptrCo->_func == nullptr)
-    {
+    if (ptrCo == nullptr || ptrCo->_func == nullptr) {
       unknownResponse(msgSession, msgSrc, msgData, msgSz);
       return 0;
     }
@@ -262,44 +214,32 @@ int32_t actorComponent::dispatchMessage(struct message *msg)
     ptrCo->_func();
     removeSusped(msgSession);
     return 0;
-  }
-  else if (msgId == messageId::M_ID_QUIT)
-  {
+  } else if (msgId == messageId::M_ID_QUIT) {
     INST(actorSystem, doUnRegister, msgDst);
     return 0;
-  }
-  else
-  {
+  } else {
     messageProtocol *p = getProtocol(msgId);
-    if (p == nullptr)
-    {
-      if (msgSession != 0)
-      {
+    if (p == nullptr) {
+      if (msgSession != 0) {
         INST(actorSystem, doSendMessage, msgSrc, msgSrc, messageId::M_ID_ERROR,
              msgSession, (void *)"");
-      }
-      else
-      {
+      } else {
         unknownRequest(msgId, msgSession, msgSrc, msgData, msgSz);
       }
       return 0;
     }
 
     auto f = p->_dispatch;
-    if (f)
-    {
+    if (f) {
       f(this, msgSession, msgSrc, p->_unpack(this, msgData, msgSz));
-    }
-    else
-    {
+    } else {
       unknownDispatch(msgId, msgSession, msgSrc, msgData, msgSz);
     }
   }
 }
 
 void actorComponent::unknownResponse(int32_t session, uint32_t source,
-                                     void *msg, uint32_t sz)
-{
+                                     void *msg, uint32_t sz) {
   SYSLOG_ERROR(m_parent->handle(), "Response message : {}",
                std::string((const char *)msg, sz).c_str());
   SYSLOG_ERROR(m_parent->handle(), "Unknown session : {} from {:08x}", session,
@@ -307,57 +247,45 @@ void actorComponent::unknownResponse(int32_t session, uint32_t source,
 }
 
 void actorComponent::unknownRequest(int32_t msgId, int32_t session,
-                                    uint32_t source, void *msg, uint32_t sz)
-{
+                                    uint32_t source, void *msg, uint32_t sz) {
   SYSLOG_ERROR(m_parent->handle(), "Unknown request ({}): {}", msgId,
                std::string((const char *)msg, sz).c_str());
   SYSLOG_ERROR(m_parent->handle(), "Unknown session : {} from {:08x}", session,
                source);
 }
 
-void actorComponent::unknownDispatch(int32_t msgId, int32_t session, uint32_t source,
-                                     void *msg, uint32_t sz)
-{
-  if (session != 0)
-  {
+void actorComponent::unknownDispatch(int32_t msgId, int32_t session,
+                                     uint32_t source, void *msg, uint32_t sz) {
+  if (session != 0) {
     INST(actorSystem, doSendMessage, source, source, messageId::M_ID_ERROR,
          session, (void *)"");
-  }
-  else
-  {
+  } else {
     unknownRequest(msgId, session, source, msg, sz);
   }
 }
 
 void actorComponent::staticErrorDispatch(void *param, int32_t session,
-                                         uint32_t src, boost::any data)
-{
+                                         uint32_t src, boost::any data) {
   actorComponent *cpt = static_cast<actorComponent *>(param);
   cpt->errorDispatch(session, src, data);
 }
 
-struct errorResult
-{
+struct errorResult {
   const char *_message;
   uint32_t _size;
 };
 
 void actorComponent::errorDispatch(int32_t errorSession, uint32_t errorSrc,
-                                   boost::any &data)
-{
+                                   boost::any &data) {
   struct coEntry *ptrCo = getSusped(errorSession);
-  if (ptrCo == nullptr)
-  {
+  if (ptrCo == nullptr) {
     errorResult er = boost::any_cast<errorResult>(data);
-    if (strcmp(er._message, "") != 0)
-    {
+    if (strcmp(er._message, "") != 0) {
       SYSLOG_ERROR(m_parent->handle(), "Source Address [:{:08x}] Error:{}",
                    errorSrc, er._message);
       return;
     }
-  }
-  else
-  {
+  } else {
     uint64_t tmpId = ptrCo->_id;
     operation::worker::suspendEntry tmpEnter = std::move(ptrCo->_entry);
     removeSleepSusped(tmpId);
@@ -367,12 +295,10 @@ void actorComponent::errorDispatch(int32_t errorSession, uint32_t errorSrc,
 }
 
 boost::any actorComponent::staticErrorUnPack(void *param, void *data,
-                                             uint32_t size)
-{
+                                             uint32_t size) {
   errorResult er{(const char *)data, size};
   boost::any result(er);
   return result;
 }
 
-} // namespace module
-} // namespace wolf
+NS_CC_M_END

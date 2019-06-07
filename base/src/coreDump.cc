@@ -20,7 +20,7 @@ linux 版本
 window dbughelp
 */
 
-namespace wolf {
+NS_CC_BEGIN
 
 void coreDump::coreSignal(int dunno) {
   INST(coreDump, outStack, dunno);
@@ -99,4 +99,4 @@ void coreDump::outStack(int sig) {
   fclose(f);
 }
 
-} // namespace wolf
+NS_CC_END

@@ -4,8 +4,8 @@
 #include <sys/mman.h>
 #endif
 
-namespace wolf {
-namespace operation {
+NS_CC_O_BEGIN
+
 int &StackTraits::getProtectStackPageSize() {
   static int size = 0;
   return size;
@@ -51,5 +51,4 @@ bool StackTraits::protectStack(void *stack, size_t size, int pageSize) {
 void StackTraits::unprotectStack(void *stack, int pageSize) { return; }
 #endif
 
-} // namespace operation
-} // namespace wolf
+NS_CC_O_END

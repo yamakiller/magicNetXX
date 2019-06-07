@@ -9,8 +9,7 @@
 #define SOCKET_LARGE_PAGE_NODE 12
 #define SOCKET_BUFFER_LIMIT (256 * 1024)
 
-namespace wolf {
-namespace api {
+NS_CC_A_BEGIN
 
 ///////////////////////////////////////////////////
 //基础数据结构不被外部访问
@@ -721,5 +720,4 @@ void socketApi::doShutdown(int32_t id) {
   }
 }
 
-} // namespace api
-} // namespace wolf
+NS_CC_A_END

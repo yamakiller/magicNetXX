@@ -4,8 +4,8 @@
 #include "base.h"
 #include <string>
 
-namespace wolf {
-namespace util {
+NS_CC_U_BEGIN
+
 struct object_ref;
 struct shared_ref;
 
@@ -315,7 +315,7 @@ decrementRef(T *ptr) {
 template <typename T>
 typename std::enable_if<!std::is_base_of<object_ref, T>::value>::type
 decrementRef(T *ptr) {}
-} // namespace util
-} // namespace wolf
+
+NS_CC_U_END
 
 #endif

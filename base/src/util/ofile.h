@@ -5,16 +5,14 @@
 #include <string>
 #include <unordered_map>
 
-NS_CC_BEGIN
-
-NS_UTIL_BEGIN
+NS_CC_U_BEGIN
 
 struct Data {
   char *_bytes;
   ssize_t _len;
 };
 
-class ofile : public util::singleton<ofile> {
+class ofile : public singleton<ofile> {
 public:
   ofile() = default;
   ~ofile() = default;
@@ -32,8 +30,7 @@ protected:
   std::unordered_map<std::string, Data> m_data;
   util::spinlock m_lock;
 };
-NS_UTIL_END
 
-NS_CC_END
+NS_CC_U_END
 
 #endif
