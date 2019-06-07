@@ -4,32 +4,23 @@
 
 #include <spdlog/sinks/stdout_color_sinks.h>
 
-namespace wolf
-{
-namespace log
-{
-logConsole::logConsole()
-{
+NS_CC_L_BEGIN
+
+logConsole::logConsole() {
   auto console = spdlog::stdout_color_mt("console");
 
   console->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%l] %v");
-  console->set_level(
-      toLevel(getLevel(INSTGET_VAR(OPT, _logLevel))));
+  console->set_level(toLevel(getLevel(INSTGET_VAR(OPT, _logLevel))));
 
   spdlog::set_error_handler([](const std::string &msg) {
     fprintf(stderr, "log console error:%s\n", msg.c_str());
   });
 }
 
-logConsole::~logConsole()
-{
-  spdlog::drop("console");
-}
+logConsole::~logConsole() { spdlog::drop("console"); }
 
-spdlog::level::level_enum logConsole::toLevel(logLevel level)
-{
-  switch (level)
-  {
+spdlog::level::level_enum logConsole::toLevel(logLevel level) {
+  switch (level) {
   case logLevel::L_TRACE:
     return spdlog::level::trace;
   case logLevel::L_DEBUG:
@@ -47,10 +38,8 @@ spdlog::level::level_enum logConsole::toLevel(logLevel level)
   }
 }
 
-bool logConsole::doLog(ilog::logLevel level, const std::string &msg)
-{
-  switch (level)
-  {
+bool logConsole::doLog(ilog::logLevel level, const std::string &msg) {
+  switch (level) {
   case logLevel::L_TRACE:
     spdlog::get("console")->trace(msg);
     break;
@@ -75,5 +64,5 @@ bool logConsole::doLog(ilog::logLevel level, const std::string &msg)
   }
   return true;
 }
-} // namespace log
-} // namespace wolf
+
+NS_CC_L_END

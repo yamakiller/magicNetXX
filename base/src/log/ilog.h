@@ -1,18 +1,15 @@
 #ifndef WOLF_ILOG_H
 #define WOLF_ILOG_H
 
+#include "platform.h"
 #include <string>
 
-namespace wolf
-{
-namespace log
-{
-class ilog
-{
+NS_CC_L_BEGIN
+
+class ilog {
 public:
   virtual ~ilog() {}
-  enum logLevel
-  {
+  enum logLevel {
     L_TRACE,
     L_DEBUG,
     L_INFO,
@@ -24,10 +21,8 @@ public:
   virtual bool doLog(logLevel level, const std::string &msg) = 0;
 
 protected:
-  inline logLevel getLevel(int32_t level)
-  {
-    switch (level)
-    {
+  inline logLevel getLevel(int32_t level) {
+    switch (level) {
     case 0:
       return logLevel::L_TRACE;
     case 1:
@@ -47,7 +42,7 @@ protected:
 
 protected:
 };
-} // namespace log
-} // namespace wolf
+
+NS_CC_L_END
 
 #endif

@@ -4,8 +4,7 @@
 #include "ilog.h"
 #include <spdlog/spdlog.h>
 
-namespace wolf {
-namespace log {
+NS_CC_L_BEGIN
 
 class logConsole : public ilog {
 public:
@@ -17,7 +16,6 @@ private:
   spdlog::level::level_enum toLevel(logLevel level);
 };
 
-} // namespace log
-} // namespace wolf
+NS_CC_L_END
 
 #endif

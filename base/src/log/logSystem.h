@@ -8,8 +8,8 @@
 #include "util/singleton.h"
 #include <thread>
 
-namespace wolf {
-namespace log {
+NS_CC_L_BEGIN
+
 class logSystem : public util::singleton<logSystem> {
   struct logMessage {
     int32_t level;
@@ -44,7 +44,6 @@ void syslogWarning(const std::string &msg);
 void syslogError(const std::string &msg);
 void syslogFatal(const std::string &msg);
 
-} // namespace log
-} // namespace wolf
+NS_CC_L_END
 
 #endif
