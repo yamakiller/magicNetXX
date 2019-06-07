@@ -2,11 +2,12 @@
 #define WOLF_NETWORK_IOCPEPOLL_H
 
 #include "iocpWrap.h"
+#include "platform.h"
 
 #ifdef UT_PLATFORM_LINUX
 
-namespace wolf {
-namespace network {
+NS_CC_N_BEGIN
+
 class iocpEpoll : public iocpWrap {
 public:
   iocpEpoll();
@@ -22,8 +23,8 @@ public:
 protected:
   int32_t m_handle;
 };
-} // namespace network
-} // namespace wolf
+
+NS_CC_N_END
 
 #endif
 

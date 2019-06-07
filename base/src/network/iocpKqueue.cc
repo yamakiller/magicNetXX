@@ -2,8 +2,8 @@
 
 #ifdef UT_PLATFORM_APPLE
 
-namespace wolf {
-namespace network {
+NS_CC_N_BEGIN
+
 iocpKqueue::iocpKqueue() { m_handle = kqueue(); }
 iocpKqueue::~iocpKqueue() {
   close(m_handle);
@@ -68,7 +68,6 @@ int iocpKqueue::onWait() {
   return n;
 }
 
-} // namespace network
-} // namespace wolf
+NS_CC_N_END
 
 #endif

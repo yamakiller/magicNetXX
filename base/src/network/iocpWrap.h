@@ -6,8 +6,7 @@
 
 #define IOCP_EVENT_WAIT_MAX 1024
 
-namespace wolf {
-namespace network {
+NS_CC_N_BEGIN
 
 struct iocpEvent {
   void *s;
@@ -36,7 +35,7 @@ public:
 protected:
   struct iocpEvent m_evts[IOCP_EVENT_WAIT_MAX];
 };
-} // namespace network
-} // namespace wolf
+
+NS_CC_N_END
 
 #endif

@@ -21,7 +21,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-
 #define SOCKET_ERROR (-1)
 #define INVALID_SOCKET 0
 #endif
@@ -44,8 +43,7 @@
 
 #define WARNING_SIZE (1024 * 1024)
 
-namespace wolf {
-namespace network {
+NS_CC_N_BEGIN
 
 #ifdef UT_PLATFORM_WINDOWS
 typedef SOCKET wsocket_t;
@@ -131,7 +129,7 @@ public:
 
   static int32_t reuseaddr(wsocket_t sock);
 };
-} // namespace network
-} // namespace wolf
+
+NS_CC_N_END
 
 #endif

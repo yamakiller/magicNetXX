@@ -5,8 +5,8 @@
 
 #ifdef UT_PLATFORM_APPLE
 
-namespace wolf {
-namespace network {
+NS_CC_N_BEGIN
+
 class iocpKqueue : public iocpWrap {
 public:
   iocpKqueue();
@@ -22,8 +22,8 @@ public:
 protected:
   int32_t m_handle;
 };
-} // namespace network
-} // namespace wolf
+
+NS_CC_N_END;
 
 #endif
 

@@ -8,22 +8,16 @@
 #define SOCKET_HANDLE_INVALID -1
 #define SOCKET_HANDLE_MINRECVBUFFER_MAX 128
 
-namespace wolf
-{
-namespace network
-{
+NS_CC_N_BEGIN
 
-class socketHandle
-{
-  struct sendData
-  {
+class socketHandle {
+  struct sendData {
     void *_data;
     char *_ptr;
     uint32_t _sz;
   };
 
-  struct socketInfo
-  {
+  struct socketInfo {
     uint64_t _recvLastTime;
     uint64_t _sendLastTime;
     uint64_t _recvBytes;
@@ -64,8 +58,7 @@ public:
 
   wsocket_t getSocket();
 
-  void setCurrentSendBuffer(void *data, char *ptr, uint32_t sz)
-  {
+  void setCurrentSendBuffer(void *data, char *ptr, uint32_t sz) {
     m_curSender._data = data;
     m_curSender._ptr = ptr;
     m_curSender._sz = sz;
@@ -111,7 +104,6 @@ private:
   util::spinlock m_mutex;
 };
 
-} // namespace network
-} // namespace wolf
+NS_CC_N_END
 
 #endif

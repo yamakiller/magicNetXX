@@ -9,20 +9,16 @@
 #include "util/spinlock.h"
 #include <thread>
 
-namespace wolf
-{
-namespace network
-{
-struct socketMessage
-{
+NS_CC_N_BEGIN
+
+struct socketMessage {
   int32_t _id;
   int32_t _type;
   int _ext;
   char *_buffer;
 };
 
-class socketSystem : public util::singleton<socketSystem>
-{
+class socketSystem : public util::singleton<socketSystem> {
 
   friend class socketChannel;
   typedef std::function<void(uintptr_t opaque, int32_t handle, int32_t ud,
@@ -62,13 +58,11 @@ private:
   int32_t getReserve();
   socketHandle *getSocket(int32_t handle);
 
-  int32_t getEventFuncPos(socketMessageType type)
-  {
+  int32_t getEventFuncPos(socketMessageType type) {
     return ((int32_t)type) - 1;
   }
 
-  socketEventFunc getEventFunc(socketMessageType type)
-  {
+  socketEventFunc getEventFunc(socketMessageType type) {
     return m_eFunc[getEventFuncPos(type)];
   }
 
@@ -111,7 +105,7 @@ private:
 private:
   std::thread m_pid;
 };
-} // namespace network
-} // namespace wolf
+
+NS_CC_N_END
 
 #endif

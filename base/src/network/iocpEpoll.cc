@@ -6,8 +6,8 @@
 #include <sys/errno.h>
 #include <unistd.h>
 
-namespace wolf {
-namespace network {
+NS_CC_N_BEGIN
+
 iocpEpoll::iocpEpoll() { m_handle = epoll_create(1024); }
 iocpEpoll::~iocpEpoll() {
   ::close(m_handle);
@@ -55,7 +55,6 @@ int iocpEpoll::onWait() {
   return n;
 }
 
-} // namespace network
-} // namespace wolf
+NS_CC_N_END
 
 #endif

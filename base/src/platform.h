@@ -64,6 +64,12 @@
   NS_CC_END                                                                    \
   }
 
+#define NS_CC_N_BEGIN NS_CC_BEGIN namespace network {
+
+#define NS_CC_N_END                                                            \
+  NS_CC_END                                                                    \
+  }
+
 #if defined(__cplusplus) || defined(c_plusplus)
 #define WOLF_C_API extern "C"
 #else

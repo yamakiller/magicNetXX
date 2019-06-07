@@ -8,55 +8,45 @@
 
 #define CHANNEL_INVALID -1
 
-namespace wolf
-{
-namespace network
-{
-class socketChannel final
-{
+NS_CC_N_BEGIN
+
+class socketChannel final {
 public:
-  struct requestExit
-  {
+  struct requestExit {
     uintptr_t _opaque;
   };
 
-  struct requestStart
-  {
+  struct requestStart {
     int32_t _handle;
     uintptr_t _opaque;
   };
 
-  struct requestConnect
-  {
+  struct requestConnect {
     int32_t _handle;
     int32_t _port;
     uintptr_t _opaque;
     char _addr[1];
   };
 
-  struct requestSend
-  {
+  struct requestSend {
     int32_t _handle;
     int32_t _sz;
     char *_data;
   };
 
-  struct requestSetopt
-  {
+  struct requestSetopt {
     int32_t _handle;
     int32_t _what;
     int32_t _value;
   };
 
-  struct requestClose
-  {
+  struct requestClose {
     int32_t _handle;
     int32_t _shutdown;
     uintptr_t _opaque;
   };
 
-  struct requestPacket
-  {
+  struct requestPacket {
     uint8_t header[2];
     union {
       char data[256];
@@ -80,8 +70,7 @@ public:
       requestClearClosedFunc;
 
 public:
-  enum errCode
-  {
+  enum errCode {
     CH_NOEINTR = 1,
     CH_EINTR = 2,
     CH_ERROR = 3,
@@ -111,8 +100,7 @@ public:
   void doRegisterSendFunc(requestSendFunc func) { m_sendFunc = func; }
   void doRegisterSetOptFunc(requestSetoptFunc func) { m_setoptFunc = func; }
   void doRegisterCloseFunc(requestCloseFunc func) { m_closeFunc = func; }
-  void doRegisterClearClosedFunc(requestClearClosedFunc func)
-  {
+  void doRegisterClearClosedFunc(requestClearClosedFunc func) {
     m_clearClosedFunc = func;
   }
 
@@ -141,6 +129,6 @@ private:
 private:
   fd_set m_rsfds;
 };
-} // namespace network
-} // namespace wolf
+
+NS_CC_A_END
 #endif
