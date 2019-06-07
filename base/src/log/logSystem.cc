@@ -5,7 +5,8 @@
 #include "util/stringUtil.h"
 #include <functional>
 
-NS_CC_L_BEGIN
+namespace wolf {
+namespace log {
 
 logSystem::logSystem() : m_log(nullptr) {}
 
@@ -64,7 +65,7 @@ void syslogTrace(const std::string &msg) {
 }
 
 void syslogDebug(const std::string &msg) {
-  INST(logSystem, doLog, ilog::logLevel::L_DEBUG, msg);
+  INST(log::logSystem, doLog, ilog::logLevel::L_DEBUG, msg);
 }
 
 void syslogInfo(const std::string &msg) {
@@ -83,4 +84,5 @@ void syslogFatal(const std::string &msg) {
   INST(logSystem, doLog, ilog::logLevel::L_FATAL, msg);
 }
 
-NS_CC_L_END
+} // namespace log
+} // namespace wolf

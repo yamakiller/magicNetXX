@@ -3,6 +3,7 @@
 
 #include "ilog.h"
 #include "util/memory.h"
+#include "util/noncopyable.h"
 #include "util/post.h"
 #include "util/queue.h"
 #include "util/singleton.h"
