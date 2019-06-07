@@ -13,8 +13,6 @@ if(UNIX AND NOT APPLE)
 	list(APPEND LUA_LIBRARIES ${DL_LIBRARY})
 endif()
 
-message("tetwtttt:${DL_LIBRARY}-${LUA_LIBRARIES}")
-
 include_directories(
 	"${PROJECT_SOURCE_DIR}/include"
 	"${LUA_INCLUDE_DIR}"

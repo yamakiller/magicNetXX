@@ -90,6 +90,7 @@ include(${ROOT_DIR}/cmake/External_base.cmake)
 include(${ROOT_DIR}/cmake/External_launcher.cmake)
 include(${ROOT_DIR}/cmake/External_example.cmake)
 include(${ROOT_DIR}/cmake/External_component.cmake)
+include(${ROOT_DIR}/cmake/External_lualib.cmake)
 
 
 

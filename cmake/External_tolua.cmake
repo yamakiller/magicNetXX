@@ -17,8 +17,9 @@ ExternalProject_Add(tolua
 
 list(APPEND Wolf_THIRDPARTYLIBS_ARGS
     # Add cppformat engine properties so correct version .
-      "-DTolua_INCLUDE_DIR:PATH=${tolua_source}"
-      "-DTolua_LIBRARIES:PATH=${LIBRARY_OUTPUT_PATH}")
+      "-DTolua_INCLUDE_DIR:PATH=${tolua_source}/include"
+      "-DTolua_LIBRARIES:PATH=${LIBRARY_OUTPUT_PATH}"
+      "-DTolua_RUN:PATH=${EXECUTABLE_OUTPUT_PATH}")
 
 add_custom_command(TARGET tolua POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy

@@ -9,7 +9,6 @@ add_library(${PROJ_NAME}  SHARED ${SRCLIST})
 set(Boost_USE_STATIC_LIBS ON)
 find_package(Boost COMPONENTS system coroutine context REQUIRED)
 
-
 include_directories(
 	./src/
     ${Base_INCLUDE_DIR}
@@ -25,6 +24,7 @@ set(tolua ${Tolua_LIBRARIES}/libtolua++.a)
 target_link_libraries(${PROJ_NAME} 
     ${base}
     ${tolua})
+add_dependencies(lualib)
 
 set_target_properties(${PROJ_NAME} PROPERTIES FOLDER 
 									"components" 

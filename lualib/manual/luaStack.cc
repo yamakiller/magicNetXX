@@ -1,0 +1,216 @@
+#include "luaStack.h"
+#include "luaFile.h"
+
+#define LUA_MEMORY_WARNING_REPORT (1024 * 1024 * 32)
+#define LUA_STACK_FIX_ACTOR "luastack_fix_type_acotr"
+
+NC_CC_BEGIN
+
+void *luaStack::alloc(void *ud, void *ptr, size_t osize, size_t nsize)
+{
+    luaStack *stack = static_cast<luaStack *>(ud);
+    size_t mem = stack->m_mem;
+    stack->m_mem += nsize;
+    if (ptr)
+    {
+        stack->m_mem -= osize;
+    }
+
+    if (stack->m_memLimit != 0 &&
+        stack->m_mem > stack->m_memLimit)
+    {
+        if (ptr == nullptr ||
+            nsize > osize)
+        {
+            stack->m_mem = mem;
+            return nullptr;
+        }
+    }
+
+    if (stack->m_mem > stack->m_memReport)
+    {
+        stack->m_memReport *= 2;
+        SYSLOG_ERROR(0, "lua Stack Memory warning {:02f} M", (float)stack->m_mem / (1024 * 1024));
+    }
+
+    return util::memory::lalloc(ptr, osize, nsize);
+}
+
+luaStack::luaStack() : m_mem(0),
+                       m_memLimit(0)
+{
+    m_memReport = LUA_MEMORY_WARNING_REPORT;
+}
+
+luaStack::~luaStack()
+{
+    if (m_state)
+    {
+        lua_close(m_state);
+        m_state = nullptr;
+    }
+}
+
+luaStack *luaStack::create(module::actor *ptr)
+{
+    luaStack *stack = new (std::nothrow) luaStack();
+    assert(stack);
+    stack->init(ptr);
+    return stack;
+}
+
+int32_t luaStack::init(module::actor *ptr)
+{
+    m_actor = ptr;
+    m_state = lua_newstate(&luaStack::alloc, this);
+    lua_gc(m_state, LUA_GCSTOP, 0);
+    luaL_openlibs(m_state);
+
+    //TODO tolua bind
+}
+
+void luaStack::clean()
+{
+    lua_settop(m_state, 0);
+}
+
+void luaStack::pushInt(int intValue)
+{
+    lua_pushinteger(m_state, intValue);
+}
+
+void luaStack::pushFloat(float floatValue)
+{
+    lua_pushnumber(m_state, floatValue);
+}
+
+void luaStack::pushLong(long longValue)
+{
+    lua_pushnumber(m_state, longValue);
+}
+
+void luaStack::pushBoolean(bool boolValue)
+{
+    lua_pushboolean(m_state, boolValue);
+}
+
+void luaStack::pushString(const char *stringValue)
+{
+    lua_pushstring(m_state, stringValue);
+}
+
+void luaStack::pushString(const char *stringValue, int length)
+{
+    lua_pushlstring(m_state, stringValue, length);
+}
+
+void luaStack::pushNil(void)
+{
+    lua_pushnil(m_state);
+}
+
+void luaStack::addSearchPath(const char *path)
+{
+    lua_getglobal(m_state, "package");
+    lua_getfield(m_state, -1, "path");
+    const char *cur_path = lua_tostring(m_state, -1);
+    lua_pushfstring(m_state, "%s;%s/?.lua", cur_path, path);
+    lua_setfield(m_state, -3, "path");
+    lua_pop(m_state, 2);
+}
+
+int luaStack::executeScriptFile(const char *filename)
+{
+    assert(filename);
+    //判断文件是否存在
+
+    fileData *data = INST(luaFile, getDataFromFile, filename);
+}
+
+int luaStack::executeFunction(int numArgs)
+{
+    int functionIndex = -(numArgs + 1);
+    if (!lua_isfunction(m_state, functionIndex))
+    {
+        SYSLOG_ERROR(m_actor->handle(), "value at stack [{}] is not function", functionIndex);
+        lua_pop(m_state, numArgs + 1);
+        return 0;
+    }
+
+    int traceback = 0;
+    lua_getglobal(m_state, "__G__TRACKBACK__");
+    if (!lua_isfunction(m_state, -1))
+    {
+        lua_pop(mstate, 1);
+    }
+    else
+    {
+        lua_insert(m_state, functionIndex - 1);
+        traceback = functionIndex - 1;
+    }
+
+    int error = 0;
+    error = lua_pcall(m_state, numArgs, 1, traceback);
+    if (error)
+    {
+        if (traceback == 0)
+        {
+            SYSLOG_ERROR(m_actor->handle(), "[LUA ERROR] {}", lua_tostring(_state, -1));
+            lua_pop(m_state, 1);
+        }
+        else
+        {
+            lua_pop(m_state, 2);
+        }
+        return 0;
+    }
+
+    int ret = 0;
+    if (lua_isnumber(m_state, -1))
+    {
+        ret = (int)lua_tointeger(m_state, -1);
+    }
+    else if (lua_isboolean(m_state, -1))
+    {
+        ret = (int)lua_toboolean(m_state, -1);
+    }
+
+    lua_pop(m_state, 1);
+
+    if (traceback)
+    {
+        lua_pop(m_state, 1);
+    }
+
+    return ret;
+}
+
+int32_t luaStack::luaLoadBuffer(lua_State *l, const char *chunk, int chunkSize, const char *chunkName)
+{
+    int r = luaL_loadbuffer(l, chunk, chunkSize, chunkName);
+
+    if (r)
+    {
+        switch (r)
+        {
+        case LUA_ERRSYNTAX:
+            SYSLOG_ERROR("[LUA ERROR] load \"{}\", error: syntax error during pre-compilation.", chunkName);
+            break;
+
+        case LUA_ERRMEM:
+            SYSLOG_ERROR("[LUA ERROR] load \"{}\", error: memory allocation error.", chunkName);
+            break;
+
+        case LUA_ERRFILE:
+            SYSLOG_ERROR("[LUA ERROR] load \"{}\", error: cannot open/read file.", chunkName);
+            break;
+
+        default:
+            SYSLOG_ERROR("[LUA ERROR] load \"{}\", error: unknown", chunkName);
+        }
+    }
+
+    return r;
+}
+
+NC_CC_END

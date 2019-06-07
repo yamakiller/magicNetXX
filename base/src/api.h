@@ -10,11 +10,6 @@
 #include "util/mobject.h"
 #include "util/spinlock.h"
 #include "util/stringUtil.h"
-
-#if defined(__cplusplus) || defined(c_plusplus)
-#define WOLF_C_API extern "C"
-#else
-#define WOLF_C_API extern
-#endif
+#include "platform.h"
 
 #endif

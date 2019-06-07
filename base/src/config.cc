@@ -4,8 +4,8 @@
 
 using namespace tinyxml2;
 
-namespace wolf
-{
+NS_CC_BEGIN
+
 bool coroutineOptions::load(std::string path)
 {
     if (path.empty() || path.compare("") == 0)
@@ -99,4 +99,5 @@ const char *coroutineOptions::getValue(std::string const &key)
 
     return it->second.c_str();
 }
-} // namespace wolf
+
+NS_CC_END
