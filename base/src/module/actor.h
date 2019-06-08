@@ -33,6 +33,8 @@ public:
 
   uint32_t doInit(const char *name, void *parm);
 
+  void doExit();
+
   void push(struct message *msg);
 
   inline uint32_t handle() { return m_handle; }
@@ -43,7 +45,6 @@ public:
 
 protected:
   operation::clock::timeEntery doTimeOut(int time, int session);
-  void doExit();
 
 public:
   void dispatch();
