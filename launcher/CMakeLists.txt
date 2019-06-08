@@ -19,4 +19,4 @@ include_directories(
 
 target_link_libraries(${PROJ_NAME} base)
 
-set_target_properties(${PROJ_NAME} PROPERTIES CXX_STANDARD 17 FOLDER "core") 
+set_target_properties(${PROJ_NAME} PROPERTIES CXX_STANDARD 11 FOLDER "core") 
