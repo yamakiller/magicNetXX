@@ -6,59 +6,58 @@
 
 NS_CC_BEGIN
 
-class luaStack : public mobject
-{
+class luaStack : public util::mobject {
 public:
-    luaStack();
-    virtual ~luaStack();
-
-public:
-    static luaStack *create(module::actor *ptr);
+  luaStack();
+  virtual ~luaStack();
 
 public:
-    lua_State *getLuaState(void)
-    {
-        return m_state;
-    }
+  static luaStack *create(module::actor *ptr);
 
-    virtual void addSearchPath(const char *path);
+public:
+  lua_State *getLuaState(void) { return m_state; }
 
-    virtual int reload(const char *moduleFileName);
+  virtual void addSearchPath(const char *path);
 
-    virtual int executeScriptFile(const char *filename);
+  virtual void addLoader(lua_CFunction func);
 
-    virtual void clean(void);
+  virtual int reload(const char *moduleFileName);
 
-    virtual void pushInt(int intValue);
+  virtual int executeScriptFile(const char *filename);
 
-    virtual void pushFloat(float floatValue);
+  virtual void clean(void);
 
-    virtual void pushLong(long longValue);
+  virtual void pushInt(int intValue);
 
-    virtual void pushBoolean(bool boolValue);
+  virtual void pushFloat(float floatValue);
 
-    virtual void pushString(const char *stringValue);
+  virtual void pushLong(long longValue);
 
-    virtual void pushString(const char *stringValue, int length);
+  virtual void pushBoolean(bool boolValue);
 
-    virtual void pushNil(void);
+  virtual void pushString(const char *stringValue);
 
-    virtual int executeFunction(int numArgs);
+  virtual void pushString(const char *stringValue, int length);
 
-    int32_t luaLoadBuffer(lua_State *l, const char *chunk, int chunkSize, const char *chunkName);
+  virtual void pushNil(void);
 
-protected:
-    static void *alloc(void *ud, void *ptr, size_t osize, size_t nsize);
+  virtual int executeFunction(int numArgs);
 
-protected:
-    int32_t init(module::actor *ptr);
+  int32_t luaLoadBuffer(lua_State *l, const char *chunk, int chunkSize,
+                        const char *chunkName);
 
 protected:
-    lua_State *m_state;
-    module::actor *m_actor;
-    size_t m_mem;
-    size_t m_memReport;
-    size_t m_memLimit;
+  static void *alloc(void *ud, void *ptr, size_t osize, size_t nsize);
+
+protected:
+  int32_t init(module::actor *ptr);
+
+protected:
+  lua_State *m_state;
+  module::actor *m_actor;
+  size_t m_mem;
+  size_t m_memReport;
+  size_t m_memLimit;
 };
 
 NS_CC_END

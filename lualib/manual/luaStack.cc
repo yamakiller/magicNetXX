@@ -1,9 +1,11 @@
 #include "luaStack.h"
+#include "luaFix.h"
+#include "luaLoader.h"
+
 
 #define LUA_MEMORY_WARNING_REPORT (1024 * 1024 * 32)
-#define LUA_STACK_FIX_ACTOR "luastack_fix_type_acotr"
 
-NC_CC_BEGIN
+NS_CC_BEGIN
 
 void *luaStack::alloc(void *ud, void *ptr, size_t osize, size_t nsize) {
   luaStack *stack = static_cast<luaStack *>(ud);
@@ -41,7 +43,7 @@ luaStack::~luaStack() {
 }
 
 luaStack *luaStack::create(module::actor *ptr) {
-  luaStack *stack = new (std::nothrow) luaStack();
+  luaStack *stack = new luaStack();
   assert(stack);
   stack->init(ptr);
   return stack;
@@ -53,7 +55,15 @@ int32_t luaStack::init(module::actor *ptr) {
   lua_gc(m_state, LUA_GCSTOP, 0);
   luaL_openlibs(m_state);
 
-  // TODO tolua bind
+  // SET FIX data is the
+  lua_pushstring(m_state, LUA_STACK_FIX_ACTOR);
+  lua_pushlightuserdata(m_state, (void *)this);
+  lua_rawset(m_state, LUA_REGISTRYINDEX);
+
+  // 绑定lib
+
+  addLoader(lua_loader);
+  return 0;
 }
 
 void luaStack::clean() { lua_settop(m_state, 0); }
@@ -89,14 +99,32 @@ void luaStack::addSearchPath(const char *path) {
   lua_pop(m_state, 2);
 }
 
-int luaStack::executeScriptFile(const char *filename) {
-  assert(filename);
-  if (!INST(ofile, isExist, filename)) {
-    return -1;
+void luaStack::addLoader(lua_CFunction func) {
+  if (!func) {
+    return;
   }
 
-  Data *pd = INST(ofile, getDataFromFile, filename);
-  return luaLoadBuffer(m_state, pd->_bytes, data->_len, filename.c_str());
+  lua_getglobal(m_state, "package");
+  lua_getfield(m_state, -1, "loader");
+
+  lua_pushcfunction(m_state, func);
+  lua_rawseti(m_state, -2, 2);
+
+  lua_pop(m_state, 2);
+}
+
+int luaStack::executeScriptFile(const char *filename) {
+  assert(filename);
+  assert(INST(util::ofile, isExist, filename));
+
+  int nr = 0;
+  util::Data *pd = INST(util::ofile, getDataFromFile, filename);
+  if (pd != nullptr) {
+    if (luaLoadBuffer(m_state, pd->_bytes, pd->_len, filename) == 0) {
+      nr = executeFunction(0);
+    }
+  }
+  return nr;
 }
 
 int luaStack::executeFunction(int numArgs) {
@@ -111,7 +139,7 @@ int luaStack::executeFunction(int numArgs) {
   int traceback = 0;
   lua_getglobal(m_state, "__G__TRACKBACK__");
   if (!lua_isfunction(m_state, -1)) {
-    lua_pop(mstate, 1);
+    lua_pop(m_state, 1);
   } else {
     lua_insert(m_state, functionIndex - 1);
     traceback = functionIndex - 1;
@@ -122,7 +150,7 @@ int luaStack::executeFunction(int numArgs) {
   if (error) {
     if (traceback == 0) {
       SYSLOG_ERROR(m_actor->handle(), "[LUA ERROR] {}",
-                   lua_tostring(_state, -1));
+                   lua_tostring(m_state, -1));
       lua_pop(m_state, 1);
     } else {
       lua_pop(m_state, 2);
@@ -176,4 +204,4 @@ int32_t luaStack::luaLoadBuffer(lua_State *l, const char *chunk, int chunkSize,
   return r;
 }
 
-NC_CC_END
+NS_CC_END
