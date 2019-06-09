@@ -10,7 +10,7 @@ extern "C"
 
 NS_CC_LL_BEGIN
 
-int regiserAllCore(lua_State *l);
+int registerAllCore(lua_State *l);
 
 NS_CC_LL_END
 

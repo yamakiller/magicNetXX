@@ -11,15 +11,16 @@ find_package(Boost COMPONENTS system coroutine context REQUIRED)
 
 include_directories(
 	./src/
-	${Base_INCLUDE_DIR}
+	${Engine_INCLUDE_DIR}
+	${LUA_INCLUDE_DIR}
 	${Cppformat_INCLUDE_DIR}
 	${Launcher_INCLUDE_DIR}
     ${Boost_INCLUDE_DIRS})
     
-set(base ${Base_LIBRARIES}/libbase.so)
+set(engine ${Engine_LIBRARIES}/libengine.so)
 
 target_link_libraries(${PROJ_NAME} 
-	${base})
+	${engine})
 
 set_target_properties(${PROJ_NAME} PROPERTIES FOLDER 
 									"components" 

@@ -1,3 +1,4 @@
+add_compile_options(-fPIC)
 add_library(libtolua++
 	tolua_event.c
 	tolua_is.c

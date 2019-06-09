@@ -10,7 +10,7 @@ extern "C"
 
 NS_CC_LL_BEGIN
 
-int regiserAllNetwork(lua_State *l);
+int registerAllNetwork(lua_State *l);
 
 NS_CC_LL_END
 

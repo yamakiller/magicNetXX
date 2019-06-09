@@ -18,6 +18,8 @@ include_directories(
 	"${LUA_INCLUDE_DIR}"
 )
 
+add_compile_options(-fPIC)
+
 add_subdirectory(lib)
 add_subdirectory(bin)
 add_subdirectory(tests)

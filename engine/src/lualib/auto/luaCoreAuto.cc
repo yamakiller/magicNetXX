@@ -1,4 +1,5 @@
 #include "luaCoreAuto.h"
+#include "module/actor.h"
 
 NS_CC_LL_BEGIN
 
@@ -190,7 +191,7 @@ int register_core_actor(lua_State *l)
   tolua_endmodule(l);
 }
 
-TOLUA_API int registerCoreAuto(lua_State *l)
+TOLUA_API int registerAllCore(lua_State *l)
 {
   tolua_open(l);
   tolua_module(l, "ccore", 0);

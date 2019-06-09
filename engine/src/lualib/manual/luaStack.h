@@ -2,6 +2,8 @@
 #define LUALIB_STACK_H
 
 #include "base.h"
+#include "util/mobject.h"
+#include "module/actor.h"
 #include <lua.hpp>
 
 NS_CC_LL_BEGIN

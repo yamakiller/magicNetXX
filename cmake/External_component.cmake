@@ -1,7 +1,7 @@
 set(component_source "${CMAKE_CURRENT_SOURCE_DIR}/component")
 set(component_build "${CMAKE_CURRENT_BINARY_DIR}/component")
 
-set(_deps "base")
+set(_deps "engine")
 add_optional_deps(_deps "boost")
 
 ExternalProject_Add(components
@@ -20,10 +20,6 @@ list(APPEND Wolf_THIRDPARTYLIBS_ARGS
     # Add wolf components properties so correct version.
       "-DComponent_INCLUDE_DIR:PATH=${base_source}/src"
       "-DComponent_LIBRARIES:PATH=${LIBRARY_OUTPUT_PATH}/component")
-
-#add_custom_command(TARGET base POST_BUILD
-#                 COMMAND ${CMAKE_COMMAND} -E copy
-#                   ${component_build}/*.so ${LIBRARY_OUTPUT_PATH}/component)
 
 if(FORCE_STEP)
   ExternalProject_Add_Step(components forcebuild

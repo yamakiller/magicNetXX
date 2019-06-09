@@ -75,7 +75,7 @@ macro(add_optional_deps dep_var)
   endforeach()
 endmacro()
 
-set(base
+set(engine
 	  launcher
 	  cppformat
 
@@ -90,7 +90,6 @@ include(${ROOT_DIR}/cmake/External_engine.cmake)
 include(${ROOT_DIR}/cmake/External_launcher.cmake)
 include(${ROOT_DIR}/cmake/External_example.cmake)
 include(${ROOT_DIR}/cmake/External_component.cmake)
-include(${ROOT_DIR}/cmake/External_lualib.cmake)
 
 
 

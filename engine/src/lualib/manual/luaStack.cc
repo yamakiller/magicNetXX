@@ -1,6 +1,9 @@
 #include "luaStack.h"
 #include "luaFix.h"
+#include "lualib/auto/luaCoreAuto.h"
+#include "lualib/auto/luaNetworkAuto.h"
 #include "luaLoader.h"
+#include "util/ofile.h"
 
 #define LUA_MEMORY_WARNING_REPORT (1024 * 1024 * 32)
 
@@ -69,7 +72,8 @@ int32_t luaStack::init(module::actor *ptr)
   lua_pushlightuserdata(m_state, (void *)this);
   lua_rawset(m_state, LUA_REGISTRYINDEX);
 
-  // 绑定lib
+  registerAllCore(m_state);
+  registerAllNetwork(m_state);
 
   addLoader(lua_loader);
   return 0;
@@ -127,6 +131,11 @@ void luaStack::addLoader(lua_CFunction func)
   lua_rawseti(m_state, -2, 2);
 
   lua_pop(m_state, 2);
+}
+
+int luaStack::reload(const char *moduleFileName)
+{
+  return 0;
 }
 
 int luaStack::executeScriptFile(const char *filename)

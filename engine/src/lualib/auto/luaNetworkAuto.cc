@@ -20,7 +20,7 @@ int register_network_socket(lua_State *l)
   return 0;
 }
 
-TOLUA_API int regiserAllNetwork(lua_State *l)
+TOLUA_API int registerAllNetwork(lua_State *l)
 {
   tolua_open(l);
   tolua_module(l, "cnet", 0);
@@ -31,4 +31,5 @@ TOLUA_API int regiserAllNetwork(lua_State *l)
   tolua_endmodule(l);
   return 1;
 }
+
 NS_CC_LL_END

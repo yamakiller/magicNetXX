@@ -1,7 +1,7 @@
 set(engine_source "${CMAKE_CURRENT_SOURCE_DIR}/engine")
 set(engine_build "${CMAKE_CURRENT_BINARY_DIR}/engine")
 
-add_optional_deps(_deps "boost" "jemalloc" "cppformat" "spdlog" "tinyxml2")
+add_optional_deps(_deps "boost" "jemalloc" "cppformat" "spdlog" "tinyxml2" "lua" "tolua")
 
 
 ExternalProject_Add(engine
@@ -18,7 +18,7 @@ ExternalProject_Add(engine
 
 
 list(APPEND Wolf_THIRDPARTYLIBS_ARGS
-    # Add base engine properties so correct version of Boost is found.
+    # Add engine engine properties so correct version of Boost is found.
       "-DEngine_INCLUDE_DIR:PATH=${engine_source}/src"
       "-DEngine_LIBRARIES:PATH=${LIBRARY_OUTPUT_PATH}"
       "-DCOMP_LIBRARY_OUT_PATH:PATH=${EXECUTABLE_OUTPUT_PATH}")

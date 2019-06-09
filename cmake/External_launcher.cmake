@@ -1,7 +1,7 @@
 set(launcher_source "${CMAKE_CURRENT_SOURCE_DIR}/launcher")
 set(launcher_build "${CMAKE_CURRENT_BINARY_DIR}/launcher")
 
-set(_deps "base")
+set(_deps "engine")
 
 ExternalProject_Add(launcher
   SOURCE_DIR ${launcher_source}

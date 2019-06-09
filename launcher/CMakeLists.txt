@@ -12,6 +12,7 @@ add_library(${PROJ_NAME} ${SRCLIST})
 
 include_directories(
 	./src
+	${LUA_INCLUDE_DIR}
 	${Cppformat_INCLUDE_DIR}
 	${Engine_INCLUDE_DIR}
 	${Boost_INCLUDE_DIRS}
