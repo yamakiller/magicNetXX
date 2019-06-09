@@ -1,13 +1,14 @@
 #include "luaNetworkAuto.h"
 
-NS_CC_BEGIN
+NS_CC_LL_BEGIN
 
 int lua_network_socket_listen(lua_State *l) { return 0; }
 int lua_network_socket_open(lua_State *l) { return 0; }
 int lua_network_socket_connect(lua_State *l) { return 0; }
 int lua_network_socket_close(lua_State *l) { return 0; }
 
-int register_network_socket(lua_State *l) {
+int register_network_socket(lua_State *l)
+{
   tolua_usertype(l, "cnet.Socket");
   tolua_cclass(l, "Socket", "cnet.Socket", nullptr, nullptr);
   tolua_beginmodule(l, "Socket");
@@ -19,7 +20,8 @@ int register_network_socket(lua_State *l) {
   return 0;
 }
 
-TOLUA_API int regiserAllNetwork(lua_State *l) {
+TOLUA_API int regiserAllNetwork(lua_State *l)
+{
   tolua_open(l);
   tolua_module(l, "cnet", 0);
   tolua_beginmodule(l, "cnet");
@@ -29,4 +31,4 @@ TOLUA_API int regiserAllNetwork(lua_State *l) {
   tolua_endmodule(l);
   return 1;
 }
-NS_CC_END
+NS_CC_LL_END

@@ -1,7 +1,7 @@
 
 cmake_minimum_required(VERSION 3.14)
 
-set(PROJ_NAME base)
+set(PROJ_NAME engine)
 file(GLOB 
 	SRCLIST 
 	./src/*.* 
@@ -10,7 +10,9 @@ file(GLOB
 	./src/operation/*.* 
 	./src/module/*.* 
 	./src/network/*.*
-	./src/api/*.*)
+	./src/api/*.*
+	./src/lualib/auto/*.*
+	./src/lualib/manual/*.*)
 
 add_library(${PROJ_NAME} SHARED ${SRCLIST})
 add_definitions(-DUSE_JEMALLOC)

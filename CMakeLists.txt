@@ -86,7 +86,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS On)
 
 add_subdirectory(3rd)
 
-include(${ROOT_DIR}/cmake/External_base.cmake)
+include(${ROOT_DIR}/cmake/External_engine.cmake)
 include(${ROOT_DIR}/cmake/External_launcher.cmake)
 include(${ROOT_DIR}/cmake/External_example.cmake)
 include(${ROOT_DIR}/cmake/External_component.cmake)

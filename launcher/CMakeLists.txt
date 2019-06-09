@@ -13,10 +13,10 @@ add_library(${PROJ_NAME} ${SRCLIST})
 include_directories(
 	./src
 	${Cppformat_INCLUDE_DIR}
-	${Base_INCLUDE_DIR}
+	${Engine_INCLUDE_DIR}
 	${Boost_INCLUDE_DIRS}
 )
 
-target_link_libraries(${PROJ_NAME} base)
+target_link_libraries(${PROJ_NAME} engine)
 
 set_target_properties(${PROJ_NAME} PROPERTIES CXX_STANDARD 11 FOLDER "core") 

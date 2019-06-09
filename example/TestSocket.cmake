@@ -1,7 +1,7 @@
 set(exampleapp_TestSocket_source "${CMAKE_CURRENT_SOURCE_DIR}/example/TestSocket")
 set(exampleapp_TestSocket_build "${CMAKE_CURRENT_BINARY_DIR}/example/bin")
 
-set(_deps "base")
+set(_deps "engine")
 add_optional_deps(_deps "boost" "launcher")
 
 ExternalProject_Add(exampleapp_TestSocket

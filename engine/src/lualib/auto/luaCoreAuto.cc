@@ -1,19 +1,22 @@
 #include "luaCoreAuto.h"
 
-NS_CC_BEGIN
+NS_CC_LL_BEGIN
 
-int lua_core_actor_create(lua_State *LS) {
+int lua_core_actor_create(lua_State *LS)
+{
   int argc = 0;
 
 #if WOLF_DEBUG >= 1
   tolua_Error tolua_err;
-  if (!tolua_isusertable(LS, 1, "ccore.Actor", 0, &tolua_err)) {
+  if (!tolua_isusertable(LS, 1, "ccore.Actor", 0, &tolua_err))
+  {
     goto tolua_lerror;
   }
 #endif
 
   argc = lua_gettop(LS) - 1;
-  if (argc == 0) {
+  if (argc == 0)
+  {
     module::actor *ret = new module::actor();
     tolua_pushusertype(LS, (void *)ret, "ccore.Actor");
     return 1;
@@ -27,7 +30,8 @@ tolua_lerror:
   return 0;
 }
 
-int lua_core_actor_init(lua_State *LS) {
+int lua_core_actor_init(lua_State *LS)
+{
   int argc;
   module::actor *cobj = nullptr;
 #if WOLF_DEBUG >= 1
@@ -42,7 +46,8 @@ int lua_core_actor_init(lua_State *LS) {
   cobj = (module::actor *)tolua_tousertype(LS, 1, 0);
 
 #if WOLF_DEBUG >= 1
-  if (!cobj) {
+  if (!cobj)
+  {
     tolua_error(LS, "invalid 'cobj' in function 'lua_core_actor_init'",
                 nullptr);
     return 0;
@@ -50,7 +55,8 @@ int lua_core_actor_init(lua_State *LS) {
 #endif
 
   argc = lua_gettop(LS) - 1;
-  if (argc == 2) {
+  if (argc == 2)
+  {
     std::string actorName = luaL_checkstring(LS, 3);
     void *parm = lua_touserdata(LS, 2);
 
@@ -78,7 +84,8 @@ int lua_core_actor_susped(lua_State *LS) { return 0; }
 
 int lua_core_actor_wakeup(lua_State *LS) { return 0; }
 
-int lua_core_actor_logout(lua_State *LS) {
+int lua_core_actor_logout(lua_State *LS)
+{
   int argc;
   module::actor *cobj = nullptr;
 #if WOLF_DEBUG >= 1
@@ -86,16 +93,19 @@ int lua_core_actor_logout(lua_State *LS) {
 #endif
 
 #if WOLF_DEBUG >= 1
-  if (!tolua_isusertype(LS, 1, "ccore.Actor", 0, &tolua_err)) {
+  if (!tolua_isusertype(LS, 1, "ccore.Actor", 0, &tolua_err))
+  {
     goto tolua_lerror;
   }
 #endif
 
   cobj = (module::actor *)tolua_tousertype(LS, 1, 0);
   argc = lua_gettop(LS) - 1;
-  if (argc == 2) {
+  if (argc == 2)
+  {
     int type = tolua_tonumber(LS, 3, 0);
-    switch (type) {
+    switch (type)
+    {
     case log::ilog::L_INFO:
       SYSLOG_INFO(cobj->handle(), tolua_tostring(LS, 2, ""));
       break;
@@ -132,7 +142,8 @@ tolua_lerror:
   return 0;
 }
 
-int lua_core_actor_exit(lua_State *LS) {
+int lua_core_actor_exit(lua_State *LS)
+{
   int argc;
   module::actor *cobj = nullptr;
 #if WOLF_DEBUG >= 1
@@ -147,7 +158,8 @@ int lua_core_actor_exit(lua_State *LS) {
   cobj = (module::actor *)tolua_tousertype(LS, 1, 0);
 
   argc = lua_gettop(LS) - 1;
-  if (argc == 0) {
+  if (argc == 0)
+  {
     cobj->doExit();
     return 0;
   }
@@ -162,7 +174,8 @@ tolua_lerror:
   return 0;
 }
 
-int register_core_actor(lua_State *l) {
+int register_core_actor(lua_State *l)
+{
   tolua_usertype(l, "ccore.Actor");
   tolua_cclass(l, "Actor", "ccore.Actor", nullptr, nullptr);
   tolua_beginmodule(l, "Actor");
@@ -177,7 +190,8 @@ int register_core_actor(lua_State *l) {
   tolua_endmodule(l);
 }
 
-TOLUA_API int registerCoreAuto(lua_State *l) {
+TOLUA_API int registerCoreAuto(lua_State *l)
+{
   tolua_open(l);
   tolua_module(l, "ccore", 0);
   tolua_beginmodule(l, "ccore");
@@ -188,4 +202,4 @@ TOLUA_API int registerCoreAuto(lua_State *l) {
   return 1;
 }
 
-NS_CC_END
+NS_CC_LL_END

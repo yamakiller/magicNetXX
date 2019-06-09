@@ -1,12 +1,12 @@
-set(base_source "${CMAKE_CURRENT_SOURCE_DIR}/base")
-set(base_build "${CMAKE_CURRENT_BINARY_DIR}/base")
+set(engine_source "${CMAKE_CURRENT_SOURCE_DIR}/engine")
+set(engine_build "${CMAKE_CURRENT_BINARY_DIR}/engine")
 
 add_optional_deps(_deps "boost" "jemalloc" "cppformat" "spdlog" "tinyxml2")
 
 
-ExternalProject_Add(base
-  SOURCE_DIR ${base_source}
-  BINARY_DIR ${base_build}
+ExternalProject_Add(engine
+  SOURCE_DIR ${engine_source}
+  BINARY_DIR ${engine_build}
   INSTALL_COMMAND ""
   CMAKE_CACHE_ARGS
     ${Wolf_DEFAULT_ARGS}
@@ -19,18 +19,18 @@ ExternalProject_Add(base
 
 list(APPEND Wolf_THIRDPARTYLIBS_ARGS
     # Add base engine properties so correct version of Boost is found.
-      "-DBase_INCLUDE_DIR:PATH=${base_source}/src"
-      "-DBase_LIBRARIES:PATH=${LIBRARY_OUTPUT_PATH}"
+      "-DEngine_INCLUDE_DIR:PATH=${engine_source}/src"
+      "-DEngine_LIBRARIES:PATH=${LIBRARY_OUTPUT_PATH}"
       "-DCOMP_LIBRARY_OUT_PATH:PATH=${EXECUTABLE_OUTPUT_PATH}")
 
 
-add_custom_command(TARGET base POST_BUILD
+add_custom_command(TARGET engine POST_BUILD
                   COMMAND ${CMAKE_COMMAND} -E copy
-                   ${base_build}/*.so ${LIBRARY_OUTPUT_PATH})
+                   ${engine_build}/*.so ${LIBRARY_OUTPUT_PATH})
 
 if(FORCE_STEP)
-  ExternalProject_Add_Step(base forcebuild
-    COMMAND ${CMAKE_COMMAND} -E echo "Force build of base sdk"
+  ExternalProject_Add_Step(engine forcebuild
+    COMMAND ${CMAKE_COMMAND} -E echo "Force build of engine sdk"
     ${FORCE_STEP_ARGS}
     ALWAYS 1)
 endif()

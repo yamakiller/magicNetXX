@@ -12,5 +12,6 @@
 #include "util/ofile.h"
 #include "util/spinlock.h"
 #include "util/stringUtil.h"
+#include "lualib/manual/luaStack.h"
 
 #endif

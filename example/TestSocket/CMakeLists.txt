@@ -11,21 +11,21 @@ find_package(Boost COMPONENTS system coroutine context REQUIRED)
 
 include_directories(
 	./src/
-	${Base_INCLUDE_DIR}
+	${Engine_INCLUDE_DIR}
 	${Launcher_INCLUDE_DIR}
 	${Boost_INCLUDE_DIRS})
 
 
 set(dl dl)
 set(pthread pthread)
-set(base ${Base_LIBRARIES}/libbase.so)
+set(engine ${Engine_LIBRARIES}/libengine.so)
 set(launcher ${Launcher_LIBRARIES}/liblauncher.a)
 set(jemalloc ${Jemalloc_LIBRARIES}/libjemalloc.so)
 set(cppformat ${Cppformat_LIBRARIES}/libcppformat.so)
 
 
 target_link_libraries(${PROJ_NAME} 
-	${base}
+	${engine}
 	${cppformat}
 	${launcher}
 	${jemalloc}

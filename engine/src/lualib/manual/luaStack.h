@@ -1,12 +1,13 @@
 #ifndef LUALIB_STACK_H
 #define LUALIB_STACK_H
 
-#include <api.h>
+#include "base.h"
 #include <lua.hpp>
 
-NS_CC_BEGIN
+NS_CC_LL_BEGIN
 
-class luaStack : public util::mobject {
+class luaStack : public util::mobject
+{
 public:
   luaStack();
   virtual ~luaStack();
@@ -60,6 +61,6 @@ protected:
   size_t m_memLimit;
 };
 
-NS_CC_END
+NS_CC_LL_END
 
 #endif
