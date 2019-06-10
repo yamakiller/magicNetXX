@@ -12,7 +12,8 @@ typedef void *(*component_dl_create)(void);
 typedef void (*component_dl_release)(void *inst);
 typedef void (*component_dl_signal)(void *inst, int signal);
 
-struct component {
+struct component
+{
   const char *_name;
   void *_dll;
   component_dl_create _create;
@@ -20,7 +21,8 @@ struct component {
   component_dl_signal _signal;
 };
 
-class componentGroup {
+class componentGroup
+{
 public:
   componentGroup();
   virtual ~componentGroup();
@@ -40,7 +42,7 @@ private:
   int32_t m_count;
   std::string m_path;
   component m_compts[MAX_COMPONENT_TYPE];
-  util::spinlock m_mutex;
+  util::spinlock m_mutex; //TODO 修改为读写锁
 };
 
 NS_CC_M_END

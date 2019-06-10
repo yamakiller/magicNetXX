@@ -5,28 +5,44 @@
 
 NS_CC_U_BEGIN
 
-bool ofile::isExist(const std::string &filename) {
-  if (access(filename.c_str(), F_OK) != -1) {
+bool ofile::isExist(const std::string &filename)
+{
+  if (access(filename.c_str(), F_OK) != -1)
+  {
     return true;
   }
   return false;
 }
 
-Data *ofile::getDataFromFile(const std::string &filename) {
+std::string ofile::getfullPathForFilename(const std::string &filename)
+{
+  if (filename.empty())
+  {
+    return "";
+  }
+
+  return m_strDir.substr(0, m_strDir.rfind('/') + 1) + filename;
+}
+
+Data *ofile::getDataFromFile(const std::string &filename)
+{
   Data *ret = getData(filename);
-  if (ret) {
+  if (ret)
+  {
     return ret;
   }
 
   m_lock.lock();
   ret = getUnData(filename);
-  if (ret) {
+  if (ret)
+  {
     m_lock.unlock();
     ret;
   }
 
   FILE *fp = fopen(filename.c_str(), "rb");
-  if (!fp) {
+  if (!fp)
+  {
     m_lock.unlock();
     return nullptr;
   }
@@ -38,7 +54,8 @@ Data *ofile::getDataFromFile(const std::string &filename) {
   char *fileBuffer = (char *)util::memory::malloc(size);
   assert(fileBuffer);
   size_t readRet = fread(fileBuffer, 1, size, fp);
-  if (readRet != size) {
+  if (readRet != size)
+  {
     util::memory::free(fileBuffer);
     m_lock.unlock();
     return nullptr;
@@ -52,22 +69,27 @@ Data *ofile::getDataFromFile(const std::string &filename) {
   return ret;
 }
 
-Data *ofile::getData(const std::string &filename) {
+Data *ofile::getData(const std::string &filename)
+{
   Data *ret = nullptr;
   m_lock.lock();
   ret = getUnData(filename);
   m_lock.unlock();
-  ret;
+  return ret;
 }
 
-Data *ofile::getUnData(const std::string &filename) {
+Data *ofile::getUnData(const std::string &filename)
+{
   Data *ret = nullptr;
-  if (m_data.empty()) {
+  if (m_data.empty())
+  {
     return ret;
   }
 
   auto it = m_data.find(filename);
-  if (it == m_data.end()) {
+  if (it == m_data.end())
+  {
+    fprintf(stderr, "null \n");
     return ret;
   }
 
@@ -75,9 +97,11 @@ Data *ofile::getUnData(const std::string &filename) {
   return ret;
 }
 
-void ofile::clear() {
+void ofile::clear()
+{
   m_lock.lock();
-  while (!m_data.empty()) {
+  while (!m_data.empty())
+  {
     auto it = m_data.begin();
     Data fre = it->second;
     m_data.erase(it);

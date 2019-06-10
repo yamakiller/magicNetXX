@@ -10,14 +10,14 @@ bool coroutineOptions::load(std::string path)
 {
     if (path.empty() || path.compare("") == 0)
     {
-        fprintf(stderr, "Please enter the configuration file path, the command parameters are:-p <filepath>");
+        fprintf(stderr, "Please enter the configuration file path, the command parameters are:-p <filepath>\n");
         return false;
     }
 
     XMLDocument doc;
     if (doc.LoadFile(path.c_str()) != XML_SUCCESS)
     {
-        fprintf(stderr, "Profile open failed:%s", path.c_str());
+        fprintf(stderr, "Profile open failed:%s\n", path.c_str());
         return false;
     }
 
@@ -29,7 +29,10 @@ bool coroutineOptions::load(std::string path)
         const XMLElement *itemPtr = options->FirstChildElement();
         while (itemPtr)
         {
-            m_env[itemPtr->Name()] = itemPtr->GetText();
+            if (itemPtr->GetText() != nullptr)
+            {
+                m_env[itemPtr->Name()] = itemPtr->GetText();
+            }
             itemPtr = itemPtr->NextSiblingElement();
         }
     }

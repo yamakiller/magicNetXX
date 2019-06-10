@@ -10,7 +10,7 @@ int lua_network_socket_close(lua_State *l) { return 0; }
 int register_network_socket(lua_State *l)
 {
   tolua_usertype(l, "cnet.Socket");
-  tolua_cclass(l, "Socket", "cnet.Socket", nullptr, nullptr);
+  tolua_cclass(l, "Socket", "cnet.Socket", "", nullptr);
   tolua_beginmodule(l, "Socket");
   tolua_function(l, "listen", lua_network_socket_listen);
   tolua_function(l, "open", lua_network_socket_open);

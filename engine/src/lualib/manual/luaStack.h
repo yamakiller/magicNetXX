@@ -4,7 +4,7 @@
 #include "base.h"
 #include "util/mobject.h"
 #include "module/actor.h"
-#include <lua.hpp>
+#include "luaExternApi.h"
 
 NS_CC_LL_BEGIN
 
@@ -20,11 +20,15 @@ public:
 public:
   lua_State *getLuaState(void) { return m_state; }
 
-  virtual void addSearchPath(const char *path);
+  virtual void setSearchPath(const char *path);
+
+  virtual void setSearchCPath(const char *cpath);
 
   virtual void addLoader(lua_CFunction func);
 
-  virtual int reload(const char *moduleFileName);
+  virtual void reload(const char *moduleFileName);
+
+  virtual int executeString(const char *codes);
 
   virtual int executeScriptFile(const char *filename);
 
@@ -57,7 +61,7 @@ protected:
 
 protected:
   lua_State *m_state;
-  module::actor *m_actor;
+  module::actor *m_aptr;
   size_t m_mem;
   size_t m_memReport;
   size_t m_memLimit;

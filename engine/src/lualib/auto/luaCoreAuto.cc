@@ -178,7 +178,7 @@ tolua_lerror:
 int register_core_actor(lua_State *l)
 {
   tolua_usertype(l, "ccore.Actor");
-  tolua_cclass(l, "Actor", "ccore.Actor", nullptr, nullptr);
+  tolua_cclass(l, "Actor", "ccore.Actor", "", nullptr);
   tolua_beginmodule(l, "Actor");
   tolua_function(l, "new", lua_core_actor_create);
   tolua_function(l, "init", lua_core_actor_init);

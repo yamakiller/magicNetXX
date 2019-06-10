@@ -15,25 +15,31 @@ framework::~framework() {}
 
 framework *framework::instance() { return gInstance; }
 
-void framework::startLoop() {
+void framework::startLoop()
+{
   static int64_t bt = util::timestamp::getTime();
   int64_t ct = 0;
-  while (true) {
+  while (true)
+  {
     ct = util::timestamp::getTime();
-    if (ct <= bt) {
+    if (ct <= bt)
+    {
       std::this_thread::sleep_for(std::chrono::milliseconds(1));
       continue;
     }
 
-    if (!loop()) {
+    if (!loop())
+    {
       break;
     }
     bt = ct;
   }
 }
 
-bool framework::doInit(const commandLineOption *opt) {
-  if (!INST(OPT, load, ((commandLineOption *)opt)->getOption("p"))) {
+bool framework::doInit(const commandLineOption *opt)
+{
+  if (!INST(OPT, load, ((commandLineOption *)opt)->getOption("p")))
+  {
     return false;
   }
 
@@ -59,11 +65,13 @@ bool framework::doInit(const commandLineOption *opt) {
 
   INST(log::logSystem, doStart);
   INST(coreDump, doListen);
+  INST(util::ofile, setDirectory, INST(OPT, getString, "directory", "script/"));
   INST(operation::scheduler, doStart, INSTGET_VAR(OPT, _thread));
   INST(module::actorSystem, doStart, INSTGET_VAR(OPT, _componentPath));
   INST(network::socketSystem, doStart);
 
-  if (!initialize(opt)) {
+  if (!initialize(opt))
+  {
     INST(network::socketSystem, doShutdown);
     INST(module::actorSystem, doShutdown);
     INST(operation::scheduler, doShutdown);
@@ -76,7 +84,8 @@ bool framework::doInit(const commandLineOption *opt) {
   return true;
 }
 
-void framework::doUnInit() {
+void framework::doUnInit()
+{
   finalize();
 
   INST(network::socketSystem, doShutdown);

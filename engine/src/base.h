@@ -55,12 +55,19 @@
     std::string header;                                                 \
     try                                                                 \
     {                                                                   \
-      header = fmt::format("[:{:08x}] ", SOURCE);                       \
+      if (SOURCE == 0)                                                  \
+      {                                                                 \
+        header = "[:system] ";                                          \
+      }                                                                 \
+      else                                                              \
+      {                                                                 \
+        header = fmt::format("[:{:08x}] ", SOURCE);                     \
+      }                                                                 \
       body = fmt::format(FMT);                                          \
     }                                                                   \
     catch (...)                                                         \
     {                                                                   \
-      header = "[:00000000] ";                                          \
+      header = "[:system] ";                                            \
       body = "format error";                                            \
     }                                                                   \
     std::string tail =                                                  \
@@ -76,7 +83,14 @@
     std::string header;                                                 \
     try                                                                 \
     {                                                                   \
-      header = fmt::format("[:{:08x}] ", SOURCE);                       \
+      if (SOURCE == 0)                                                  \
+      {                                                                 \
+        header = "[:system] ";                                          \
+      }                                                                 \
+      else                                                              \
+      {                                                                 \
+        header = fmt::format("[:{:08x}] ", SOURCE);                     \
+      }                                                                 \
       body = fmt::format(__VA_ARGS__);                                  \
     }                                                                   \
     catch (...)                                                         \
@@ -101,7 +115,6 @@
 #define LOCAL_LOG_WARNING(...) SYSLOG_WARNING(getHandle(), __VA_ARGS__)
 #define LOCAL_LOG_ERROR(...) SYSLOG_ERROR(getHandle(), __VA_ARGS__)
 #define LOCAL_LOG_FATAL(...) SYSLOG_FATAL(getHandle(), __VA_ARGS__)
-
 
 NS_CC_BEGIN
 

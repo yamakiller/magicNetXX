@@ -33,9 +33,31 @@ public:
 protected:
     int32_t onLaunch(void *parm)
     {
+        if (parm == nullptr)
+        {
+            LOCAL_LOG_ERROR("lnlua component error: please input args[<xxx.lua> <args>]");
+            return -1;
+        }
+
         m_stack = luaStack::create(m_parent);
         assert(m_stack);
-        //m_stack->
+        m_stack->setSearchPath(INST(OPT, getString, "lua_path", "./lua-script/?.lua"));
+        m_stack->setSearchCPath(INST(OPT, getString, "lua_cpath", "./lua-lib/?.so"));
+        m_stack->reload(INST(OPT, getString, "lua_reload", nullptr));
+
+        std::string strParam = (const char *)parm;
+        std::vector<std::string> args = util::stringUtil::split(strParam, " ");
+        if (args[0].find_first_of(".lua", 0) == -1)
+        {
+            args[0] += ".lua";
+        }
+
+        int r = m_stack->executeScriptFile(args[0].c_str());
+        if (r != LUA_OK)
+        {
+            LOCAL_LOG_ERROR("can't load {} : {}", args[0].c_str(), lua_tostring(m_stack->getLuaState(), -1));
+            return -1;
+        }
         return 0;
     }
 

@@ -13,5 +13,7 @@
 #include "util/spinlock.h"
 #include "util/stringUtil.h"
 #include "lualib/manual/luaStack.h"
+#include "framework.h"
+#include "commandLineOption.h"
 
 #endif

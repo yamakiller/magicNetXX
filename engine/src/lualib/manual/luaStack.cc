@@ -1,5 +1,4 @@
 #include "luaStack.h"
-#include "luaFix.h"
 #include "lualib/auto/luaCoreAuto.h"
 #include "lualib/auto/luaNetworkAuto.h"
 #include "luaLoader.h"
@@ -18,7 +17,6 @@ void *luaStack::alloc(void *ud, void *ptr, size_t osize, size_t nsize)
   {
     stack->m_mem -= osize;
   }
-
   if (stack->m_memLimit != 0 && stack->m_mem > stack->m_memLimit)
   {
     if (ptr == nullptr || nsize > osize)
@@ -62,7 +60,7 @@ luaStack *luaStack::create(module::actor *ptr)
 
 int32_t luaStack::init(module::actor *ptr)
 {
-  m_actor = ptr;
+  m_aptr = ptr;
   m_state = lua_newstate(&luaStack::alloc, this);
   lua_gc(m_state, LUA_GCSTOP, 0);
   luaL_openlibs(m_state);
@@ -71,6 +69,11 @@ int32_t luaStack::init(module::actor *ptr)
   lua_pushstring(m_state, LUA_STACK_FIX_ACTOR);
   lua_pushlightuserdata(m_state, (void *)this);
   lua_rawset(m_state, LUA_REGISTRYINDEX);
+
+  const luaL_Reg global_functions[] = {
+      {nullptr, nullptr}};
+
+  luaL_register(m_state, "_G", global_functions);
 
   registerAllCore(m_state);
   registerAllNetwork(m_state);
@@ -107,14 +110,16 @@ void luaStack::pushString(const char *stringValue, int length)
 
 void luaStack::pushNil(void) { lua_pushnil(m_state); }
 
-void luaStack::addSearchPath(const char *path)
+void luaStack::setSearchPath(const char *path)
 {
-  lua_getglobal(m_state, "package");
-  lua_getfield(m_state, -1, "path");
-  const char *cur_path = lua_tostring(m_state, -1);
-  lua_pushfstring(m_state, "%s;%s/?.lua", cur_path, path);
-  lua_setfield(m_state, -3, "path");
-  lua_pop(m_state, 2);
+  lua_pushstring(m_state, path);
+  lua_setglobal(m_state, "LUA_PATH");
+}
+
+void luaStack::setSearchCPath(const char *cpath)
+{
+  lua_pushstring(m_state, cpath);
+  lua_setglobal(m_state, "LUA_CPATH");
 }
 
 void luaStack::addLoader(lua_CFunction func)
@@ -125,27 +130,48 @@ void luaStack::addLoader(lua_CFunction func)
   }
 
   lua_getglobal(m_state, "package");
-  lua_getfield(m_state, -1, "loader");
+  lua_getfield(m_state, -1, "searchers");
 
   lua_pushcfunction(m_state, func);
+  for (int i = (int)(lua_rawlen(m_state, -2) + 1); i > 2; --i)
+  {
+    lua_rawgeti(m_state, -2, i - 1);
+
+    lua_rawseti(m_state, -3, i);
+  }
   lua_rawseti(m_state, -2, 2);
 
-  lua_pop(m_state, 2);
+  lua_setfield(m_state, -2, "searchers");
+
+  lua_pop(m_state, 1);
 }
 
-int luaStack::reload(const char *moduleFileName)
+void luaStack::reload(const char *moduleFileName)
 {
-  return 0;
+  lua_pushstring(m_state, moduleFileName);
+  lua_setglobal(m_state, "LUA_PRELOAD");
+}
+
+int luaStack::executeString(const char *codes)
+{
+  luaL_loadstring(m_state, codes);
+  return executeFunction(0);
 }
 
 int luaStack::executeScriptFile(const char *filename)
 {
   assert(filename);
-  assert(INST(util::ofile, isExist, filename));
 
   int nr = 0;
-  util::Data *pd = INST(util::ofile, getDataFromFile, filename);
-  if (pd != nullptr)
+  std::string fullPath = INST(util::ofile, getfullPathForFilename, filename);
+  if (!INST(util::ofile, isExist, fullPath))
+  {
+    SYSLOG_ERROR(m_aptr->handle(), "lua script file {} does not exist", fullPath.c_str());
+    assert(false);
+  }
+
+  util::Data *pd = INST(util::ofile, getDataFromFile, fullPath);
+  if (pd != nullptr && pd->_bytes != nullptr)
   {
     if (luaLoadBuffer(m_state, pd->_bytes, pd->_len, filename) == 0)
     {
@@ -160,7 +186,7 @@ int luaStack::executeFunction(int numArgs)
   int functionIndex = -(numArgs + 1);
   if (!lua_isfunction(m_state, functionIndex))
   {
-    SYSLOG_ERROR(m_actor->handle(), "value at stack [{}] is not function",
+    SYSLOG_ERROR(m_aptr->handle(), "value at stack [{}] is not function",
                  functionIndex);
     lua_pop(m_state, numArgs + 1);
     return 0;
@@ -184,7 +210,7 @@ int luaStack::executeFunction(int numArgs)
   {
     if (traceback == 0)
     {
-      SYSLOG_ERROR(m_actor->handle(), "[LUA ERROR] {}",
+      SYSLOG_ERROR(m_aptr->handle(), "[LUA ERROR] {}",
                    lua_tostring(m_state, -1));
       lua_pop(m_state, 1);
     }
@@ -219,7 +245,6 @@ int32_t luaStack::luaLoadBuffer(lua_State *l, const char *chunk, int chunkSize,
                                 const char *chunkName)
 {
   int r = luaL_loadbuffer(l, chunk, chunkSize, chunkName);
-
   if (r)
   {
     switch (r)

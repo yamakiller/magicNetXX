@@ -7,19 +7,26 @@
 
 NS_CC_U_BEGIN
 
-struct Data {
+struct Data
+{
   char *_bytes;
   ssize_t _len;
 };
 
-class ofile : public singleton<ofile> {
+class ofile : public singleton<ofile>
+{
 public:
-  ofile() = default;
+  ofile()
+  {
+    m_strDir = "";
+  }
   ~ofile() = default;
 
 public:
   void clear();
   bool isExist(const std::string &filename);
+  void setDirectory(const char *path) { m_strDir = path; }
+  std::string getfullPathForFilename(const std::string &filename);
   Data *getDataFromFile(const std::string &filename);
 
 protected:
@@ -29,6 +36,7 @@ protected:
 protected:
   std::unordered_map<std::string, Data> m_data;
   util::spinlock m_lock;
+  std::string m_strDir;
 };
 
 NS_CC_U_END
