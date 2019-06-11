@@ -1,7 +1,7 @@
 #include "luaStack.h"
+#include "luaLoader.h"
 #include "lualib/auto/luaCoreAuto.h"
 #include "lualib/auto/luaNetworkAuto.h"
-#include "luaLoader.h"
 #include "util/ofile.h"
 
 #define LUA_MEMORY_WARNING_REPORT (1024 * 1024 * 32)
@@ -70,8 +70,7 @@ int32_t luaStack::init(module::actor *ptr)
   lua_pushlightuserdata(m_state, (void *)this);
   lua_rawset(m_state, LUA_REGISTRYINDEX);
 
-  const luaL_Reg global_functions[] = {
-      {nullptr, nullptr}};
+  const luaL_Reg global_functions[] = {{nullptr, nullptr}};
 
   luaL_register(m_state, "_G", global_functions);
 
@@ -166,7 +165,8 @@ int luaStack::executeScriptFile(const char *filename)
   std::string fullPath = INST(util::ofile, getfullPathForFilename, filename);
   if (!INST(util::ofile, isExist, fullPath))
   {
-    SYSLOG_ERROR(m_aptr->handle(), "lua script file {} does not exist", fullPath.c_str());
+    SYSLOG_ERROR(m_aptr->handle(), "lua script file {} does not exist",
+                 fullPath.c_str());
     assert(false);
   }
 
@@ -250,23 +250,22 @@ int32_t luaStack::luaLoadBuffer(lua_State *l, const char *chunk, int chunkSize,
     switch (r)
     {
     case LUA_ERRSYNTAX:
-      SYSLOG_ERROR("[LUA ERROR] load \"{}\", error: syntax error during "
-                   "pre-compilation.",
+      SYSLOG_ERROR(m_aptr->handle(), "[LUA ERROR] load \"{}\", error: syntax error during "
+                                     "pre-compilation.",
                    chunkName);
       break;
-
     case LUA_ERRMEM:
-      SYSLOG_ERROR("[LUA ERROR] load \"{}\", error: memory allocation error.",
+      SYSLOG_ERROR(m_aptr->handle(), "[LUA ERROR] load \"{}\", error: memory allocation error.",
                    chunkName);
       break;
 
     case LUA_ERRFILE:
-      SYSLOG_ERROR("[LUA ERROR] load \"{}\", error: cannot open/read file.",
+      SYSLOG_ERROR(m_aptr->handle(), "[LUA ERROR] load \"{}\", error: cannot open/read file.",
                    chunkName);
       break;
 
     default:
-      SYSLOG_ERROR("[LUA ERROR] load \"{}\", error: unknown", chunkName);
+      SYSLOG_ERROR(m_aptr->handle(), "[LUA ERROR] load \"{}\", error: unknown", chunkName);
     }
   }
 
