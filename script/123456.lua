@@ -10,6 +10,6 @@ function __G__TRACKBACK__(msg)
 end
 
 
-#ccore.Actor::callback()
+--ccore.Actor::callback()
 
  print("tttttttttttttttttttttttttttt")
