@@ -2,14 +2,13 @@
 #define LUALIB_STACK_H
 
 #include "base.h"
-#include "util/mobject.h"
-#include "module/actor.h"
 #include "luaExternApi.h"
+#include "module/actor.h"
+#include "util/mobject.h"
 
 NS_CC_LL_BEGIN
 
-class luaStack : public util::mobject
-{
+class luaStack : public util::mobject {
 public:
   luaStack();
   virtual ~luaStack();
@@ -19,6 +18,8 @@ public:
 
 public:
   lua_State *getLuaState(void) { return m_state; }
+
+  module::actor *getActor(void) { return m_aptr; }
 
   virtual void setSearchPath(const char *path);
 
