@@ -4,7 +4,7 @@ set(lua_source "${CMAKE_CURRENT_SOURCE_DIR}/lua")
 ExternalProject_Add(lua
   SOURCE_DIR ${lua_source}
   CONFIGURE_COMMAND ""
-  BUILD_COMMAND make linux -DLUA_COMPAT_5_1
+  BUILD_COMMAND make linux 
   INSTALL_DIR "${CisEngine_INSTALL_PREFIX}"
   INSTALL_COMMAND ""
   BUILD_IN_SOURCE 1
