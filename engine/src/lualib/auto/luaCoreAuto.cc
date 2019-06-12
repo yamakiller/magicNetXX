@@ -1,6 +1,7 @@
 #include "luaCoreAuto.h"
 #include "lualib/manual/luaStack.h"
 #include "module/actor.h"
+#include "module/actorSystem.h"
 
 NS_CC_LL_BEGIN
 
@@ -86,7 +87,57 @@ tolua_lerror:
   return 0;
 }
 
-int lua_core_actor_send(lua_State *LS) { return 0; }
+int lua_core_actor_send(lua_State *LS)
+{
+  int argc;
+  module::actor *cobj = nullptr;
+#if WOLF_DEBUG >= 1
+  tolua_Error tolua_err;
+#endif
+
+#if WOLF_DEBUG >= 1
+  if (!tolua_isusertype(LS, 1, "ccore.Actor", 0, &tolua_err))
+  {
+    goto tolua_lerror;
+  }
+#endif
+
+  cobj = lua_core_get_actor(LS);
+  argc = lua_gettop(LS) - 1;
+  if (argc >= 3)
+  {
+    uint32_t dest = luaL_checknumber(LS, 2);
+    int session = luaL_checkinteger(LS, 3);
+    int type = luaL_checkinteger(LS, 4);
+    void *data = nullptr;
+    size_t sz = 0;
+    if (argc >= 4)
+    {
+      data = lua_touserdata(LS, 5);
+    }
+    else
+    {
+      data = (void *)"";
+    }
+
+    if (argc >= 5)
+    {
+      sz = luaL_checknumber(LS, 6);
+    }
+
+    int32_t r = INST(module::actorSystem, doSendMessage, cobj->handle(), dest, type, session, data, sz);
+    tolua_pushnumber(LS, r);
+    return 1;
+  }
+
+  luaL_error(LS, "%s has wrong number of arguments: %d, was expecting 3-5 \n",
+             "ccore.Actor:send", argc);
+#if WOLF_DEBUG >= 1
+tolua_lerror:
+  tolua_error(LS, "#ferror in function 'lua_core_actor_send'.", &tolua_err);
+#endif
+  return 0;
+}
 
 int lua_core_actor_timeout(lua_State *LS) { return 0; }
 
